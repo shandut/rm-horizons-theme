@@ -9,6 +9,100 @@
  */
  {
   "sections": {
+    "video_hero_rmw": {
+      "type": "video-hero-slideshow",
+      "blocks": {
+        "slide_heritage": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Our pioneering original",
+            "heading": "The Heritage Collection",
+            "text_alignment": "left",
+            "button_label_1": "Shop the collection",
+            "button_link_1": "",
+            "button_style_1": "primary",
+            "button_label_2": "",
+            "button_link_2": "",
+            "button_style_2": "secondary"
+          }
+        },
+        "slide_drover": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Timeless vintage meets the big sky",
+            "heading": "The Drover",
+            "text_alignment": "left",
+            "button_label_1": "Shop men's & kids",
+            "button_link_1": "",
+            "button_style_1": "primary",
+            "button_label_2": "Accessories & more",
+            "button_link_2": "",
+            "button_style_2": "secondary"
+          }
+        },
+        "slide_new": {
+          "type": "slide",
+          "settings": {
+            "subheading": "Redefining modern essentials",
+            "heading": "The New Collection",
+            "text_alignment": "left",
+            "button_label_1": "Discover now",
+            "button_link_1": "",
+            "button_style_1": "primary",
+            "button_label_2": "",
+            "button_link_2": "",
+            "button_style_2": "secondary"
+          }
+        },
+        "cat_new": {
+          "type": "category",
+          "settings": {
+            "label": "New"
+          }
+        },
+        "cat_jackets": {
+          "type": "category",
+          "settings": {
+            "label": "Jackets"
+          }
+        },
+        "cat_shirts": {
+          "type": "category",
+          "settings": {
+            "label": "Shirts"
+          }
+        },
+        "cat_knitwear": {
+          "type": "category",
+          "settings": {
+            "label": "Knitwear"
+          }
+        },
+        "cat_tshirts": {
+          "type": "category",
+          "settings": {
+            "label": "T-Shirts"
+          }
+        }
+      },
+      "block_order": [
+        "slide_heritage",
+        "slide_drover",
+        "slide_new",
+        "cat_new",
+        "cat_jackets",
+        "cat_shirts",
+        "cat_knitwear",
+        "cat_tshirts"
+      ],
+      "settings": {
+        "video_url": "https://res.cloudinary.com/rmwdam/video/upload/f_auto,q_auto:best,w_2560,h_1440,fl_progressive,so_auto/content/AW26/wk32/HP/SHEM/RMW_AW26_D1_RM_Kit_MW_WW_WEB_HP_v2_16x9",
+        "show_overlay": true,
+        "overlay_color": "#00000066",
+        "overlay_direction": "to top",
+        "autoplay_speed": 5
+      }
+    },
     "hero_jVaWmY": {
       "type": "hero",
       "blocks": {
@@ -282,6 +376,7 @@
     }
   },
   "order": [
+    "video_hero_rmw",
     "hero_jVaWmY",
     "product_list_fa6P9H"
   ]
