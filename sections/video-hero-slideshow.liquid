@@ -3,8 +3,6 @@
   assign category_blocks = section.blocks | where: 'type', 'category'
   assign slide_count = slide_blocks.size
   assign autoplay_speed = section.settings.autoplay_speed | default: 5
-  assign video_url = section.settings.video_url
-  assign mobile_video_url = section.settings.mobile_video_url | default: video_url
 %}
 
 <div
@@ -13,61 +11,61 @@
   data-autoplay-speed="{{ autoplay_speed }}"
   data-slide-count="{{ slide_count }}"
 >
-  {%- comment -%} Video Background {%- endcomment -%}
-  <div class="video-hero-slideshow__media">
-    {% if video_url != blank %}
-      {%- comment -%}
-        External video from Cloudinary DAM.
-        Cloudinary f_auto handles format negotiation, so we use the URL directly.
-        theme-check-disable AssetUrlFilters -- external CDN video, not a theme asset
-      {%- endcomment -%}
-      <video
-        class="video-hero-slideshow__video video-hero-slideshow__video--desktop"
-        src="{{ video_url }}"
-        playsinline
-        muted
-        autoplay
-        loop
-        preload="auto"
-        fetchpriority="high"
-      ></video>
-      {% if mobile_video_url != video_url %}
-        <video
-          class="video-hero-slideshow__video video-hero-slideshow__video--mobile"
-          src="{{ mobile_video_url }}"
-          playsinline
-          muted
-          autoplay
-          loop
-          preload="auto"
-          fetchpriority="high"
-        ></video>
-      {% endif %}
-    {% else %}
-      <div class="video-hero-slideshow__placeholder">
-        {{ 'hero-apparel-1' | placeholder_svg_tag }}
-      </div>
-    {% endif %}
+  {%- comment -%} Overlay (shared across all slides) {%- endcomment -%}
+  {% if section.settings.show_overlay %}
+    <div
+      class="video-hero-slideshow__overlay"
+      style="background: linear-gradient({{ section.settings.overlay_direction }}, {{ section.settings.overlay_color }}, {{ section.settings.overlay_color | color_modify: 'alpha', 0 }});"
+    ></div>
+  {% endif %}
 
-    {%- comment -%} Overlay {%- endcomment -%}
-    {% if section.settings.show_overlay %}
-      <div
-        class="video-hero-slideshow__overlay"
-        style="background: linear-gradient({{ section.settings.overlay_direction }}, {{ section.settings.overlay_color }}, {{ section.settings.overlay_color | color_modify: 'alpha', 0 }});"
-      ></div>
-    {% endif %}
-  </div>
-
-  {%- comment -%} Slides Content {%- endcomment -%}
+  {%- comment -%} Slides — each with its own video background {%- endcomment -%}
   {% if slide_count > 0 %}
-    <div class="video-hero-slideshow__content">
-      <div class="video-hero-slideshow__slides">
-        {% for block in slide_blocks %}
-          <div
-            class="video-hero-slideshow__slide{% if forloop.first %} video-hero-slideshow__slide--active{% endif %}"
-            data-slide-index="{{ forloop.index0 }}"
-            {{ block.shopify_attributes }}
-          >
+    <div class="video-hero-slideshow__slides">
+      {% for block in slide_blocks %}
+        {%- liquid
+          assign slide_video = block.settings.video_url
+          assign slide_mobile_video = block.settings.mobile_video_url | default: slide_video
+        -%}
+        <div
+          class="video-hero-slideshow__slide{% if forloop.first %} video-hero-slideshow__slide--active{% endif %}"
+          data-slide-index="{{ forloop.index0 }}"
+          {{ block.shopify_attributes }}
+        >
+          {%- comment -%} Per-slide video background {%- endcomment -%}
+          <div class="video-hero-slideshow__media">
+            {% if slide_video != blank %}
+              <video
+                class="video-hero-slideshow__video video-hero-slideshow__video--desktop"
+                src="{{ slide_video }}"
+                playsinline
+                muted
+                {% if forloop.first %}autoplay{% endif %}
+                loop
+                preload="{% if forloop.first %}auto{% else %}metadata{% endif %}"
+                {% if forloop.first %}fetchpriority="high"{% endif %}
+              ></video>
+              {% if slide_mobile_video != slide_video %}
+                <video
+                  class="video-hero-slideshow__video video-hero-slideshow__video--mobile"
+                  src="{{ slide_mobile_video }}"
+                  playsinline
+                  muted
+                  {% if forloop.first %}autoplay{% endif %}
+                  loop
+                  preload="{% if forloop.first %}auto{% else %}metadata{% endif %}"
+                  {% if forloop.first %}fetchpriority="high"{% endif %}
+                ></video>
+              {% endif %}
+            {% else %}
+              <div class="video-hero-slideshow__placeholder">
+                {{ 'hero-apparel-1' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+          </div>
+
+          {%- comment -%} Slide text content {%- endcomment -%}
+          <div class="video-hero-slideshow__slide-content">
             <div class="video-hero-slideshow__slide-inner" style="text-align: {{ block.settings.text_alignment | default: 'center' }};">
               {% if block.settings.subheading != blank %}
                 <p class="video-hero-slideshow__subheading">
@@ -102,26 +100,26 @@
               </div>
             </div>
           </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {%- comment -%} Dot Navigation {%- endcomment -%}
+    {% if slide_count > 1 %}
+      <div class="video-hero-slideshow__dots" role="tablist" aria-label="Slide navigation">
+        {% for block in slide_blocks %}
+          <button
+            class="video-hero-slideshow__dot{% if forloop.first %} video-hero-slideshow__dot--active{% endif %}"
+            data-slide-index="{{ forloop.index0 }}"
+            role="tab"
+            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+            aria-label="Go to slide {{ forloop.index }}"
+          >
+            <span class="video-hero-slideshow__dot-progress"></span>
+          </button>
         {% endfor %}
       </div>
-
-      {%- comment -%} Dot Navigation {%- endcomment -%}
-      {% if slide_count > 1 %}
-        <div class="video-hero-slideshow__dots" role="tablist" aria-label="Slide navigation">
-          {% for block in slide_blocks %}
-            <button
-              class="video-hero-slideshow__dot{% if forloop.first %} video-hero-slideshow__dot--active{% endif %}"
-              data-slide-index="{{ forloop.index0 }}"
-              role="tab"
-              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-              aria-label="Go to slide {{ forloop.index }}"
-            >
-              <span class="video-hero-slideshow__dot-progress"></span>
-            </button>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </div>
+    {% endif %}
   {% endif %}
 
   {%- comment -%} Bottom Category Strip {%- endcomment -%}
@@ -174,7 +172,19 @@
     let timer = null;
     let isPaused = false;
 
+    function pauseSlideVideos(slide) {
+      slide.querySelectorAll('video').forEach(function(v) { v.pause(); });
+    }
+
+    function playSlideVideos(slide) {
+      slide.querySelectorAll('video').forEach(function(v) {
+        v.currentTime = 0;
+        v.play().catch(function() {});
+      });
+    }
+
     function goToSlide(index) {
+      pauseSlideVideos(slides[current]);
       slides[current].classList.remove('video-hero-slideshow__slide--active');
       dots[current].classList.remove('video-hero-slideshow__dot--active');
       dots[current].setAttribute('aria-selected', 'false');
@@ -184,6 +194,7 @@
       slides[current].classList.add('video-hero-slideshow__slide--active');
       dots[current].classList.add('video-hero-slideshow__dot--active');
       dots[current].setAttribute('aria-selected', 'true');
+      playSlideVideos(slides[current]);
     }
 
     function nextSlide() {
@@ -247,7 +258,39 @@
     flex-direction: column;
   }
 
-  /* Video Background */
+  /* Overlay (shared, sits above all slides) */
+  .video-hero-slideshow__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Slides container */
+  .video-hero-slideshow__slides {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  /* Individual slide — full bleed, stacked */
+  .video-hero-slideshow__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+    pointer-events: none;
+  }
+
+  .video-hero-slideshow__slide--active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 1;
+  }
+
+  /* Per-slide video background */
   .video-hero-slideshow__media {
     position: absolute;
     inset: 0;
@@ -286,53 +329,17 @@
     object-fit: cover;
   }
 
-  /* Overlay */
-  .video-hero-slideshow__overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  /* Content Area */
-  .video-hero-slideshow__content {
+  /* Slide text content — positioned over the video */
+  .video-hero-slideshow__slide-content {
     position: relative;
-    z-index: 2;
-    flex: 1;
+    z-index: 1;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
     padding: 0 clamp(1.5rem, 4vw, 4rem);
     padding-bottom: clamp(2rem, 6vw, 5rem);
-  }
-
-  /* Slides */
-  .video-hero-slideshow__slides {
-    position: relative;
-    min-height: 200px;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-  }
-
-  .video-hero-slideshow__slide {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.8s ease, visibility 0.8s ease;
-    pointer-events: none;
-  }
-
-  .video-hero-slideshow__slide--active {
-    opacity: 1;
-    visibility: visible;
-    position: relative;
-    pointer-events: auto;
   }
 
   .video-hero-slideshow__slide-inner {
@@ -414,10 +421,14 @@
 
   /* Dot Navigation */
   .video-hero-slideshow__dots {
+    position: absolute;
+    bottom: clamp(2rem, 6vw, 5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-top: 2rem;
   }
 
   .video-hero-slideshow__dot {
@@ -543,13 +554,9 @@
       max-height: 800px;
     }
 
-    .video-hero-slideshow__content {
+    .video-hero-slideshow__slide-content {
       padding: 0 1.25rem;
       padding-bottom: 1.5rem;
-    }
-
-    .video-hero-slideshow__slides {
-      min-height: 160px;
     }
 
     .video-hero-slideshow__heading {
@@ -564,6 +571,10 @@
 
     .video-hero-slideshow__dot {
       width: 28px;
+    }
+
+    .video-hero-slideshow__dots {
+      bottom: 1.5rem;
     }
 
     .video-hero-slideshow__categories {
@@ -606,22 +617,6 @@
     "groups": ["header", "footer"]
   },
   "settings": [
-    {
-      "type": "header",
-      "content": "Video"
-    },
-    {
-      "type": "text",
-      "id": "video_url",
-      "label": "Video URL",
-      "info": "Paste the full Cloudinary or external video URL. Cloudinary f_auto will handle format delivery."
-    },
-    {
-      "type": "text",
-      "id": "mobile_video_url",
-      "label": "Mobile video URL",
-      "info": "Optional: different video for mobile. Leave blank to use the desktop video."
-    },
     {
       "type": "header",
       "content": "Overlay"
@@ -670,6 +665,26 @@
       "name": "Slide",
       "limit": 6,
       "settings": [
+        {
+          "type": "header",
+          "content": "Video"
+        },
+        {
+          "type": "text",
+          "id": "video_url",
+          "label": "Video URL",
+          "info": "Paste the full Cloudinary or external video URL for this slide."
+        },
+        {
+          "type": "text",
+          "id": "mobile_video_url",
+          "label": "Mobile video URL",
+          "info": "Optional: different video for mobile. Leave blank to use the desktop video."
+        },
+        {
+          "type": "header",
+          "content": "Content"
+        },
         {
           "type": "text",
           "id": "subheading",
