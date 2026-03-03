@@ -14,7 +14,6 @@
       "blocks": {
         "slide_drover": {
           "type": "slide",
-          "disabled": true,
           "settings": {
             "video_url": "https://cdn.shopify.com/videos/c/o/v/621279cc42904062b1cf6314b81ac47e.mp4",
             "mobile_video_url": "",
@@ -47,7 +46,6 @@
         },
         "slide_heritage": {
           "type": "slide",
-          "disabled": true,
           "settings": {
             "video_url": "https://cdn.shopify.com/videos/c/o/v/6d8ac35b9d20461ab78563873d3a0889.mp4",
             "mobile_video_url": "",
