@@ -12,24 +12,9 @@
     "video_hero_rmw": {
       "type": "video-hero-slideshow",
       "blocks": {
-        "slide_heritage": {
-          "type": "slide",
-          "settings": {
-            "video_url": "https://cdn.shopify.com/videos/c/o/v/6d8ac35b9d20461ab78563873d3a0889.mp4",
-            "mobile_video_url": "",
-            "subheading": "Our pioneering original",
-            "heading": "The Heritage Collection",
-            "text_alignment": "center",
-            "button_label_1": "Shop the collection",
-            "button_link_1": "",
-            "button_style_1": "primary",
-            "button_label_2": "",
-            "button_link_2": "",
-            "button_style_2": "secondary"
-          }
-        },
         "slide_drover": {
           "type": "slide",
+          "disabled": true,
           "settings": {
             "video_url": "https://cdn.shopify.com/videos/c/o/v/621279cc42904062b1cf6314b81ac47e.mp4",
             "mobile_video_url": "",
@@ -53,6 +38,23 @@
             "heading": "The New Collection",
             "text_alignment": "center",
             "button_label_1": "Discover now",
+            "button_link_1": "",
+            "button_style_1": "primary",
+            "button_label_2": "",
+            "button_link_2": "",
+            "button_style_2": "secondary"
+          }
+        },
+        "slide_heritage": {
+          "type": "slide",
+          "disabled": true,
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/6d8ac35b9d20461ab78563873d3a0889.mp4",
+            "mobile_video_url": "",
+            "subheading": "Our pioneering original",
+            "heading": "The Heritage Collection",
+            "text_alignment": "center",
+            "button_label_1": "Shop the collection",
             "button_link_1": "",
             "button_style_1": "primary",
             "button_label_2": "",
@@ -97,9 +99,9 @@
         }
       },
       "block_order": [
-        "slide_heritage",
         "slide_drover",
         "slide_new",
+        "slide_heritage",
         "cat_new",
         "cat_jackets",
         "cat_shirts",
