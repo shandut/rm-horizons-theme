@@ -14,31 +14,45 @@
     "header_announcements_9jGBFp": {
       "type": "header-announcements",
       "blocks": {
-        "announcement_BxgCk9": {
+        "announcement_free_shipping": {
           "type": "_announcement",
           "settings": {
-            "text": "Welcome to our store",
+            "text": "FREE SHIPPING ON ALL ORDERS $75 AND OVER*",
             "link": "",
             "font": "var(--font-subheading--family)",
             "font_size": "0.75rem",
-            "weight": "",
-            "letter_spacing": "normal",
-            "case": "none"
+            "weight": "500",
+            "letter_spacing": "loose",
+            "case": "uppercase"
+          },
+          "blocks": {}
+        },
+        "announcement_click_collect": {
+          "type": "_announcement",
+          "settings": {
+            "text": "CLICK & COLLECT* | READY IN 4 HOURS",
+            "link": "",
+            "font": "var(--font-subheading--family)",
+            "font_size": "0.75rem",
+            "weight": "500",
+            "letter_spacing": "loose",
+            "case": "uppercase"
           },
           "blocks": {}
         }
       },
       "block_order": [
-        "announcement_BxgCk9"
+        "announcement_free_shipping",
+        "announcement_click_collect"
       ],
       "name": "t:names.announcement_bar",
       "settings": {
         "speed": 5,
-        "section_width": "page-width",
-        "color_scheme": "scheme-1",
-        "divider_width": 1,
-        "padding-block-start": 15,
-        "padding-block-end": 15
+        "section_width": "full-width",
+        "color_scheme": "scheme-5",
+        "divider_width": 0,
+        "padding-block-start": 10,
+        "padding-block-end": 10
       }
     },
     "header_section": {
