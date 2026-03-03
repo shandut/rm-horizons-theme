@@ -7,7 +7,7 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
- {
+{
   "sections": {
     "video_hero_rmw": {
       "type": "video-hero-slideshow",
@@ -15,7 +15,7 @@
         "slide_heritage": {
           "type": "slide",
           "settings": {
-            "video_url": "",
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/6d8ac35b9d20461ab78563873d3a0889.mp4",
             "mobile_video_url": "",
             "subheading": "Our pioneering original",
             "heading": "The Heritage Collection",
@@ -31,7 +31,7 @@
         "slide_drover": {
           "type": "slide",
           "settings": {
-            "video_url": "",
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/621279cc42904062b1cf6314b81ac47e.mp4",
             "mobile_video_url": "",
             "subheading": "Timeless vintage meets the big sky",
             "heading": "The Drover",
@@ -47,7 +47,7 @@
         "slide_new": {
           "type": "slide",
           "settings": {
-            "video_url": "",
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/08cb2e0cac1941c99a7701e43a2bf76f.mp4",
             "mobile_video_url": "",
             "subheading": "Redefining modern essentials",
             "heading": "The New Collection",
@@ -63,31 +63,36 @@
         "cat_new": {
           "type": "category",
           "settings": {
-            "label": "New"
+            "label": "New",
+            "link": ""
           }
         },
         "cat_jackets": {
           "type": "category",
           "settings": {
-            "label": "Jackets"
+            "label": "Jackets",
+            "link": ""
           }
         },
         "cat_shirts": {
           "type": "category",
           "settings": {
-            "label": "Shirts"
+            "label": "Shirts",
+            "link": ""
           }
         },
         "cat_knitwear": {
           "type": "category",
           "settings": {
-            "label": "Knitwear"
+            "label": "Knitwear",
+            "link": ""
           }
         },
         "cat_tshirts": {
           "type": "category",
           "settings": {
-            "label": "T-Shirts"
+            "label": "T-Shirts",
+            "link": ""
           }
         }
       },
@@ -161,6 +166,10 @@
       "settings": {
         "media_type_1": "image",
         "media_type_2": "image",
+        "stack_media_on_mobile": false,
+        "custom_mobile_media": false,
+        "media_type_1_mobile": "image",
+        "media_type_2_mobile": "image",
         "link": "",
         "open_in_new_tab": false,
         "content_direction": "column",
