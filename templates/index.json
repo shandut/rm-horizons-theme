@@ -17,7 +17,7 @@
           "settings": {
             "subheading": "Our pioneering original",
             "heading": "The Heritage Collection",
-            "text_alignment": "left",
+            "text_alignment": "center",
             "button_label_1": "Shop the collection",
             "button_link_1": "",
             "button_style_1": "primary",
@@ -31,7 +31,7 @@
           "settings": {
             "subheading": "Timeless vintage meets the big sky",
             "heading": "The Drover",
-            "text_alignment": "left",
+            "text_alignment": "center",
             "button_label_1": "Shop men's & kids",
             "button_link_1": "",
             "button_style_1": "primary",
@@ -45,7 +45,7 @@
           "settings": {
             "subheading": "Redefining modern essentials",
             "heading": "The New Collection",
-            "text_alignment": "left",
+            "text_alignment": "center",
             "button_label_1": "Discover now",
             "button_link_1": "",
             "button_style_1": "primary",
@@ -96,7 +96,7 @@
         "cat_tshirts"
       ],
       "settings": {
-        "video_url": "https://res.cloudinary.com/rmwdam/video/upload/f_auto,q_auto:best,w_2560,h_1440,fl_progressive,so_auto/content/AW26/wk32/HP/SHEM/RMW_AW26_D1_RM_Kit_MW_WW_WEB_HP_v2_16x9",
+        "video_url": "",
         "show_overlay": true,
         "overlay_color": "#00000066",
         "overlay_direction": "to top",

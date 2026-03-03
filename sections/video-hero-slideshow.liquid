@@ -302,6 +302,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    align-items: center;
     padding: 0 clamp(1.5rem, 4vw, 4rem);
     padding-bottom: clamp(2rem, 6vw, 5rem);
   }
@@ -310,6 +311,9 @@
   .video-hero-slideshow__slides {
     position: relative;
     min-height: 200px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .video-hero-slideshow__slide {
@@ -317,6 +321,7 @@
     inset: 0;
     display: flex;
     align-items: flex-end;
+    justify-content: center;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.8s ease, visibility 0.8s ease;
@@ -333,6 +338,7 @@
   .video-hero-slideshow__slide-inner {
     width: 100%;
     max-width: 700px;
+    margin: 0 auto;
   }
 
   /* Typography */
@@ -363,6 +369,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    justify-content: center;
   }
 
   .video-hero-slideshow__button {
@@ -408,6 +415,7 @@
   /* Dot Navigation */
   .video-hero-slideshow__dots {
     display: flex;
+    justify-content: center;
     gap: 8px;
     margin-top: 2rem;
   }
@@ -679,10 +687,10 @@
           "id": "text_alignment",
           "label": "Text alignment",
           "options": [
-            { "value": "left", "label": "Left" },
-            { "value": "center", "label": "Center" }
+            { "value": "center", "label": "Center" },
+            { "value": "left", "label": "Left" }
           ],
-          "default": "left"
+          "default": "center"
         },
         {
           "type": "header",
