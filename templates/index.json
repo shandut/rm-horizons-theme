@@ -59,52 +59,12 @@
             "button_link_2": "",
             "button_style_2": "secondary"
           }
-        },
-        "cat_new": {
-          "type": "category",
-          "settings": {
-            "label": "New",
-            "link": ""
-          }
-        },
-        "cat_jackets": {
-          "type": "category",
-          "settings": {
-            "label": "Jackets",
-            "link": ""
-          }
-        },
-        "cat_shirts": {
-          "type": "category",
-          "settings": {
-            "label": "Shirts",
-            "link": ""
-          }
-        },
-        "cat_knitwear": {
-          "type": "category",
-          "settings": {
-            "label": "Knitwear",
-            "link": ""
-          }
-        },
-        "cat_tshirts": {
-          "type": "category",
-          "settings": {
-            "label": "T-Shirts",
-            "link": ""
-          }
         }
       },
       "block_order": [
         "slide_drover",
         "slide_new",
-        "slide_heritage",
-        "cat_new",
-        "cat_jackets",
-        "cat_shirts",
-        "cat_knitwear",
-        "cat_tshirts"
+        "slide_heritage"
       ],
       "settings": {
         "show_overlay": true,
@@ -387,10 +347,80 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
+    },
+    "explore_range_rmw": {
+      "type": "explore-range",
+      "blocks": {
+        "tab_women": {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Women",
+            "label_1": "Boots",
+            "label_2": "Belts",
+            "label_3": "Sweatshirts",
+            "label_4": "Bags",
+            "label_5": "Shirts",
+            "label_6": "Rugbys and polos"
+          }
+        },
+        "tab_men": {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Men",
+            "label_1": "Boots",
+            "label_2": "Belts",
+            "label_3": "Sweatshirts",
+            "label_4": "T-shirts",
+            "label_5": "Shirts",
+            "label_6": "Rugbys and polos"
+          }
+        }
+      },
+      "block_order": [
+        "tab_women",
+        "tab_men"
+      ],
+      "settings": {
+        "heading": "Explore our range"
+      }
+    },
+    "seasonal_comforts_rmw": {
+      "type": "seasonal-comforts",
+      "blocks": {
+        "row_1": {
+          "type": "row",
+          "settings": {
+            "reverse_layout": false,
+            "banner_heading": "Seasonal comfort starts here",
+            "button_label_1": "Women's boots",
+            "button_label_2": "Men's boots",
+            "product_subtitle": "Comfort. Handcrafted."
+          }
+        },
+        "row_2": {
+          "type": "row",
+          "settings": {
+            "reverse_layout": true,
+            "banner_heading": "The gift of comfort",
+            "button_label_1": "Gifts for her",
+            "button_label_2": "Gifts for him",
+            "product_subtitle": "A timeless classic."
+          }
+        }
+      },
+      "block_order": [
+        "row_1",
+        "row_2"
+      ],
+      "settings": {
+        "heading": "Seasonal Comforts"
+      }
     }
   },
   "order": [
     "video_hero_rmw",
+    "explore_range_rmw",
+    "seasonal_comforts_rmw",
     "hero_jVaWmY",
     "product_list_fa6P9H"
   ]

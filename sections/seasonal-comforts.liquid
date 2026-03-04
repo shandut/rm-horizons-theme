@@ -1,0 +1,492 @@
+{%- comment -%}
+  Seasonal Comforts — alternating rows with a background-image
+  banner (heading + 2 CTA buttons) and a featured-product card.
+{%- endcomment -%}
+
+{% liquid
+  assign row_blocks = section.blocks | where: 'type', 'row'
+%}
+
+<div class="seasonal-comforts" id="SeasonalComforts-{{ section.id }}">
+  {% if section.settings.heading != blank %}
+    <div class="seasonal-comforts__header">
+      <h2 class="seasonal-comforts__title">{{ section.settings.heading }}</h2>
+    </div>
+  {% endif %}
+
+  {% for block in row_blocks %}
+    {%- liquid
+      assign product = block.settings.featured_product
+      assign is_reversed = block.settings.reverse_layout
+    -%}
+    <div
+      class="seasonal-comforts__row{% if is_reversed %} seasonal-comforts__row--reversed{% endif %}"
+      {{ block.shopify_attributes }}
+    >
+      {%- comment -%} Banner side — background image with heading & buttons {%- endcomment -%}
+      <a href="{{ block.settings.banner_link | default: '#' }}" class="seasonal-comforts__banner">
+        {% if block.settings.banner_image != blank %}
+          {{
+            block.settings.banner_image
+            | image_url: width: 1200
+            | image_tag:
+              widths: '400, 600, 800, 1000, 1200',
+              sizes: '(min-width: 750px) 50vw, 100vw',
+              loading: 'lazy',
+              class: 'seasonal-comforts__banner-img'
+          }}
+        {% else %}
+          <div class="seasonal-comforts__banner-placeholder">
+            {{ 'lifestyle-1' | placeholder_svg_tag }}
+          </div>
+        {% endif %}
+
+        <div class="seasonal-comforts__banner-overlay"></div>
+
+        <div class="seasonal-comforts__banner-content">
+          {% if block.settings.banner_heading != blank %}
+            <h3 class="seasonal-comforts__banner-heading">{{ block.settings.banner_heading }}</h3>
+          {% endif %}
+
+          <div class="seasonal-comforts__banner-buttons">
+            {% if block.settings.button_label_1 != blank %}
+              <span class="seasonal-comforts__banner-btn">
+                {{ block.settings.button_label_1 }}
+              </span>
+            {% endif %}
+            {% if block.settings.button_label_2 != blank %}
+              <span class="seasonal-comforts__banner-btn">
+                {{ block.settings.button_label_2 }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+
+      {%- comment -%} Featured product side {%- endcomment -%}
+      <div class="seasonal-comforts__product">
+        {% if product != blank %}
+          <a href="{{ product.url }}" class="seasonal-comforts__product-link">
+            <div class="seasonal-comforts__product-image">
+              {% if product.featured_image != blank %}
+                {{
+                  product.featured_image
+                  | image_url: width: 800
+                  | image_tag:
+                    widths: '300, 400, 600, 800',
+                    sizes: '(min-width: 750px) 25vw, 80vw',
+                    loading: 'lazy'
+                }}
+              {% endif %}
+            </div>
+            <div class="seasonal-comforts__product-info">
+              <h4 class="seasonal-comforts__product-title">{{ product.title }}</h4>
+              {% if block.settings.product_subtitle != blank %}
+                <p class="seasonal-comforts__product-subtitle">{{ block.settings.product_subtitle }}</p>
+              {% endif %}
+              <p class="seasonal-comforts__product-price">{{ product.price | money }}</p>
+              <span class="seasonal-comforts__product-btn">Shop now</span>
+            </div>
+          </a>
+        {% else %}
+          <div class="seasonal-comforts__product-link seasonal-comforts__product-link--empty">
+            <div class="seasonal-comforts__product-image">
+              <div class="seasonal-comforts__product-placeholder">
+                {{ 'product-1' | placeholder_svg_tag }}
+              </div>
+            </div>
+            <div class="seasonal-comforts__product-info">
+              <h4 class="seasonal-comforts__product-title">Featured product</h4>
+              <p class="seasonal-comforts__product-subtitle">Select a product in theme settings</p>
+              <span class="seasonal-comforts__product-btn">Shop now</span>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% stylesheet %}
+  .seasonal-comforts {
+    padding: clamp(2rem, 4vw, 3.5rem) 0;
+  }
+
+  .seasonal-comforts__header {
+    text-align: center;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    padding: 0 1.5rem;
+  }
+
+  .seasonal-comforts__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground-heading, var(--color-foreground));
+    margin: 0;
+  }
+
+  /* ---- Row layout ---- */
+  .seasonal-comforts__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(0.75rem, 1.5vw, 1rem);
+    padding: 0 clamp(1rem, 2vw, 2rem);
+    max-width: var(--normal-page-width, 120rem);
+    margin: 0 auto clamp(0.75rem, 1.5vw, 1rem);
+  }
+
+  @media screen and (min-width: 750px) {
+    .seasonal-comforts__row {
+      grid-template-columns: 3fr 2fr;
+    }
+
+    .seasonal-comforts__row--reversed {
+      grid-template-columns: 2fr 3fr;
+    }
+
+    .seasonal-comforts__row--reversed .seasonal-comforts__banner {
+      order: 2;
+    }
+
+    .seasonal-comforts__row--reversed .seasonal-comforts__product {
+      order: 1;
+    }
+  }
+
+  /* ---- Banner side ---- */
+  .seasonal-comforts__banner {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    text-decoration: none;
+    border-radius: 6px;
+    min-height: 350px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .seasonal-comforts__banner {
+      min-height: 450px;
+    }
+  }
+
+  .seasonal-comforts__banner-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .seasonal-comforts__banner:hover .seasonal-comforts__banner-img {
+    transform: scale(1.03);
+  }
+
+  .seasonal-comforts__banner-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55) 0%, transparent 60%);
+    pointer-events: none;
+    border-radius: 6px;
+  }
+
+  .seasonal-comforts__banner-placeholder {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+  }
+
+  .seasonal-comforts__banner-placeholder svg {
+    width: 30%;
+    height: 30%;
+    opacity: 0.2;
+  }
+
+  .seasonal-comforts__banner-content {
+    position: relative;
+    z-index: 1;
+    padding: clamp(1.25rem, 2.5vw, 2rem);
+    width: 100%;
+  }
+
+  .seasonal-comforts__banner-heading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: var(--font-heading--weight, 400);
+    color: #fff;
+    margin: 0 0 1rem;
+    line-height: 1.15;
+  }
+
+  .seasonal-comforts__banner-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .seasonal-comforts__banner-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625rem 1.5rem;
+    font-family: var(--font-body--family);
+    font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 100px;
+    white-space: nowrap;
+    transition: background 0.25s ease;
+  }
+
+  .seasonal-comforts__banner:hover .seasonal-comforts__banner-btn {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  /* ---- Featured product side ---- */
+  .seasonal-comforts__product {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+  }
+
+  .seasonal-comforts__product-link {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .seasonal-comforts__product-image {
+    width: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .seasonal-comforts__product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+  }
+
+  .seasonal-comforts__product-link:hover .seasonal-comforts__product-image img {
+    transform: scale(1.03);
+  }
+
+  .seasonal-comforts__product-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .seasonal-comforts__product-placeholder svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.2;
+  }
+
+  .seasonal-comforts__product-info {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1rem, 2vw, 2rem);
+  }
+
+  .seasonal-comforts__product-title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1rem, 1.8vw, 1.375rem);
+    font-weight: var(--font-heading--weight, 400);
+    color: var(--color-foreground-heading, var(--color-foreground));
+    margin: 0 0 0.35rem;
+    line-height: 1.2;
+  }
+
+  .seasonal-comforts__product-subtitle {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text));
+    margin: 0 0 0.75rem;
+    line-height: 1.4;
+  }
+
+  .seasonal-comforts__product-price {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.8rem, 1.1vw, 0.9375rem);
+    font-weight: 500;
+    color: var(--color-foreground);
+    margin: 0 0 1rem;
+  }
+
+  .seasonal-comforts__product-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 0.625rem 1.5rem;
+    font-family: var(--font-body--family);
+    font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    background: transparent;
+    border: 1px solid var(--color-foreground);
+    border-radius: 100px;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+
+  .seasonal-comforts__product-link:hover .seasonal-comforts__product-btn {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  /* ---- Mobile stacking ---- */
+  @media screen and (max-width: 749px) {
+    .seasonal-comforts__product-link {
+      flex-direction: column;
+    }
+
+    .seasonal-comforts__product-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+    }
+
+    .seasonal-comforts__product-info {
+      width: 100%;
+      padding: 1.25rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Seasonal comforts",
+  "tag": "section",
+  "class": "seasonal-comforts-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Seasonal Comforts"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Row",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "reverse_layout",
+          "label": "Swap banner and product sides",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Banner"
+        },
+        {
+          "type": "image_picker",
+          "id": "banner_image",
+          "label": "Background image"
+        },
+        {
+          "type": "text",
+          "id": "banner_heading",
+          "label": "Heading",
+          "default": "Seasonal comfort starts here"
+        },
+        {
+          "type": "url",
+          "id": "banner_link",
+          "label": "Banner link"
+        },
+        {
+          "type": "text",
+          "id": "button_label_1",
+          "label": "Button 1 label",
+          "default": "Women's boots"
+        },
+        {
+          "type": "text",
+          "id": "button_label_2",
+          "label": "Button 2 label",
+          "default": "Men's boots"
+        },
+        {
+          "type": "header",
+          "content": "Featured product"
+        },
+        {
+          "type": "product",
+          "id": "featured_product",
+          "label": "Product"
+        },
+        {
+          "type": "text",
+          "id": "product_subtitle",
+          "label": "Product subtitle",
+          "info": "Optional line below the product title.",
+          "default": "Comfort. Handcrafted."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Seasonal comforts",
+      "category": "Collection",
+      "blocks": [
+        {
+          "type": "row",
+          "settings": {
+            "banner_heading": "Seasonal comfort starts here",
+            "button_label_1": "Women's boots",
+            "button_label_2": "Men's boots",
+            "product_subtitle": "Comfort. Handcrafted."
+          }
+        },
+        {
+          "type": "row",
+          "settings": {
+            "reverse_layout": true,
+            "banner_heading": "The gift of comfort",
+            "button_label_1": "Gifts for her",
+            "button_label_2": "Gifts for him",
+            "product_subtitle": "A timeless classic."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

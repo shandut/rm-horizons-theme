@@ -1,12 +1,12 @@
 {% doc %}
-  Renders the predictive search empty state
+  Renders the predictive search empty state — RM Williams style
+  with popular searches, trending products, and new arrival banners.
 
   @param {number} shadow_opacity - shadow opacity for the empty state container shadow
-  @param {string} products_test_id - a playwright test id, used to differentiate empty state from 'real' search results
   @param {boolean} [load_empty_state] - Load the empty state or not
 
   @example
-  {% render 'predictive-search-empty-state', shadow_opacity: 0.1, products_test_id: 'empty-state' %}
+  {% render 'predictive-search-empty-state', shadow_opacity: 0.1 %}
 {% enddoc %}
 
 <div
@@ -17,28 +17,237 @@
   style="--color-shadow: rgb(var(--color-foreground-rgb) / {{ shadow_opacity }});"
 >
   {% if load_empty_state %}
-    <div class="predictive-search-results__inner">
-      {% liquid
-        assign collection = settings.empty_state_collection | default: collections.all
-        assign default_title = 'content.search_results_resource_products' | t
-        assign title = settings.empty_state_collection.title | default: default_title
-      %}
-      {% paginate collection.products by 4 %}
-        {% assign products = collection.products %}
-        {% comment %} Only show products section if there are products to display {% endcomment %}
-        {% if products.size > 0 %}
-          {% render 'predictive-search-products-list',
-            products_test_id: products_test_id,
-            title: title,
-            products: products,
-            limit: 4
-          %}
-        {% else %}
-          <div class="predictive-search-results__no-results">
-            <p>{{ 'content.no_products_found' | t }}</p>
-          </div>
-        {% endif %}
-      {% endpaginate %}
+    <div class="predictive-search-results__inner search-empty-state">
+
+      {%- comment -%} Popular Searches — pills that submit the search form {%- endcomment -%}
+      <div class="search-empty-state__section">
+        <h4 class="search-empty-state__heading">Popular searches</h4>
+        <div class="search-empty-state__pills">
+          {%- liquid
+            assign popular_terms = settings.search_popular_terms | default: 'belt, wallet, comfort craftsman boot, made in australia, cap, polo shirt, key ring, drover belt, hat, socks'
+            assign terms_array = popular_terms | split: ','
+          -%}
+          {% for term in terms_array %}
+            {%- assign clean_term = term | strip -%}
+            {% if clean_term != blank %}
+              <a
+                href="{{ routes.search_url }}?q={{ clean_term | url_encode }}&options%5Bprefix%5D=last"
+                class="search-empty-state__pill"
+              >
+                {{ clean_term }}
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+      {%- comment -%} Trending Products — 6 products from featured collection {%- endcomment -%}
+      <div class="search-empty-state__section">
+        <h4 class="search-empty-state__heading">Trending products</h4>
+        {% liquid
+          assign collection = settings.empty_state_collection | default: collections.all
+        %}
+        {% paginate collection.products by 6 %}
+          {% assign products = collection.products %}
+          {% if products.size > 0 %}
+            <ul class="search-empty-state__products list-unstyled">
+              {% for product in products limit: 6 %}
+                <li class="search-empty-state__product-card">
+                  {% render 'resource-card',
+                    resource_type: 'product',
+                    resource: product,
+                    image_width: 500,
+                    image_hover: true,
+                    image_aspect_ratio: '4 / 5'
+                  %}
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endpaginate %}
+      </div>
+
+      {%- comment -%} New Arrivals Banners — Men & Women {%- endcomment -%}
+      <div class="search-empty-state__section">
+        <div class="search-empty-state__banners">
+          <a href="{{ settings.search_banner_link_1 | default: '/collections/new-men' }}" class="search-empty-state__banner">
+            {% if settings.search_banner_image_1 != blank %}
+              {{
+                settings.search_banner_image_1
+                | image_url: width: 800
+                | image_tag:
+                  widths: '400, 600, 800',
+                  sizes: '(min-width: 750px) 40vw, 90vw',
+                  loading: 'lazy'
+              }}
+            {% else %}
+              <div class="search-empty-state__banner-placeholder">
+                {{ 'collection-1' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+            <span class="search-empty-state__banner-label">
+              {{ settings.search_banner_label_1 | default: 'New arrivals for men' }}
+            </span>
+          </a>
+          <a href="{{ settings.search_banner_link_2 | default: '/collections/new-women' }}" class="search-empty-state__banner">
+            {% if settings.search_banner_image_2 != blank %}
+              {{
+                settings.search_banner_image_2
+                | image_url: width: 800
+                | image_tag:
+                  widths: '400, 600, 800',
+                  sizes: '(min-width: 750px) 40vw, 90vw',
+                  loading: 'lazy'
+              }}
+            {% else %}
+              <div class="search-empty-state__banner-placeholder">
+                {{ 'collection-2' | placeholder_svg_tag }}
+              </div>
+            {% endif %}
+            <span class="search-empty-state__banner-label">
+              {{ settings.search_banner_label_2 | default: 'New arrivals for women' }}
+            </span>
+          </a>
+        </div>
+      </div>
+
     </div>
   {% endif %}
 </div>
+
+{% stylesheet %}
+  /* ── Search Empty State ── */
+  .search-empty-state {
+    padding: 0 clamp(1.25rem, 3vw, 2.5rem) clamp(2rem, 4vw, 3rem);
+  }
+
+  .search-empty-state__section {
+    padding-block: clamp(1rem, 2vw, 1.5rem) 0;
+  }
+
+  .search-empty-state__heading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(0.875rem, 1.2vw, 1rem);
+    font-weight: var(--font-heading--weight, 400);
+    color: var(--color-foreground);
+    margin: 0 0 clamp(0.75rem, 1.5vw, 1rem);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .search-empty-state__heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  /* Popular search pills */
+  .search-empty-state__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .search-empty-state__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    font-family: var(--font-body--family);
+    font-size: clamp(0.75rem, 1vw, 0.85rem);
+    color: var(--color-foreground);
+    text-decoration: none;
+    border: 1px solid var(--color-border);
+    border-radius: 100px;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .search-empty-state__pill:hover {
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    border-color: var(--color-foreground);
+  }
+
+  /* Trending products grid */
+  .search-empty-state__products {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(0.5rem, 1vw, 0.75rem);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .search-empty-state__products {
+      grid-template-columns: repeat(6, 1fr);
+    }
+  }
+
+  .search-empty-state__product-card {
+    list-style: none;
+  }
+
+  /* New arrivals banners */
+  .search-empty-state__banners {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(0.5rem, 1vw, 0.75rem);
+  }
+
+  @media screen and (min-width: 750px) {
+    .search-empty-state__banners {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .search-empty-state__banner {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    text-decoration: none;
+    border-radius: var(--style-border-radius-sm, 0);
+  }
+
+  .search-empty-state__banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .search-empty-state__banner:hover img {
+    transform: scale(1.03);
+  }
+
+  .search-empty-state__banner-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-empty-state__banner-placeholder svg {
+    width: 30%;
+    height: 30%;
+    opacity: 0.2;
+  }
+
+  .search-empty-state__banner-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: clamp(0.75rem, 1.5vw, 1.25rem);
+    font-family: var(--font-heading--family);
+    font-size: clamp(0.9rem, 1.5vw, 1.125rem);
+    font-weight: var(--font-heading--weight, 400);
+    color: #fff;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  }
+{% endstylesheet %}

@@ -12,31 +12,31 @@
   "name": "t:names.header",
   "sections": {
     "header_announcements_9jGBFp": {
-      "type": "header-announcements",
+      "type": "announcement-bar-split",
       "blocks": {
         "announcement_free_shipping": {
           "type": "_announcement",
           "settings": {
-            "text": "FREE SHIPPING ON ALL ORDERS $75 AND OVER*",
+            "text": "<a href=\"/pages/shipping-policy\">Free shipping</a> on all orders $75 and over.",
             "link": "",
-            "font": "var(--font-subheading--family)",
+            "font": "var(--font-body--family)",
             "font_size": "0.75rem",
-            "weight": "500",
-            "letter_spacing": "loose",
-            "case": "uppercase"
+            "weight": "400",
+            "letter_spacing": "normal",
+            "case": "none"
           },
           "blocks": {}
         },
         "announcement_click_collect": {
           "type": "_announcement",
           "settings": {
-            "text": "CLICK & COLLECT* | READY IN 4 HOURS",
+            "text": "<a href=\"/pages/click-collect\">Click & Collect*</a> | Ready in 4 hours",
             "link": "",
-            "font": "var(--font-subheading--family)",
+            "font": "var(--font-body--family)",
             "font_size": "0.75rem",
-            "weight": "500",
-            "letter_spacing": "loose",
-            "case": "uppercase"
+            "weight": "400",
+            "letter_spacing": "normal",
+            "case": "none"
           },
           "blocks": {}
         }
@@ -45,9 +45,13 @@
         "announcement_free_shipping",
         "announcement_click_collect"
       ],
-      "name": "t:names.announcement_bar",
+      "name": "Announcement bar (split)",
       "settings": {
         "speed": 5,
+        "right_text": "Can we help you?",
+        "right_link": "/pages/contact",
+        "right_font": "var(--font-body--family)",
+        "right_font_size": "0.75rem",
         "section_width": "full-width",
         "color_scheme": "scheme-2",
         "divider_width": 0,

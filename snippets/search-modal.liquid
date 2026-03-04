@@ -138,18 +138,15 @@
   }
 
   .search-modal__content {
-    /* Approx set the top so when the content is at max height, the modal is centered */
-    --modal-top-margin: calc(50dvh - var(--modal-max-height) / 2 - 2rem);
-    --modal-width: 66dvw;
-
     padding: 0;
-    border: var(--style-border-popover);
-
-    @media screen and (min-width: 750px) {
-      width: var(--modal-width);
-      margin-block-start: var(--modal-top-margin);
-      overflow: hidden;
-    }
+    border: none;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
+    margin: 0;
+    inset: 0;
+    border-radius: 0;
   }
 
   /* Hide the default dialog backdrop on small screens */
@@ -160,14 +157,10 @@
   }
 
   .dialog-modal[open].search-modal__content {
-    transform-origin: bottom center;
-    animation: search-element-slide-in-bottom 300ms var(--ease-out-quad) forwards;
-    border-radius: var(--search-border-radius);
-    box-shadow: var(--shadow-popover);
-
-    @media screen and (max-width: 749px) {
-      border-radius: 0;
-    }
+    transform-origin: top center;
+    animation: search-element-slide-in-bottom 250ms var(--ease-out-quad) forwards;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .dialog-modal.search-modal__content.dialog-closing {
@@ -216,10 +209,11 @@
     --resource-card-corner-radius: var(--product-corner-radius);
 
     display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 100%;
     position: relative;
     margin-inline: auto;
-    align-items: center;
     background-color: var(--color-background);
     z-index: var(--layer-heightened);
   }
@@ -253,11 +247,14 @@
   .predictive-search-form {
     position: relative;
     width: 100%;
-    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
   }
 
   .predictive-search-form__content {
-    max-height: 50dvh;
+    flex: 1;
     overflow-y: auto;
     background-color: var(--color-background);
 
@@ -271,26 +268,14 @@
   }
 
   .predictive-search-form__content-wrapper {
-    position: absolute;
-    top: 100%;
+    position: relative;
     width: 100%;
-    left: 0;
     z-index: var(--layer-raised);
     display: flex;
     flex-direction: column;
-    border-radius: 0 0 var(--search-border-radius) var(--search-border-radius);
-    transition: box-shadow var(--animation-speed) var(--animation-easing);
-    transform: translateZ(0);
-    will-change: transform, opacity;
+    flex: 1;
     overflow: hidden;
-
-    @media screen and (max-width: 749px) {
-      border-radius: 0;
-    }
-
-    @media screen and (min-width: 750px) {
-      max-height: var(--modal-max-height);
-    }
+    border-radius: 0;
   }
 
   /* Add new rule to apply bottom padding only when search button exists */

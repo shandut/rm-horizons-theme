@@ -2157,6 +2157,49 @@
           }
         ],
         "default": "default"
+      },
+      {
+        "type": "header",
+        "content": "Search empty state"
+      },
+      {
+        "type": "textarea",
+        "id": "search_popular_terms",
+        "label": "Popular search terms",
+        "info": "Comma-separated list of popular search terms shown as pills.",
+        "default": "belt, wallet, comfort craftsman boot, made in australia, cap, polo shirt, key ring, drover belt, hat, socks"
+      },
+      {
+        "type": "image_picker",
+        "id": "search_banner_image_1",
+        "label": "Banner image 1"
+      },
+      {
+        "type": "text",
+        "id": "search_banner_label_1",
+        "label": "Banner label 1",
+        "default": "New arrivals for men"
+      },
+      {
+        "type": "url",
+        "id": "search_banner_link_1",
+        "label": "Banner link 1"
+      },
+      {
+        "type": "image_picker",
+        "id": "search_banner_image_2",
+        "label": "Banner image 2"
+      },
+      {
+        "type": "text",
+        "id": "search_banner_label_2",
+        "label": "Banner label 2",
+        "default": "New arrivals for women"
+      },
+      {
+        "type": "url",
+        "id": "search_banner_link_2",
+        "label": "Banner link 2"
       }
     ]
   },

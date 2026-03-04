@@ -1,0 +1,630 @@
+{%- comment -%}
+  Explore Our Range — tabbed Women / Men toggle with a
+  horizontal row of 6 collection cards per tab.
+  Labels auto-pull from collection titles when a collection is linked.
+{%- endcomment -%}
+
+{% liquid
+  assign tab_blocks = section.blocks | where: 'type', 'tab'
+  assign bg_color = section.settings.background_color | default: '#f5f0e1'
+  assign card_radius = section.settings.card_corner_radius | default: 12
+  assign card_ratio = section.settings.card_aspect_ratio | default: '3:4'
+  assign label_size = section.settings.label_size | default: 'large'
+  assign label_position = section.settings.label_position | default: 'center'
+  assign overlay_opacity = section.settings.overlay_opacity | default: 30
+
+%}
+
+<div
+  class="explore-range explore-range--labels-{{ label_position }} explore-range--labels-{{ label_size }}"
+  id="ExploreRange-{{ section.id }}"
+  style="
+    background-color: {{ bg_color }};
+    --card-radius: {{ card_radius }}px;
+    --card-ratio: {{ card_ratio | replace: ':', ' / ' }};
+    --overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }};
+  "
+>
+  {% if section.settings.heading != blank %}
+    <div class="explore-range__header">
+      <h2 class="explore-range__title">{{ section.settings.heading }}</h2>
+    </div>
+  {% endif %}
+
+  {% if tab_blocks.size > 0 %}
+    {%- comment -%} Tab toggles {%- endcomment -%}
+    <div class="explore-range__tabs" role="tablist">
+      {% for block in tab_blocks %}
+        <button
+          class="explore-range__tab{% if forloop.first %} explore-range__tab--active{% endif %}"
+          role="tab"
+          type="button"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+          aria-controls="explore-range-panel-{{ block.id }}"
+          id="explore-range-tab-{{ block.id }}"
+        >
+          {{ block.settings.tab_label }}
+        </button>
+      {% endfor %}
+    </div>
+
+    {%- comment -%} Tab panels {%- endcomment -%}
+    {% for block in tab_blocks %}
+      <div
+        class="explore-range__panel{% if forloop.first %} explore-range__panel--active{% endif %}"
+        role="tabpanel"
+        id="explore-range-panel-{{ block.id }}"
+        aria-labelledby="explore-range-tab-{{ block.id }}"
+        {{ block.shopify_attributes }}
+      >
+        <div class="explore-range__grid">
+          {% for i in (1..6) %}
+            {% assign col_key = 'collection_' | append: i %}
+            {% assign img_key = 'image_' | append: i %}
+            {% assign label_key = 'label_' | append: i %}
+            {% assign collection = block.settings[col_key] %}
+            {% assign img = block.settings[img_key] %}
+            {% assign fallback_label = block.settings[label_key] %}
+
+            {%- comment -%} Resolve label: collection title → fallback text {%- endcomment -%}
+            {% if collection != blank %}
+              {% assign card_label = collection.title %}
+              {% assign card_link = collection.url %}
+            {% else %}
+              {% assign card_label = fallback_label %}
+              {% assign card_link = '#' %}
+            {% endif %}
+
+            {%- comment -%} Resolve image: manual override → collection image {%- endcomment -%}
+            {% if img != blank %}
+              {% assign card_image = img %}
+            {% elsif collection != blank and collection.image != blank %}
+              {% assign card_image = collection.image %}
+            {% else %}
+              {% assign card_image = nil %}
+            {% endif %}
+
+            {% if card_label != blank %}
+              <a href="{{ card_link }}" class="explore-range__card">
+                <div class="explore-range__card-image">
+                  {% if card_image != blank %}
+                    {{
+                      card_image
+                      | image_url: width: 600
+                      | image_tag:
+                        widths: '200, 300, 400, 600',
+                        sizes: '(min-width: 750px) 16vw, 45vw',
+                        loading: 'lazy'
+                    }}
+                  {% else %}
+                    <div class="explore-range__placeholder">
+                      {{ 'collection-1' | placeholder_svg_tag }}
+                    </div>
+                  {% endif %}
+                </div>
+                <span class="explore-range__card-label">{{ card_label }}</span>
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+<script>
+  (function() {
+    var section = document.getElementById('ExploreRange-{{ section.id }}');
+    if (!section) return;
+
+    var tabs = section.querySelectorAll('.explore-range__tab');
+    var panels = section.querySelectorAll('.explore-range__panel');
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        tabs.forEach(function(t) {
+          t.classList.remove('explore-range__tab--active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach(function(p) {
+          p.classList.remove('explore-range__panel--active');
+        });
+
+        tab.classList.add('explore-range__tab--active');
+        tab.setAttribute('aria-selected', 'true');
+        var panelId = tab.getAttribute('aria-controls');
+        document.getElementById(panelId).classList.add('explore-range__panel--active');
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .explore-range {
+    padding: clamp(2.5rem, 5vw, 4.5rem) 0;
+  }
+
+  .explore-range__header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+    padding: 0 1.5rem;
+  }
+
+  .explore-range__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground-heading, var(--color-foreground));
+    margin: 0;
+  }
+
+  /* ---- Tab toggles ---- */
+  .explore-range__tabs {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .explore-range__tab {
+    appearance: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.25rem;
+    color: var(--color-foreground);
+    position: relative;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.25s ease;
+  }
+
+  .explore-range__tab--active {
+    border-bottom-color: currentColor;
+  }
+
+  .explore-range__tab:hover {
+    border-bottom-color: currentColor;
+  }
+
+  /* ---- Tab panels ---- */
+  .explore-range__panel {
+    display: none;
+  }
+
+  .explore-range__panel--active {
+    display: block;
+    animation: exploreRangeFadeIn 0.35s ease;
+  }
+
+  @keyframes exploreRangeFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---- Card grid ---- */
+  .explore-range__grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: clamp(0.5rem, 1.2vw, 1rem);
+    padding: 0 clamp(1rem, 2.5vw, 2.5rem);
+    max-width: var(--normal-page-width, 120rem);
+    margin: 0 auto;
+  }
+
+  /* ---- Individual card ---- */
+  .explore-range__card {
+    display: block;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--card-radius, 12px);
+  }
+
+  .explore-range__card-image {
+    aspect-ratio: var(--card-ratio, 3 / 4);
+    overflow: hidden;
+    border-radius: var(--card-radius, 12px);
+  }
+
+  .explore-range__card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+  }
+
+  .explore-range__card:hover .explore-range__card-image img {
+    transform: scale(1.04);
+  }
+
+  /* ---- Card label — positioned by modifier ---- */
+  .explore-range__card-label {
+    position: absolute;
+    color: #fff;
+    font-family: var(--font-heading--family);
+    font-weight: var(--font-heading--weight, 500);
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+  }
+
+  /* Label position: center (default) */
+  .explore-range--labels-center .explore-range__card-label {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  /* Label position: bottom */
+  .explore-range--labels-bottom .explore-range__card-label {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: clamp(0.75rem, 1.5vw, 1.25rem);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+    border-radius: 0 0 var(--card-radius, 12px) var(--card-radius, 12px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  /* Label position: bottom-left */
+  .explore-range--labels-bottom-left .explore-range__card-label {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: clamp(0.75rem, 1.5vw, 1.25rem);
+    text-align: left;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 100%);
+    border-radius: 0 0 var(--card-radius, 12px) var(--card-radius, 12px);
+  }
+
+  /* Label sizes */
+  .explore-range--labels-small .explore-range__card-label {
+    font-size: clamp(0.75rem, 1vw, 0.9rem);
+  }
+
+  .explore-range--labels-medium .explore-range__card-label {
+    font-size: clamp(0.9rem, 1.3vw, 1.15rem);
+  }
+
+  .explore-range--labels-large .explore-range__card-label {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  }
+
+  .explore-range--labels-extra-large .explore-range__card-label {
+    font-size: clamp(1.3rem, 2.2vw, 1.85rem);
+  }
+
+  /* ---- Overlay on cards when label is centered ---- */
+  .explore-range--labels-center .explore-range__card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, var(--overlay-opacity, 0.3));
+    border-radius: var(--card-radius, 12px);
+    pointer-events: none;
+    transition: background 0.3s ease;
+  }
+
+  .explore-range--labels-center .explore-range__card:hover::after {
+    background: rgba(0, 0, 0, calc(var(--overlay-opacity, 0.3) + 0.08));
+  }
+
+  .explore-range--labels-center .explore-range__card-label {
+    z-index: 1;
+  }
+
+  /* ---- Placeholder ---- */
+  .explore-range__placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e8e3d4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--card-radius, 12px);
+  }
+
+  .explore-range__placeholder svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.25;
+  }
+
+  /* ---- Mobile: 2-col, tablet: 3-col ---- */
+  @media screen and (max-width: 749px) {
+    .explore-range__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .explore-range__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Explore our range",
+  "tag": "section",
+  "class": "explore-range-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Explore our range"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background colour",
+      "default": "#f5f0e1"
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "range",
+      "id": "card_corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "card_aspect_ratio",
+      "label": "Card aspect ratio",
+      "options": [
+        { "value": "1:1",  "label": "Square (1:1)" },
+        { "value": "3:4",  "label": "Portrait (3:4)" },
+        { "value": "2:3",  "label": "Tall portrait (2:3)" },
+        { "value": "4:5",  "label": "Photo (4:5)" },
+        { "value": "9:16", "label": "Story (9:16)" }
+      ],
+      "default": "3:4"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Image overlay opacity",
+      "info": "Darkens the image behind the label",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Label style"
+    },
+    {
+      "type": "select",
+      "id": "label_position",
+      "label": "Label position",
+      "options": [
+        { "value": "center",      "label": "Centre" },
+        { "value": "bottom",      "label": "Bottom centre" },
+        { "value": "bottom-left", "label": "Bottom left" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "label_size",
+      "label": "Label size",
+      "options": [
+        { "value": "small",       "label": "Small" },
+        { "value": "medium",      "label": "Medium" },
+        { "value": "large",       "label": "Large" },
+        { "value": "extra-large", "label": "Extra large" }
+      ],
+      "default": "large"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "tab",
+      "name": "Tab",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "tab_label",
+          "label": "Tab label",
+          "default": "Women"
+        },
+        {
+          "type": "header",
+          "content": "Collection 1"
+        },
+        {
+          "type": "collection",
+          "id": "collection_1",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_1",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_1",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Boots"
+        },
+        {
+          "type": "header",
+          "content": "Collection 2"
+        },
+        {
+          "type": "collection",
+          "id": "collection_2",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_2",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_2",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Belts"
+        },
+        {
+          "type": "header",
+          "content": "Collection 3"
+        },
+        {
+          "type": "collection",
+          "id": "collection_3",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_3",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_3",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Sweatshirts"
+        },
+        {
+          "type": "header",
+          "content": "Collection 4"
+        },
+        {
+          "type": "collection",
+          "id": "collection_4",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_4",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_4",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Bags"
+        },
+        {
+          "type": "header",
+          "content": "Collection 5"
+        },
+        {
+          "type": "collection",
+          "id": "collection_5",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_5",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_5",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Shirts"
+        },
+        {
+          "type": "header",
+          "content": "Collection 6"
+        },
+        {
+          "type": "collection",
+          "id": "collection_6",
+          "label": "Collection"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_6",
+          "label": "Image override",
+          "info": "Uses collection image if left blank"
+        },
+        {
+          "type": "text",
+          "id": "label_6",
+          "label": "Label override",
+          "info": "Uses collection title if left blank",
+          "default": "Rugbys and polos"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Explore our range",
+      "category": "Collection",
+      "blocks": [
+        {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Women",
+            "label_1": "Boots",
+            "label_2": "Belts",
+            "label_3": "Sweatshirts",
+            "label_4": "Bags",
+            "label_5": "Shirts",
+            "label_6": "Rugbys and polos"
+          }
+        },
+        {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Men",
+            "label_1": "Boots",
+            "label_2": "Belts",
+            "label_3": "Sweatshirts",
+            "label_4": "T-shirts",
+            "label_5": "Shirts",
+            "label_6": "Rugbys and polos"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

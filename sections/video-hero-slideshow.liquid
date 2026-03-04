@@ -1,6 +1,5 @@
 {% liquid
   assign slide_blocks = section.blocks | where: 'type', 'slide'
-  assign category_blocks = section.blocks | where: 'type', 'category'
   assign slide_count = slide_blocks.size
   assign autoplay_speed = section.settings.autoplay_speed | default: 5
 %}
@@ -104,6 +103,20 @@
       {% endfor %}
     </div>
 
+    {%- comment -%} Arrow Navigation {%- endcomment -%}
+    {% if slide_count > 1 %}
+      <button class="video-hero-slideshow__arrow video-hero-slideshow__arrow--prev" aria-label="Previous slide">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 16L7 10L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="video-hero-slideshow__arrow video-hero-slideshow__arrow--next" aria-label="Next slide">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    {% endif %}
+
     {%- comment -%} Dot Navigation {%- endcomment -%}
     {% if slide_count > 1 %}
       <div class="video-hero-slideshow__dots" role="tablist" aria-label="Slide navigation">
@@ -122,39 +135,6 @@
     {% endif %}
   {% endif %}
 
-  {%- comment -%} Bottom Category Strip {%- endcomment -%}
-  {% if category_blocks.size > 0 %}
-    <div class="video-hero-slideshow__categories">
-      <div class="video-hero-slideshow__categories-track">
-        {% for block in category_blocks %}
-          <a
-            href="{{ block.settings.link | default: '#' }}"
-            class="video-hero-slideshow__category"
-            {{ block.shopify_attributes }}
-          >
-            {% if block.settings.image != blank %}
-              <div class="video-hero-slideshow__category-image">
-                {{
-                  block.settings.image
-                  | image_url: width: 200
-                  | image_tag: widths: '100, 150, 200', sizes: '100px', loading: 'lazy'
-                }}
-              </div>
-            {% else %}
-              <div class="video-hero-slideshow__category-image video-hero-slideshow__category-image--placeholder">
-                {{ 'collection-1' | placeholder_svg_tag }}
-              </div>
-            {% endif %}
-            {% if block.settings.label != blank %}
-              <span class="video-hero-slideshow__category-label">
-                {{ block.settings.label }}
-              </span>
-            {% endif %}
-          </a>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
 </div>
 
 <script>
@@ -162,15 +142,32 @@
     const heroEl = document.getElementById('VideoHero-{{ section.id }}');
     if (!heroEl) return;
 
-    const speed = parseInt(heroEl.dataset.autoplaySpeed, 10) * 1000;
+    const fallbackSpeed = parseInt(heroEl.dataset.autoplaySpeed, 10) * 1000;
     const slideCount = parseInt(heroEl.dataset.slideCount, 10);
     if (slideCount <= 1) return;
 
     const slides = heroEl.querySelectorAll('.video-hero-slideshow__slide');
     const dots = heroEl.querySelectorAll('.video-hero-slideshow__dot');
+    const prevBtn = heroEl.querySelector('.video-hero-slideshow__arrow--prev');
+    const nextBtn = heroEl.querySelector('.video-hero-slideshow__arrow--next');
     let current = 0;
     let timer = null;
     let isPaused = false;
+
+    function getActiveVideo(slide) {
+      var desktop = slide.querySelector('.video-hero-slideshow__video--desktop');
+      var mobile = slide.querySelector('.video-hero-slideshow__video--mobile');
+      if (mobile && window.innerWidth < 750 && mobile.src) return mobile;
+      return desktop;
+    }
+
+    function getSlideDuration(slide) {
+      var video = getActiveVideo(slide);
+      if (video && video.duration && isFinite(video.duration)) {
+        return video.duration * 1000;
+      }
+      return fallbackSpeed;
+    }
 
     function pauseSlideVideos(slide) {
       slide.querySelectorAll('video').forEach(function(v) { v.pause(); });
@@ -183,11 +180,29 @@
       });
     }
 
+    function resetDotProgress(dotEl, duration) {
+      var prog = dotEl.querySelector('.video-hero-slideshow__dot-progress');
+      if (prog) {
+        prog.style.animation = 'none';
+        prog.offsetHeight; /* reflow */
+        prog.style.animation = 'dotProgress ' + duration + 'ms linear forwards';
+      }
+    }
+
+    function clearDotProgress(dotEl) {
+      var prog = dotEl.querySelector('.video-hero-slideshow__dot-progress');
+      if (prog) {
+        prog.style.animation = 'none';
+        prog.style.width = '0';
+      }
+    }
+
     function goToSlide(index) {
       pauseSlideVideos(slides[current]);
       slides[current].classList.remove('video-hero-slideshow__slide--active');
       dots[current].classList.remove('video-hero-slideshow__dot--active');
       dots[current].setAttribute('aria-selected', 'false');
+      clearDotProgress(dots[current]);
 
       current = index;
 
@@ -199,25 +214,52 @@
 
     function nextSlide() {
       goToSlide((current + 1) % slideCount);
+      scheduleAutoplay();
+    }
+
+    function prevSlide() {
+      goToSlide((current - 1 + slideCount) % slideCount);
+      scheduleAutoplay();
+    }
+
+    function scheduleAutoplay() {
+      stopAutoplay();
+      if (isPaused) return;
+      var duration = getSlideDuration(slides[current]);
+      resetDotProgress(dots[current], duration);
+      timer = setTimeout(nextSlide, duration);
     }
 
     function startAutoplay() {
-      stopAutoplay();
-      timer = setInterval(nextSlide, speed);
+      isPaused = false;
+      scheduleAutoplay();
     }
 
     function stopAutoplay() {
       if (timer) {
-        clearInterval(timer);
+        clearTimeout(timer);
         timer = null;
       }
     }
 
+    /* Arrow click handlers */
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function() {
+        prevSlide();
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function() {
+        nextSlide();
+      });
+    }
+
+    /* Dot click handlers */
     dots.forEach(function(dot) {
       dot.addEventListener('click', function() {
         var index = parseInt(this.dataset.slideIndex, 10);
         goToSlide(index);
-        startAutoplay();
+        scheduleAutoplay();
       });
     });
 
@@ -228,19 +270,38 @@
 
     heroEl.addEventListener('mouseleave', function() {
       isPaused = false;
-      startAutoplay();
+      scheduleAutoplay();
     });
 
-    // Respect reduced motion
+    /* Kick off the first slide dot progress */
+    function initAutoplay() {
+      var duration = getSlideDuration(slides[current]);
+      resetDotProgress(dots[current], duration);
+      timer = setTimeout(nextSlide, duration);
+    }
+
+    /* Wait for the first video to load its metadata so we know the duration */
+    var firstVideo = getActiveVideo(slides[0]);
+    if (firstVideo && firstVideo.readyState >= 1) {
+      initAutoplay();
+    } else if (firstVideo) {
+      firstVideo.addEventListener('loadedmetadata', function() { initAutoplay(); }, { once: true });
+      /* Fallback in case metadata never loads */
+      setTimeout(function() { if (!timer) initAutoplay(); }, 3000);
+    } else {
+      initAutoplay();
+    }
+
+    /* Respect reduced motion */
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (!prefersReducedMotion.matches) {
-      startAutoplay();
+    if (prefersReducedMotion.matches) {
+      stopAutoplay();
     }
     prefersReducedMotion.addEventListener('change', function(e) {
       if (e.matches) {
         stopAutoplay();
       } else if (!isPaused) {
-        startAutoplay();
+        scheduleAutoplay();
       }
     });
   })();
@@ -419,6 +480,40 @@
     border-color: #fff;
   }
 
+  /* Arrow Navigation */
+  .video-hero-slideshow__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+
+  .video-hero-slideshow__arrow:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .video-hero-slideshow__arrow--prev {
+    left: clamp(1rem, 2.5vw, 2.5rem);
+  }
+
+  .video-hero-slideshow__arrow--next {
+    right: clamp(1rem, 2.5vw, 2.5rem);
+  }
+
   /* Dot Navigation */
   .video-hero-slideshow__dots {
     position: absolute;
@@ -462,88 +557,9 @@
     background: rgba(255, 255, 255, 0.35);
   }
 
-  .video-hero-slideshow__dot--active .video-hero-slideshow__dot-progress {
-    animation: dotProgress var(--autoplay-speed, 5s) linear forwards;
-  }
-
   @keyframes dotProgress {
     from { width: 0; }
     to { width: 100%; }
-  }
-
-  /* Category Strip */
-  .video-hero-slideshow__categories {
-    position: relative;
-    z-index: 3;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    padding: 0.75rem 0;
-  }
-
-  .video-hero-slideshow__categories-track {
-    display: flex;
-    justify-content: center;
-    gap: clamp(1rem, 3vw, 2.5rem);
-    padding: 0 1rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .video-hero-slideshow__categories-track::-webkit-scrollbar {
-    display: none;
-  }
-
-  .video-hero-slideshow__category {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    text-decoration: none;
-    flex-shrink: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .video-hero-slideshow__category:hover {
-    opacity: 0.75;
-  }
-
-  .video-hero-slideshow__category-image {
-    width: clamp(48px, 6vw, 72px);
-    height: clamp(48px, 6vw, 72px);
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .video-hero-slideshow__category-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .video-hero-slideshow__category-image--placeholder {
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .video-hero-slideshow__category-image--placeholder svg {
-    width: 60%;
-    height: 60%;
-  }
-
-  .video-hero-slideshow__category-label {
-    font-family: var(--font-body--family);
-    font-size: clamp(0.6rem, 0.9vw, 0.75rem);
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #fff;
-    text-align: center;
-    white-space: nowrap;
   }
 
   /* Mobile Adjustments */
@@ -577,14 +593,17 @@
       bottom: 1.5rem;
     }
 
-    .video-hero-slideshow__categories {
-      padding: 0.5rem 0;
+    .video-hero-slideshow__arrow {
+      width: 40px;
+      height: 40px;
     }
 
-    .video-hero-slideshow__categories-track {
-      justify-content: flex-start;
-      gap: 1rem;
-      padding: 0 1.25rem;
+    .video-hero-slideshow__arrow--prev {
+      left: 0.75rem;
+    }
+
+    .video-hero-slideshow__arrow--next {
+      right: 0.75rem;
     }
   }
 
@@ -651,12 +670,13 @@
     {
       "type": "range",
       "id": "autoplay_speed",
-      "label": "Seconds per slide",
+      "label": "Fallback seconds per slide",
+      "info": "Used when video duration can't be detected.",
       "min": 3,
-      "max": 10,
+      "max": 30,
       "step": 1,
       "unit": "s",
-      "default": 5
+      "default": 10
     }
   ],
   "blocks": [
@@ -757,29 +777,6 @@
           "default": "secondary"
         }
       ]
-    },
-    {
-      "type": "category",
-      "name": "Category link",
-      "limit": 10,
-      "settings": [
-        {
-          "type": "image_picker",
-          "id": "image",
-          "label": "Image"
-        },
-        {
-          "type": "text",
-          "id": "label",
-          "label": "Label",
-          "default": "New"
-        },
-        {
-          "type": "url",
-          "id": "link",
-          "label": "Link"
-        }
-      ]
     }
   ],
   "presets": [
@@ -814,36 +811,6 @@
             "heading": "The New Collection",
             "button_label_1": "Discover now",
             "button_style_1": "primary"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "label": "New"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "label": "Jackets"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "label": "Shirts"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "label": "Knitwear"
-          }
-        },
-        {
-          "type": "category",
-          "settings": {
-            "label": "T-Shirts"
           }
         }
       ]
