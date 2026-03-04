@@ -12,31 +12,31 @@
   "name": "t:names.header",
   "sections": {
     "header_announcements_9jGBFp": {
-      "type": "announcement-bar-split",
+      "type": "header-announcements",
       "blocks": {
         "announcement_free_shipping": {
           "type": "_announcement",
           "settings": {
-            "text": "<a href=\"/pages/shipping-policy\">Free shipping</a> on all orders $75 and over.",
+            "text": "FREE SHIPPING ON ALL ORDERS $75 AND OVER*",
             "link": "",
-            "font": "var(--font-body--family)",
+            "font": "var(--font-subheading--family)",
             "font_size": "0.75rem",
-            "weight": "400",
-            "letter_spacing": "normal",
-            "case": "none"
+            "weight": "500",
+            "letter_spacing": "loose",
+            "case": "uppercase"
           },
           "blocks": {}
         },
         "announcement_click_collect": {
           "type": "_announcement",
           "settings": {
-            "text": "<a href=\"/pages/click-collect\">Click & Collect*</a> | Ready in 4 hours",
+            "text": "CLICK & COLLECT* | READY IN 4 HOURS",
             "link": "",
-            "font": "var(--font-body--family)",
+            "font": "var(--font-subheading--family)",
             "font_size": "0.75rem",
-            "weight": "400",
-            "letter_spacing": "normal",
-            "case": "none"
+            "weight": "500",
+            "letter_spacing": "loose",
+            "case": "uppercase"
           },
           "blocks": {}
         }
@@ -45,13 +45,9 @@
         "announcement_free_shipping",
         "announcement_click_collect"
       ],
-      "name": "Announcement bar (split)",
+      "name": "t:names.announcement_bar",
       "settings": {
         "speed": 5,
-        "right_text": "Can we help you?",
-        "right_link": "/pages/contact",
-        "right_font": "var(--font-body--family)",
-        "right_font_size": "0.75rem",
         "section_width": "full-width",
         "color_scheme": "scheme-2",
         "divider_width": 0,
@@ -132,10 +128,60 @@
         "enable_transparent_header_collection": false,
         "collection_color_scheme": "default"
       }
+    },
+    "announcement_bar_split_aCqGMy": {
+      "type": "announcement-bar-split",
+      "blocks": {
+        "announcement_w6WChF": {
+          "type": "_announcement",
+          "name": "t:names.announcement",
+          "settings": {
+            "text": "<a href=\"/pages/click-collect\">Click & Collect*</a> | Ready in 4 hours",
+            "link": "",
+            "font": "var(--font-subheading--family)",
+            "font_size": "0.75rem",
+            "weight": "400",
+            "letter_spacing": "normal",
+            "case": "none"
+          },
+          "blocks": {}
+        },
+        "announcement_dpUEDW": {
+          "type": "_announcement",
+          "settings": {
+            "text": "<a href=\"/pages/shipping-policy\">Free shipping</a> on all orders $75 and over.",
+            "link": "",
+            "font": "var(--font-body--family)",
+            "font_size": "0.75rem",
+            "weight": "400",
+            "letter_spacing": "normal",
+            "case": "none"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "announcement_w6WChF",
+        "announcement_dpUEDW"
+      ],
+      "name": "Announcement bar (split)",
+      "settings": {
+        "speed": 5,
+        "right_text": "Can we help you?",
+        "right_link": "",
+        "right_font": "var(--font-body--family)",
+        "right_font_size": "0.75rem",
+        "section_width": "full-width",
+        "color_scheme": "",
+        "divider_width": 1,
+        "padding-block-start": 10,
+        "padding-block-end": 10
+      }
     }
   },
   "order": [
     "header_announcements_9jGBFp",
-    "header_section"
+    "header_section",
+    "announcement_bar_split_aCqGMy"
   ]
 }
