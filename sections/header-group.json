@@ -11,50 +11,6 @@
   "type": "header",
   "name": "t:names.header",
   "sections": {
-    "header_announcements_9jGBFp": {
-      "type": "header-announcements",
-      "blocks": {
-        "announcement_free_shipping": {
-          "type": "_announcement",
-          "settings": {
-            "text": "FREE SHIPPING ON ALL ORDERS $75 AND OVER*",
-            "link": "",
-            "font": "var(--font-subheading--family)",
-            "font_size": "0.75rem",
-            "weight": "500",
-            "letter_spacing": "loose",
-            "case": "uppercase"
-          },
-          "blocks": {}
-        },
-        "announcement_click_collect": {
-          "type": "_announcement",
-          "settings": {
-            "text": "CLICK & COLLECT* | READY IN 4 HOURS",
-            "link": "",
-            "font": "var(--font-subheading--family)",
-            "font_size": "0.75rem",
-            "weight": "500",
-            "letter_spacing": "loose",
-            "case": "uppercase"
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "announcement_free_shipping",
-        "announcement_click_collect"
-      ],
-      "name": "t:names.announcement_bar",
-      "settings": {
-        "speed": 5,
-        "section_width": "full-width",
-        "color_scheme": "scheme-2",
-        "divider_width": 0,
-        "padding-block-start": 10,
-        "padding-block-end": 10
-      }
-    },
     "header_section": {
       "type": "header",
       "blocks": {
@@ -180,8 +136,7 @@
     }
   },
   "order": [
-    "header_announcements_9jGBFp",
-    "header_section",
-    "announcement_bar_split_aCqGMy"
+    "announcement_bar_split_aCqGMy",
+    "header_section"
   ]
 }
