@@ -126,11 +126,11 @@
       "settings": {
         "heading": "Explore our range",
         "background_color": "#f5f0e1",
-        "card_corner_radius": 12,
+        "card_corner_radius": 0,
         "card_aspect_ratio": "3:4",
         "overlay_opacity": 30,
         "label_position": "center",
-        "label_size": "large"
+        "label_size": "extra-large"
       }
     },
     "seasonal_comforts_rmw": {
