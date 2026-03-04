@@ -168,7 +168,7 @@
       "settings": {
         "speed": 5,
         "right_text": "Can we help you?",
-        "right_link": "",
+        "right_link": "shopify://pages/contact",
         "right_font": "var(--font-body--family)",
         "right_font_size": "0.75rem",
         "section_width": "full-width",
