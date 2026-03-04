@@ -1,0 +1,346 @@
+{%- liquid
+  assign has_multiple = false
+  if section.blocks.size > 1
+    assign has_multiple = true
+  endif
+-%}
+
+{% if has_multiple %}
+  <script
+    src="{{ 'announcement-bar.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+{% endif %}
+
+<div class="section-background color-{{ section.settings.color_scheme }}"></div>
+<aside
+  class="announcement-bar-split spacing-style section section--{{ section.settings.section_width }} color-{{ section.settings.color_scheme }}"
+  style="{% render 'spacing-padding', settings: section.settings %}; --border-bottom-width: {{ section.settings.divider_width }}px;"
+>
+  <div class="announcement-bar-split__inner">
+    <div class="announcement-bar-split__left">
+      {%- liquid
+        assign autoplay = false
+        if section.blocks.size > 1
+          assign autoplay = true
+        endif
+      -%}
+
+      <announcement-bar-component
+        class="announcement-bar-split__slider"
+        {% if autoplay %}
+          autoplay="{{ section.settings.speed }}" aria-live="polite"
+        {% endif %}
+      >
+        <div class="announcement-bar-split__slides">
+          {% content_for 'blocks' %}
+        </div>
+      </announcement-bar-component>
+    </div>
+
+    {%- if section.settings.right_text != blank -%}
+      <div class="announcement-bar-split__right">
+        {%- if section.settings.right_link != blank -%}
+          <a
+            href="{{ section.settings.right_link }}"
+            class="announcement-bar-split__right-link"
+            style="
+              font-family: {{ section.settings.right_font }};
+              font-size: {{ section.settings.right_font_size }};
+            "
+          >
+            {{ section.settings.right_text }}
+          </a>
+        {%- else -%}
+          <span
+            class="announcement-bar-split__right-text"
+            style="
+              font-family: {{ section.settings.right_font }};
+              font-size: {{ section.settings.right_font_size }};
+            "
+          >
+            {{ section.settings.right_text }}
+          </span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+</aside>
+
+{% stylesheet %}
+  .announcement-bar-split {
+    border-block-end: var(--border-bottom-width) solid var(--color-border);
+  }
+
+  .announcement-bar-split__inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: var(--page-width);
+    margin-inline: auto;
+    padding-inline: var(--page-gutter);
+  }
+
+  /* Left side: cycling announcements */
+  .announcement-bar-split__left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .announcement-bar-split__slider {
+    display: flex;
+    align-items: center;
+  }
+
+  .announcement-bar-split__slides {
+    display: grid;
+    grid: [stack] auto / [stack] auto;
+    width: 100%;
+  }
+
+  .announcement-bar-split__slides > * {
+    grid-area: stack;
+  }
+
+  /* Slide fade transitions */
+  .announcement-bar-split .announcement-bar__slide {
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    content-visibility: visible;
+  }
+
+  .announcement-bar-split .announcement-bar__slide[aria-hidden='true'] {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  /* Override default center alignment to left */
+  .announcement-bar-split .announcement-bar__slide {
+    place-content: start;
+  }
+
+  .announcement-bar-split .text-block--align-center,
+  .announcement-bar-split .text-block--align-center > * {
+    margin-inline: 0;
+  }
+
+  .announcement-bar-split .announcement-bar__text {
+    margin: 0;
+    text-align: left;
+  }
+
+  /* Underline inline links in announcement text */
+  .announcement-bar-split .announcement-bar__text a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    color: inherit;
+  }
+
+  .announcement-bar-split .announcement-bar__text a:hover {
+    opacity: 0.75;
+  }
+
+  /* Right side: static help link */
+  .announcement-bar-split__right {
+    flex-shrink: 0;
+    margin-inline-start: 2rem;
+  }
+
+  .announcement-bar-split__right-link {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    color: var(--color-foreground);
+    white-space: nowrap;
+  }
+
+  .announcement-bar-split__right-link:hover {
+    opacity: 0.75;
+  }
+
+  .announcement-bar-split__right-text {
+    white-space: nowrap;
+    color: var(--color-foreground);
+  }
+
+  /* Mobile: stack and center */
+  @media screen and (max-width: 749px) {
+    .announcement-bar-split__inner {
+      flex-direction: column;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .announcement-bar-split .announcement-bar__slide {
+      place-content: center;
+    }
+
+    .announcement-bar-split .text-block--align-center,
+    .announcement-bar-split .text-block--align-center > * {
+      margin-inline: auto;
+    }
+
+    .announcement-bar-split .announcement-bar__text {
+      text-align: center;
+    }
+
+    .announcement-bar-split__right {
+      margin-inline-start: 0;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Announcement bar (split)",
+  "blocks": [
+    {
+      "type": "_announcement"
+    }
+  ],
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "t:settings.scroll_speed",
+      "min": 2,
+      "max": 10,
+      "default": 5,
+      "unit": "sec"
+    },
+    {
+      "type": "header",
+      "content": "Right side content"
+    },
+    {
+      "type": "text",
+      "id": "right_text",
+      "label": "Text",
+      "default": "Can we help you?"
+    },
+    {
+      "type": "url",
+      "id": "right_link",
+      "label": "Link"
+    },
+    {
+      "type": "select",
+      "id": "right_font",
+      "label": "Font",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "t:options.body"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "t:options.heading"
+        }
+      ],
+      "default": "var(--font-body--family)"
+    },
+    {
+      "type": "select",
+      "id": "right_font_size",
+      "label": "Size",
+      "options": [
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        }
+      ],
+      "default": "0.75rem"
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.section_width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "full-width"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "default": "scheme-2",
+      "label": "t:settings.color_scheme"
+    },
+    {
+      "type": "range",
+      "id": "divider_width",
+      "label": "t:settings.divider_thickness",
+      "min": 0,
+      "max": 5,
+      "step": 0.5,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announcement bar (split)",
+      "blocks": {
+        "announcement_1": {
+          "type": "_announcement"
+        }
+      },
+      "block_order": ["announcement_1"]
+    }
+  ]
+}
+{% endschema %}
