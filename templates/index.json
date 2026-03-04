@@ -73,6 +73,102 @@
         "autoplay_speed": 5
       }
     },
+    "explore_range_rmw": {
+      "type": "explore-range",
+      "blocks": {
+        "tab_women": {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Women",
+            "collection_1": "",
+            "image_1": "shopify://shop_images/eor-7-boots.webp",
+            "label_1": "Boots",
+            "collection_2": "",
+            "image_2": "shopify://shop_images/eor-8-fbelt.webp",
+            "label_2": "Belts",
+            "collection_3": "",
+            "image_3": "shopify://shop_images/eor-9fsweatshirt.webp",
+            "label_3": "Sweatshirts",
+            "collection_4": "",
+            "image_4": "shopify://shop_images/eor-10fbag.webp",
+            "label_4": "Bags",
+            "collection_5": "",
+            "image_5": "shopify://shop_images/eor-11fshirt.webp",
+            "label_5": "Shirts",
+            "collection_6": "",
+            "image_6": "shopify://shop_images/eor-12frugby.webp",
+            "label_6": "Rugbys and polos"
+          }
+        },
+        "tab_men": {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Men",
+            "collection_1": "",
+            "label_1": "Boots",
+            "collection_2": "",
+            "label_2": "Belts",
+            "collection_3": "",
+            "label_3": "Sweatshirts",
+            "collection_4": "",
+            "label_4": "T-shirts",
+            "collection_5": "",
+            "label_5": "Shirts",
+            "collection_6": "",
+            "label_6": "Rugbys and polos"
+          }
+        }
+      },
+      "block_order": [
+        "tab_women",
+        "tab_men"
+      ],
+      "settings": {
+        "heading": "Explore our range",
+        "background_color": "#f5f0e1",
+        "card_corner_radius": 12,
+        "card_aspect_ratio": "3:4",
+        "overlay_opacity": 30,
+        "label_position": "center",
+        "label_size": "large"
+      }
+    },
+    "seasonal_comforts_rmw": {
+      "type": "seasonal-comforts",
+      "blocks": {
+        "row_1": {
+          "type": "row",
+          "settings": {
+            "reverse_layout": false,
+            "banner_heading": "Seasonal comfort starts here",
+            "banner_link": "",
+            "button_label_1": "Women's boots",
+            "button_label_2": "Men's boots",
+            "featured_product": "",
+            "product_subtitle": "Comfort. Handcrafted."
+          }
+        },
+        "row_2": {
+          "type": "row",
+          "settings": {
+            "reverse_layout": true,
+            "banner_heading": "The gift of comfort",
+            "banner_link": "",
+            "button_label_1": "Gifts for her",
+            "button_label_2": "Gifts for him",
+            "featured_product": "",
+            "product_subtitle": "A timeless classic."
+          }
+        }
+      },
+      "block_order": [
+        "row_1",
+        "row_2"
+      ],
+      "settings": {
+        "heading": "Seasonal Comforts"
+      }
+    },
     "hero_jVaWmY": {
       "type": "hero",
       "blocks": {
@@ -346,74 +442,6 @@
         "color_scheme": "scheme-1",
         "padding-block-start": 48,
         "padding-block-end": 48
-      }
-    },
-    "explore_range_rmw": {
-      "type": "explore-range",
-      "blocks": {
-        "tab_women": {
-          "type": "tab",
-          "settings": {
-            "tab_label": "Women",
-            "label_1": "Boots",
-            "label_2": "Belts",
-            "label_3": "Sweatshirts",
-            "label_4": "Bags",
-            "label_5": "Shirts",
-            "label_6": "Rugbys and polos"
-          }
-        },
-        "tab_men": {
-          "type": "tab",
-          "settings": {
-            "tab_label": "Men",
-            "label_1": "Boots",
-            "label_2": "Belts",
-            "label_3": "Sweatshirts",
-            "label_4": "T-shirts",
-            "label_5": "Shirts",
-            "label_6": "Rugbys and polos"
-          }
-        }
-      },
-      "block_order": [
-        "tab_women",
-        "tab_men"
-      ],
-      "settings": {
-        "heading": "Explore our range"
-      }
-    },
-    "seasonal_comforts_rmw": {
-      "type": "seasonal-comforts",
-      "blocks": {
-        "row_1": {
-          "type": "row",
-          "settings": {
-            "reverse_layout": false,
-            "banner_heading": "Seasonal comfort starts here",
-            "button_label_1": "Women's boots",
-            "button_label_2": "Men's boots",
-            "product_subtitle": "Comfort. Handcrafted."
-          }
-        },
-        "row_2": {
-          "type": "row",
-          "settings": {
-            "reverse_layout": true,
-            "banner_heading": "The gift of comfort",
-            "button_label_1": "Gifts for her",
-            "button_label_2": "Gifts for him",
-            "product_subtitle": "A timeless classic."
-          }
-        }
-      },
-      "block_order": [
-        "row_1",
-        "row_2"
-      ],
-      "settings": {
-        "heading": "Seasonal Comforts"
       }
     }
   },
