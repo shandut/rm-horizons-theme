@@ -30,7 +30,7 @@
 
         if enrichment_data != blank
           for item in enrichment_data
-            if item.name == product_option_value.name
+            if item.soleType == product_option_value.name
               assign enriched_image = item.image
               break
             endif
@@ -94,13 +94,13 @@
       {%- for item in enrichment_data -%}
         {%- liquid
           assign is_selected = false
-          if product_option.selected_value == item.name
+          if product_option.selected_value == item.soleType
             assign is_selected = true
           endif
         -%}
         <div
           class="enriched-option__description"
-          data-option-description="{{ item.name | escape }}"
+          data-option-description="{{ item.soleType | escape }}"
           {% unless is_selected %}hidden{% endunless %}
         >
           <p>{{ item.description }}</p>

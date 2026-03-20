@@ -191,7 +191,7 @@
                 "variant_style": "buttons",
                 "show_swatches": false,
                 "enriched_option": "Sole Type",
-                "enrichment_metafield_key": "sole_types",
+                "enrichment_metafield_key": "sole_type_map",
                 "option_guide_url": "/pages/sole-guide",
                 "option_guide_label": "Sole guide",
                 "alignment": "left",
