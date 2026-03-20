@@ -1,0 +1,226 @@
+{%- doc -%}
+  Renders a colour selector for products linked via the custom.related_products metafield.
+  Each swatch links to a different product (cross-product navigation, not variant selection).
+
+  Reads:
+  - closest.product.metafields.custom.related_products (list of product references)
+  - closest.product.metafields.custom.style_group (text, e.g. "Craftsman boot")
+
+  The colour name is derived by stripping the style_group + delimiter from the product title.
+{%- enddoc -%}
+
+{%- liquid
+  assign product_resource = closest.product
+  if request.visual_preview_mode and product_resource == blank
+    assign product_resource = collections.all.products.first
+  endif
+-%}
+
+{%- unless product_resource == blank -%}
+  {%- liquid
+    assign related_products = product_resource.metafields.custom.related_products.value
+    assign style_group = product_resource.metafields.custom.style_group.value | default: ''
+    assign delimiter = block.settings.delimiter | default: ' – '
+
+    comment
+      Derive the current product's colour name by stripping the style group prefix.
+    endcomment
+    assign current_colour = product_resource.title
+    if style_group != blank
+      assign prefix = style_group | append: delimiter
+      assign current_colour = product_resource.title | remove_first: prefix
+    endif
+  -%}
+
+  {%- if related_products != blank and related_products.size > 0 -%}
+    <div
+      class="colour-selector spacing-style"
+      style="{% render 'spacing-style', settings: block.settings %}"
+      {{ block.shopify_attributes }}
+    >
+      <div class="colour-selector__header">
+        <span class="colour-selector__label">Colour</span>
+        <span class="colour-selector__value">{{ current_colour }}</span>
+      </div>
+
+      <div class="colour-selector__swatches" role="list">
+        {%- comment -%} Render the current product first {%- endcomment -%}
+        <a
+          href="{{ product_resource.url }}"
+          class="colour-selector__swatch colour-selector__swatch--active"
+          aria-current="true"
+          aria-label="{{ current_colour }}"
+          role="listitem"
+        >
+          {%- if product_resource.featured_image != blank -%}
+            <img
+              src="{{ product_resource.featured_image | image_url: width: 100, height: 100, crop: 'center' }}"
+              alt="{{ current_colour | escape }}"
+              width="50"
+              height="50"
+              loading="eager"
+            >
+          {%- endif -%}
+        </a>
+
+        {%- comment -%} Render each related product {%- endcomment -%}
+        {%- for related_product in related_products -%}
+          {%- if related_product.id == product_resource.id -%}
+            {%- continue -%}
+          {%- endif -%}
+
+          {%- liquid
+            assign related_colour = related_product.title
+            if style_group != blank
+              assign related_colour = related_product.title | remove_first: prefix
+            endif
+          -%}
+
+          <a
+            href="{{ related_product.url }}"
+            class="colour-selector__swatch"
+            aria-label="{{ related_colour | escape }}"
+            role="listitem"
+          >
+            {%- if related_product.featured_image != blank -%}
+              <img
+                src="{{ related_product.featured_image | image_url: width: 100, height: 100, crop: 'center' }}"
+                alt="{{ related_colour | escape }}"
+                width="50"
+                height="50"
+                loading="lazy"
+              >
+            {%- endif -%}
+          </a>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+{%- endunless -%}
+
+{% stylesheet %}
+  .colour-selector {
+    width: 100%;
+  }
+
+  .colour-selector__header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+    margin-block-end: var(--margin-sm);
+  }
+
+  .colour-selector__label {
+    font-weight: 600;
+  }
+
+  .colour-selector__value {
+    text-transform: capitalize;
+  }
+
+  .colour-selector__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--margin-xs);
+  }
+
+  .colour-selector__swatch {
+    display: block;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+  }
+
+  .colour-selector__swatch:hover {
+    border-color: var(--color-foreground);
+  }
+
+  .colour-selector__swatch--active {
+    border-color: var(--color-foreground);
+  }
+
+  .colour-selector__swatch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .colour-selector__swatch:focus-visible {
+    outline: var(--focus-outline-width) solid currentcolor;
+    outline-offset: var(--focus-outline-offset);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Colour selector",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Displays colour swatches from the Related Products metafield. Each swatch links to a different product."
+    },
+    {
+      "type": "text",
+      "id": "delimiter",
+      "label": "Title delimiter",
+      "info": "Character(s) separating style group from colour in the product title",
+      "default": " – "
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Colour selector",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

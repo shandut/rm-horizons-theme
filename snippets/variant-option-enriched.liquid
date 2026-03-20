@@ -1,0 +1,222 @@
+{%- doc -%}
+  Renders an enriched variant option with image swatches and descriptions from metafield data.
+  Used for sole type selectors or any option enriched with external image/description JSON.
+
+  @param {object} product_option - The product option from options_with_values
+  @param {object} enrichment_data - Parsed JSON array of {name, image, description} objects
+  @param {string} [guide_url] - URL for the option guide link
+  @param {string} [guide_label] - Label for the guide link (e.g. "Sole guide")
+  @param {number} fieldset_index - The index of this fieldset in the variant picker form
+  @param {object} block - The block object
+  @param {object} product_resource - The product object
+{%- enddoc -%}
+
+<script src="{{ 'enriched-option.js' | asset_url }}" type="module" fetchpriority="low"></script>
+
+<fieldset
+  class="variant-option variant-option--buttons variant-option--enriched"
+  data-fieldset-index="{{ fieldset_index }}"
+  ref="fieldsets[]"
+>
+  <legend>
+    {{ product_option.name | escape }}
+    <span class="variant-option__swatch-value">{{ product_option.selected_value }}</span>
+  </legend>
+
+  <div class="enriched-option__swatches">
+    {%- for product_option_value in product_option.values -%}
+      {%- liquid
+        assign enriched_image = ''
+
+        if enrichment_data != blank
+          for item in enrichment_data
+            if item.name == product_option_value.name
+              assign enriched_image = item.image
+              break
+            endif
+          endfor
+        endif
+      -%}
+
+      <label class="enriched-option__label{% if product_option_value.available == false %} enriched-option__label--unavailable{% endif %}">
+        <input
+          type="radio"
+          name="{{ product_option.name | escape }}-{{ block.id }}-{{ product_resource.id }}"
+          value="{{ product_option_value | escape }}"
+          aria-label="{{ product_option_value.name }}"
+          {% if product_option_value.available == false %}
+            aria-disabled="true"
+          {% endif %}
+          data-previous-checked="false"
+          data-fieldset-index="{{ fieldset_index }}"
+          data-input-index="{{ forloop.index0 }}"
+          data-input-id="{{ product_option.position }}-{{ forloop.index0 }}"
+          data-option-value-id="{{ product_option_value.id }}"
+          data-option-available="{{ product_option_value.available }}"
+          data-connected-product-url="{{ product_option_value.product_url }}"
+          {% if product_option_value.variant.id %}
+            data-variant-id="{{ product_option_value.variant.id }}"
+          {% endif %}
+          {% if product_option_value.selected %}
+            data-current-checked="true"
+            checked
+          {% else %}
+            data-current-checked="false"
+          {% endif %}
+        >
+
+        {%- if enriched_image != blank -%}
+          {% # theme-check-disable RemoteAsset %}
+          <span class="enriched-option__swatch-image">
+            <img
+              src="{{ enriched_image }}"
+              alt="{{ product_option_value.name | escape }}"
+              width="60"
+              height="60"
+              loading="lazy"
+            >
+          </span>
+          {% # theme-check-enable RemoteAsset %}
+        {%- else -%}
+          <span class="variant-option__button-label__text">
+            {{ product_option_value | escape }}
+          </span>
+        {%- endif -%}
+
+        {% if product_option_value.available == true %}
+          <span class="variant-option__button-label__pill" data-key="variant-option-pill"></span>
+        {% endif %}
+
+        {% render 'strikethrough-variant', product_option: product_option_value %}
+      </label>
+    {%- endfor -%}
+  </div>
+
+  {%- comment -%} Description area + guide link {%- endcomment -%}
+  <enriched-option-description class="enriched-option__description-area">
+    {%- if enrichment_data != blank -%}
+      {%- for item in enrichment_data -%}
+        {%- liquid
+          assign is_selected = false
+          if product_option.selected_value == item.name
+            assign is_selected = true
+          endif
+        -%}
+        <div
+          class="enriched-option__description"
+          data-option-description="{{ item.name | escape }}"
+          {% unless is_selected %}hidden{% endunless %}
+        >
+          <p>{{ item.description }}</p>
+        </div>
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- if guide_url != blank -%}
+      <a href="{{ guide_url }}" class="enriched-option__guide-link">
+        {{ guide_label | default: 'Sole guide' }}
+      </a>
+    {%- endif -%}
+  </enriched-option-description>
+</fieldset>
+
+{% stylesheet %}
+  .variant-option--enriched legend {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+    margin-block-end: var(--margin-sm);
+  }
+
+  .enriched-option__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--margin-xs);
+  }
+
+  .enriched-option__label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    border-radius: var(--style-border-radius-inputs);
+    padding: 6px;
+    transition: border-color 0.2s ease;
+    min-width: 60px;
+    min-height: 60px;
+  }
+
+  .enriched-option__label:hover {
+    border-color: var(--color-foreground);
+  }
+
+  .enriched-option__label:has(input:checked) {
+    border-color: var(--color-foreground);
+  }
+
+  .enriched-option__label:has(input:focus-visible) {
+    outline: var(--focus-outline-width) solid currentcolor;
+    outline-offset: var(--focus-outline-offset);
+  }
+
+  .enriched-option__label--unavailable {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .enriched-option__label input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .enriched-option__swatch-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .enriched-option__swatch-image img {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+  }
+
+  .enriched-option__description-area {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--margin-xs);
+    margin-block-start: var(--margin-sm);
+  }
+
+  .enriched-option__description {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .enriched-option__description p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-foreground-secondary, var(--color-foreground));
+    line-height: 1.4;
+  }
+
+  .enriched-option__guide-link {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    color: var(--color-foreground);
+    white-space: nowrap;
+  }
+
+  .enriched-option__guide-link:hover {
+    opacity: 0.75;
+  }
+{% endstylesheet %}

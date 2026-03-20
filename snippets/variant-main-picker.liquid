@@ -35,6 +35,35 @@
     <form class="variant-picker__form">
       {%- for product_option in product_resource.options_with_values -%}
         {%- liquid
+          comment
+            Check if this option should use enriched rendering (e.g. sole type with images/descriptions).
+          endcomment
+          assign is_enriched_option = false
+          if block_settings.enriched_option != blank
+            assign enriched_option_name = block_settings.enriched_option | strip
+            if product_option.name == enriched_option_name
+              assign enrichment_metafield_key = block_settings.enrichment_metafield_key | default: 'sole_types'
+              assign enrichment_data = product_resource.metafields.custom[enrichment_metafield_key].value
+              if enrichment_data != blank
+                assign is_enriched_option = true
+              endif
+            endif
+          endif
+        -%}
+
+        {%- if is_enriched_option -%}
+          {% render 'variant-option-enriched',
+            product_option: product_option,
+            enrichment_data: enrichment_data,
+            guide_url: block_settings.option_guide_url,
+            guide_label: block_settings.option_guide_label,
+            fieldset_index: forloop.index0,
+            block: block,
+            product_resource: product_resource
+          %}
+        {%- else -%}
+
+        {%- liquid
           assign swatch_count = product_option.values | map: 'swatch' | compact | size
           assign variant_style = block_settings.variant_style
 
@@ -213,6 +242,8 @@
             </div>
           </div>
         {%- endif -%}
+
+        {%- endif -%}{%- comment -%} end is_enriched_option else {%- endcomment -%}
       {%- endfor -%}
 
       <script type="application/json">

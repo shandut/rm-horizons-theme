@@ -45,6 +45,38 @@
       "default": true
     },
     {
+      "type": "header",
+      "content": "Enriched option"
+    },
+    {
+      "type": "paragraph",
+      "content": "Render a specific option with image swatches and descriptions from a product metafield."
+    },
+    {
+      "type": "text",
+      "id": "enriched_option",
+      "label": "Option name to enrich",
+      "info": "Must match the product option name exactly, e.g. \"Sole Type\""
+    },
+    {
+      "type": "text",
+      "id": "enrichment_metafield_key",
+      "label": "Metafield key",
+      "info": "Key under custom.* namespace containing JSON array of {name, image, description}",
+      "default": "sole_types"
+    },
+    {
+      "type": "url",
+      "id": "option_guide_url",
+      "label": "Guide link URL"
+    },
+    {
+      "type": "text",
+      "id": "option_guide_label",
+      "label": "Guide link label",
+      "default": "Sole guide"
+    },
+    {
       "type": "text_alignment",
       "id": "alignment",
       "label": "t:settings.alignment",
