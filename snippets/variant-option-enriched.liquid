@@ -83,10 +83,6 @@
           </span>
         {%- endif -%}
 
-        {% if product_option_value.available == true %}
-          <span class="variant-option__button-label__pill" data-key="variant-option-pill"></span>
-        {% endif %}
-
         {% render 'strikethrough-variant', product_option: product_option_value %}
       </label>
     {%- endfor -%}
