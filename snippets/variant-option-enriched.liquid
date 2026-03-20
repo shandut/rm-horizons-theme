@@ -215,4 +215,26 @@
   .enriched-option__guide-link:hover {
     opacity: 0.75;
   }
+
+  /*
+   * Compact variant buttons for the RMW boot template.
+   * Loaded via this snippet on pages using the enriched option.
+   */
+  .variant-option--enriched ~ .variant-option--buttons .variant-option__button-label,
+  .variant-option--enriched ~ .variant-option--buttons .variant-option__button-label {
+    --variant-option-padding-inline: var(--padding-sm);
+  }
+
+  .variant-option--enriched ~ .variant-option--buttons .variant-option__button-label {
+    padding: var(--padding-2xs) var(--padding-sm);
+    font-size: 0.85rem;
+    min-width: 40px;
+    min-height: 36px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .variant-option--enriched ~ .variant-option--buttons .variant-option__button-label {
+      padding: var(--padding-2xs) var(--padding-sm);
+    }
+  }
 {% endstylesheet %}
