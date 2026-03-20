@@ -38,7 +38,7 @@
         endif
       -%}
 
-      <label class="enriched-option__label{% if product_option_value.available == false %} enriched-option__label--unavailable{% endif %}">
+      <label class="enriched-option__label{% if product_option_value.available == false %} enriched-option__label--unavailable{% endif %}" title="{{ product_option_value.name | escape }}">
         <input
           type="radio"
           name="{{ product_option.name | escape }}-{{ block.id }}-{{ product_resource.id }}"

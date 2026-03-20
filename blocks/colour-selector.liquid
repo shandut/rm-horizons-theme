@@ -50,14 +50,15 @@
           class="colour-selector__swatch colour-selector__swatch--active"
           aria-current="true"
           aria-label="{{ current_colour }}"
+          title="{{ current_colour }}"
           role="listitem"
         >
           {%- if product_resource.featured_image != blank -%}
             <img
-              src="{{ product_resource.featured_image | image_url: width: 100, height: 100, crop: 'center' }}"
+              src="{{ product_resource.featured_image | image_url: width: 120, height: 120, crop: 'center' }}"
               alt="{{ current_colour | escape }}"
-              width="50"
-              height="50"
+              width="56"
+              height="56"
               loading="eager"
             >
           {%- endif -%}
@@ -80,14 +81,15 @@
             href="{{ related_product.url }}"
             class="colour-selector__swatch"
             aria-label="{{ related_colour | escape }}"
+            title="{{ related_colour }}"
             role="listitem"
           >
             {%- if related_product.featured_image != blank -%}
               <img
-                src="{{ related_product.featured_image | image_url: width: 100, height: 100, crop: 'center' }}"
+                src="{{ related_product.featured_image | image_url: width: 120, height: 120, crop: 'center' }}"
                 alt="{{ related_colour | escape }}"
-                width="50"
-                height="50"
+                width="56"
+                height="56"
                 loading="lazy"
               >
             {%- endif -%}
@@ -121,32 +123,34 @@
   .colour-selector__swatches {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--margin-xs);
+    gap: 12px;
   }
 
   .colour-selector__swatch {
-    display: block;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 2px solid transparent;
-    transition: border-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 56px;
     cursor: pointer;
+    text-decoration: none;
+    padding-block-end: 6px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
   }
 
   .colour-selector__swatch:hover {
-    border-color: var(--color-foreground);
+    border-bottom-color: var(--color-foreground);
   }
 
   .colour-selector__swatch--active {
-    border-color: var(--color-foreground);
+    border-bottom-color: var(--color-foreground);
   }
 
   .colour-selector__swatch img {
-    width: 100%;
-    height: 100%;
+    width: 56px;
+    height: 56px;
     object-fit: cover;
+    border-radius: 4px;
   }
 
   .colour-selector__swatch:focus-visible {
