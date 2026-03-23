@@ -344,6 +344,7 @@
     "product": {
       "add_to_cart": "Add to cart",
       "adding_to_cart": "Adding...",
+      "shop_now": "Shop now",
       "added_to_cart": "Added to cart",
       "add_to_cart_error": "Error adding to cart",
       "quantity_error_max": "This item has a maximum of {{ maximum }}",

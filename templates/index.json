@@ -73,6 +73,53 @@
         "autoplay_speed": 5
       }
     },
+    "brand_values_rmw": {
+      "type": "brand-values",
+      "blocks": {
+        "value_craftsmanship": {
+          "type": "value",
+          "settings": {
+            "heading": "Craftsmanship",
+            "body": "<p>Every pair of boots is crafted with care, using techniques refined over generations in our Adelaide workshop.</p>"
+          }
+        },
+        "value_heritage": {
+          "type": "value",
+          "settings": {
+            "heading": "Heritage",
+            "body": "<p>A story that began in the Australian outback in 1932 and now spans the globe.</p>"
+          }
+        },
+        "value_quality": {
+          "type": "value",
+          "settings": {
+            "heading": "Quality",
+            "body": "<p>We source only the finest leathers and materials to create products built to last a lifetime.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "value_craftsmanship",
+        "value_heritage",
+        "value_quality"
+      ],
+      "settings": {
+        "heading": "Our Values",
+        "subheading": "Handcrafted since 1932",
+        "column_gap": 32
+      }
+    },
+    "immersive_banner_rmw": {
+      "type": "immersive-banner",
+      "settings": {
+        "heading": "The spirit of the outback",
+        "subheading": "Born from the land",
+        "enable_parallax": true,
+        "overlay_opacity": 40,
+        "min_height": "70svh",
+        "text_alignment": "center"
+      }
+    },
     "hero_jVaWmY": {
       "type": "hero",
       "blocks": {
@@ -421,6 +468,8 @@
     "video_hero_rmw",
     "explore_range_rmw",
     "seasonal_comforts_rmw",
+    "brand_values_rmw",
+    "immersive_banner_rmw",
     "hero_jVaWmY",
     "product_list_fa6P9H"
   ]

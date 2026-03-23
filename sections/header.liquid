@@ -455,6 +455,7 @@
     /* used to display the appropriate logo based on transparency state */
     --header-logo-display: none;
     --header-logo-inverse-display: block;
+    --header-logo-inverse-filter: brightness(0) invert(1);
 
     position: absolute;
     top: 0;
@@ -467,6 +468,7 @@
     &:has(.menu-list__link:not([aria-haspopup]):hover) {
       --header-logo-display: unset;
       --header-logo-inverse-display: unset;
+      --header-logo-inverse-filter: none;
       --color-foreground: inherit;
       --color-foreground-rgb: inherit;
       --color-background: inherit;
@@ -492,6 +494,7 @@
     &:has(.menu-list__list-item[slot='overflow'] .menu-list__link:is(:hover, [aria-expanded='true'])) {
       --header-logo-display: unset;
       --header-logo-inverse-display: unset;
+      --header-logo-inverse-filter: none;
       --color-foreground: inherit;
       --color-foreground-rgb: inherit;
       --color-background: inherit;

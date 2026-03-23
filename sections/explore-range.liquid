@@ -15,7 +15,7 @@
 
 %}
 
-<div
+<explore-range-component
   class="explore-range explore-range--labels-{{ label_position }} explore-range--labels-{{ label_size }}"
   id="ExploreRange-{{ section.id }}"
   style="
@@ -24,6 +24,7 @@
     --card-ratio: {{ card_ratio | replace: ':', ' / ' }};
     --overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }};
   "
+  aria-label="{{ section.settings.heading | default: 'Explore our range' }}"
 >
   {% if section.settings.heading != blank %}
     <div class="explore-range__header">
@@ -33,15 +34,19 @@
 
   {% if tab_blocks.size > 0 %}
     {%- comment -%} Tab toggles {%- endcomment -%}
-    <div class="explore-range__tabs" role="tablist">
+    <div class="explore-range__tabs" role="tablist" aria-label="{{ section.settings.heading | default: 'Explore our range' }}">
       {% for block in tab_blocks %}
         <button
           class="explore-range__tab{% if forloop.first %} explore-range__tab--active{% endif %}"
           role="tab"
           type="button"
+          ref="tabs[]"
           aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
           aria-controls="explore-range-panel-{{ block.id }}"
           id="explore-range-tab-{{ block.id }}"
+          tabindex="{% if forloop.first %}0{% else %}-1{% endif %}"
+          on:click="/activateTab"
+          on:keydown="/handleTabKeydown"
         >
           {{ block.settings.tab_label }}
         </button>
@@ -53,8 +58,10 @@
       <div
         class="explore-range__panel{% if forloop.first %} explore-range__panel--active{% endif %}"
         role="tabpanel"
+        ref="panels[]"
         id="explore-range-panel-{{ block.id }}"
         aria-labelledby="explore-range-tab-{{ block.id }}"
+        {% unless forloop.first %}hidden{% endunless %}
         {{ block.shopify_attributes }}
       >
         <div class="explore-range__grid">
@@ -94,7 +101,8 @@
                       | image_tag:
                         widths: '200, 300, 400, 600',
                         sizes: '(min-width: 750px) 16vw, 45vw',
-                        loading: 'lazy'
+                        loading: 'lazy',
+                        alt: card_label
                     }}
                   {% else %}
                     <div class="explore-range__placeholder">
@@ -110,34 +118,9 @@
       </div>
     {% endfor %}
   {% endif %}
-</div>
+</explore-range-component>
 
-<script>
-  (function() {
-    var section = document.getElementById('ExploreRange-{{ section.id }}');
-    if (!section) return;
-
-    var tabs = section.querySelectorAll('.explore-range__tab');
-    var panels = section.querySelectorAll('.explore-range__panel');
-
-    tabs.forEach(function(tab) {
-      tab.addEventListener('click', function() {
-        tabs.forEach(function(t) {
-          t.classList.remove('explore-range__tab--active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        panels.forEach(function(p) {
-          p.classList.remove('explore-range__panel--active');
-        });
-
-        tab.classList.add('explore-range__tab--active');
-        tab.setAttribute('aria-selected', 'true');
-        var panelId = tab.getAttribute('aria-controls');
-        document.getElementById(panelId).classList.add('explore-range__panel--active');
-      });
-    });
-  })();
-</script>
+<script src="{{ 'explore-range.js' | asset_url }}" type="module"></script>
 
 {% stylesheet %}
   .explore-range {

@@ -4,17 +4,25 @@
   assign autoplay_speed = section.settings.autoplay_speed | default: 5
 %}
 
-<div
+<video-hero-component
   class="video-hero-slideshow section--full-width"
   id="VideoHero-{{ section.id }}"
   data-autoplay-speed="{{ autoplay_speed }}"
   data-slide-count="{{ slide_count }}"
+  role="region"
+  aria-roledescription="carousel"
+  aria-label="Hero slideshow"
+  on:mouseenter="/onMouseEnter"
+  on:mouseleave="/onMouseLeave"
+  on:keydown="/handleKeydown"
 >
-  {%- comment -%} Overlay (shared across all slides) {%- endcomment -%}
+  {%- comment -%} Overlay — dual gradient: dark from top (for menu legibility) and bottom (for text legibility) {%- endcomment -%}
   {% if section.settings.show_overlay %}
     <div
       class="video-hero-slideshow__overlay"
-      style="background: linear-gradient({{ section.settings.overlay_direction }}, {{ section.settings.overlay_color }}, {{ section.settings.overlay_color | color_modify: 'alpha', 0 }});"
+      style="background:
+        linear-gradient(to bottom, {{ section.settings.overlay_color | color_modify: 'alpha', 0.45 }} 0%, {{ section.settings.overlay_color | color_modify: 'alpha', 0 }} 20%),
+        linear-gradient({{ section.settings.overlay_direction }}, {{ section.settings.overlay_color }}, {{ section.settings.overlay_color | color_modify: 'alpha', 0 }});"
     ></div>
   {% endif %}
 
@@ -28,7 +36,11 @@
         -%}
         <div
           class="video-hero-slideshow__slide{% if forloop.first %} video-hero-slideshow__slide--active{% endif %}"
+          ref="slides[]"
           data-slide-index="{{ forloop.index0 }}"
+          role="group"
+          aria-roledescription="slide"
+          aria-label="Slide {{ forloop.index }} of {{ slide_count }}"
           {{ block.shopify_attributes }}
         >
           {%- comment -%} Per-slide video background {%- endcomment -%}
@@ -103,209 +115,58 @@
       {% endfor %}
     </div>
 
-    {%- comment -%} Arrow Navigation {%- endcomment -%}
+    {%- comment -%} Bottom Controls: Prev Arrow | Dots | Pause | Next Arrow {%- endcomment -%}
     {% if slide_count > 1 %}
-      <button class="video-hero-slideshow__arrow video-hero-slideshow__arrow--prev" aria-label="Previous slide">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M13 16L7 10L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <button class="video-hero-slideshow__arrow video-hero-slideshow__arrow--next" aria-label="Next slide">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-    {% endif %}
+      <div class="video-hero-slideshow__controls">
+        <button
+          class="video-hero-slideshow__arrow video-hero-slideshow__arrow--prev"
+          ref="prevBtn"
+          aria-label="Previous slide"
+          on:click="/prevSlide"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M13 16L7 10L13 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
 
-    {%- comment -%} Dot Navigation {%- endcomment -%}
-    {% if slide_count > 1 %}
-      <div class="video-hero-slideshow__dots" role="tablist" aria-label="Slide navigation">
-        {% for block in slide_blocks %}
-          <button
-            class="video-hero-slideshow__dot{% if forloop.first %} video-hero-slideshow__dot--active{% endif %}"
-            data-slide-index="{{ forloop.index0 }}"
-            role="tab"
-            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-            aria-label="Go to slide {{ forloop.index }}"
-          >
-            <span class="video-hero-slideshow__dot-progress"></span>
-          </button>
-        {% endfor %}
+        <div class="video-hero-slideshow__dots" role="tablist" aria-label="Slide navigation">
+          {% for block in slide_blocks %}
+            <button
+              class="video-hero-slideshow__dot{% if forloop.first %} video-hero-slideshow__dot--active{% endif %}"
+              ref="dots[]"
+              data-slide-index="{{ forloop.index0 }}"
+              role="tab"
+              aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+              aria-label="Go to slide {{ forloop.index }}"
+              on:click="/goToSlideFromDot"
+            >
+              <span class="video-hero-slideshow__dot-progress"></span>
+            </button>
+          {% endfor %}
+        </div>
+
+        <button
+          class="video-hero-slideshow__arrow video-hero-slideshow__arrow--next"
+          ref="nextBtn"
+          aria-label="Next slide"
+          on:click="/nextSlide"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      {%- comment -%} Live region for screen reader announcements {%- endcomment -%}
+      <div ref="liveRegion" class="visually-hidden" aria-live="polite" aria-atomic="true">
+        Slide 1 of {{ slide_count }}
       </div>
     {% endif %}
   {% endif %}
 
-</div>
+</video-hero-component>
 
-<script>
-  (function() {
-    const heroEl = document.getElementById('VideoHero-{{ section.id }}');
-    if (!heroEl) return;
-
-    const fallbackSpeed = parseInt(heroEl.dataset.autoplaySpeed, 10) * 1000;
-    const slideCount = parseInt(heroEl.dataset.slideCount, 10);
-    if (slideCount <= 1) return;
-
-    const slides = heroEl.querySelectorAll('.video-hero-slideshow__slide');
-    const dots = heroEl.querySelectorAll('.video-hero-slideshow__dot');
-    const prevBtn = heroEl.querySelector('.video-hero-slideshow__arrow--prev');
-    const nextBtn = heroEl.querySelector('.video-hero-slideshow__arrow--next');
-    let current = 0;
-    let timer = null;
-    let isPaused = false;
-
-    function getActiveVideo(slide) {
-      var desktop = slide.querySelector('.video-hero-slideshow__video--desktop');
-      var mobile = slide.querySelector('.video-hero-slideshow__video--mobile');
-      if (mobile && window.innerWidth < 750 && mobile.src) return mobile;
-      return desktop;
-    }
-
-    function getSlideDuration(slide) {
-      var video = getActiveVideo(slide);
-      if (video && video.duration && isFinite(video.duration)) {
-        return video.duration * 1000;
-      }
-      return fallbackSpeed;
-    }
-
-    function pauseSlideVideos(slide) {
-      slide.querySelectorAll('video').forEach(function(v) { v.pause(); });
-    }
-
-    function playSlideVideos(slide) {
-      slide.querySelectorAll('video').forEach(function(v) {
-        v.currentTime = 0;
-        v.play().catch(function() {});
-      });
-    }
-
-    function resetDotProgress(dotEl, duration) {
-      var prog = dotEl.querySelector('.video-hero-slideshow__dot-progress');
-      if (prog) {
-        prog.style.animation = 'none';
-        prog.offsetHeight; /* reflow */
-        prog.style.animation = 'dotProgress ' + duration + 'ms linear forwards';
-      }
-    }
-
-    function clearDotProgress(dotEl) {
-      var prog = dotEl.querySelector('.video-hero-slideshow__dot-progress');
-      if (prog) {
-        prog.style.animation = 'none';
-        prog.style.width = '0';
-      }
-    }
-
-    function goToSlide(index) {
-      pauseSlideVideos(slides[current]);
-      slides[current].classList.remove('video-hero-slideshow__slide--active');
-      dots[current].classList.remove('video-hero-slideshow__dot--active');
-      dots[current].setAttribute('aria-selected', 'false');
-      clearDotProgress(dots[current]);
-
-      current = index;
-
-      slides[current].classList.add('video-hero-slideshow__slide--active');
-      dots[current].classList.add('video-hero-slideshow__dot--active');
-      dots[current].setAttribute('aria-selected', 'true');
-      playSlideVideos(slides[current]);
-    }
-
-    function nextSlide() {
-      goToSlide((current + 1) % slideCount);
-      scheduleAutoplay();
-    }
-
-    function prevSlide() {
-      goToSlide((current - 1 + slideCount) % slideCount);
-      scheduleAutoplay();
-    }
-
-    function scheduleAutoplay() {
-      stopAutoplay();
-      if (isPaused) return;
-      var duration = getSlideDuration(slides[current]);
-      resetDotProgress(dots[current], duration);
-      timer = setTimeout(nextSlide, duration);
-    }
-
-    function startAutoplay() {
-      isPaused = false;
-      scheduleAutoplay();
-    }
-
-    function stopAutoplay() {
-      if (timer) {
-        clearTimeout(timer);
-        timer = null;
-      }
-    }
-
-    /* Arrow click handlers */
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        prevSlide();
-      });
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        nextSlide();
-      });
-    }
-
-    /* Dot click handlers */
-    dots.forEach(function(dot) {
-      dot.addEventListener('click', function() {
-        var index = parseInt(this.dataset.slideIndex, 10);
-        goToSlide(index);
-        scheduleAutoplay();
-      });
-    });
-
-    heroEl.addEventListener('mouseenter', function() {
-      isPaused = true;
-      stopAutoplay();
-    });
-
-    heroEl.addEventListener('mouseleave', function() {
-      isPaused = false;
-      scheduleAutoplay();
-    });
-
-    /* Kick off the first slide dot progress */
-    function initAutoplay() {
-      var duration = getSlideDuration(slides[current]);
-      resetDotProgress(dots[current], duration);
-      timer = setTimeout(nextSlide, duration);
-    }
-
-    /* Wait for the first video to load its metadata so we know the duration */
-    var firstVideo = getActiveVideo(slides[0]);
-    if (firstVideo && firstVideo.readyState >= 1) {
-      initAutoplay();
-    } else if (firstVideo) {
-      firstVideo.addEventListener('loadedmetadata', function() { initAutoplay(); }, { once: true });
-      /* Fallback in case metadata never loads */
-      setTimeout(function() { if (!timer) initAutoplay(); }, 3000);
-    } else {
-      initAutoplay();
-    }
-
-    /* Respect reduced motion */
-    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (prefersReducedMotion.matches) {
-      stopAutoplay();
-    }
-    prefersReducedMotion.addEventListener('change', function(e) {
-      if (e.matches) {
-        stopAutoplay();
-      } else if (!isPaused) {
-        scheduleAutoplay();
-      }
-    });
-  })();
-</script>
+<script src="{{ 'video-hero-slideshow.js' | asset_url }}" type="module"></script>
 
 {% stylesheet %}
   .video-hero-slideshow {
@@ -400,7 +261,7 @@
     justify-content: flex-end;
     align-items: center;
     padding: 0 clamp(1.5rem, 4vw, 4rem);
-    padding-bottom: clamp(2rem, 6vw, 5rem);
+    padding-bottom: clamp(4.5rem, 8vw, 7rem);
   }
 
   .video-hero-slideshow__slide-inner {
@@ -480,50 +341,56 @@
     border-color: #fff;
   }
 
-  /* Arrow Navigation */
+  /* Arrow Navigation — inline at bottom within controls */
   .video-hero-slideshow__arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 4;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 48px;
-    height: 48px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 50%;
-    color: #fff;
+    width: 36px;
+    height: 36px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    transition: background 0.3s ease, border-color 0.3s ease;
+    transition: color 0.3s var(--animation-timing-hover, ease);
+    padding: 0;
+    flex-shrink: 0;
   }
 
   .video-hero-slideshow__arrow:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
   }
 
-  .video-hero-slideshow__arrow--prev {
-    left: clamp(1rem, 2.5vw, 2.5rem);
-  }
-
-  .video-hero-slideshow__arrow--next {
-    right: clamp(1rem, 2.5vw, 2.5rem);
-  }
-
-  /* Dot Navigation */
-  .video-hero-slideshow__dots {
+  /* Controls wrapper: Prev | Dots | Pause | Next */
+  .video-hero-slideshow__controls {
     position: absolute;
-    bottom: clamp(2rem, 6vw, 5rem);
+    bottom: clamp(1.5rem, 4vw, 3rem);
     left: 50%;
     transform: translateX(-50%);
     z-index: 3;
     display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Dot Navigation */
+  .video-hero-slideshow__dots {
+    display: flex;
     justify-content: center;
     gap: 8px;
+  }
+
+  /* Visually hidden for live region */
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .video-hero-slideshow__dot {
@@ -572,7 +439,7 @@
 
     .video-hero-slideshow__slide-content {
       padding: 0 1.25rem;
-      padding-bottom: 1.5rem;
+      padding-bottom: 4rem;
     }
 
     .video-hero-slideshow__heading {
@@ -589,21 +456,9 @@
       width: 28px;
     }
 
-    .video-hero-slideshow__dots {
-      bottom: 1.5rem;
-    }
-
     .video-hero-slideshow__arrow {
-      width: 40px;
-      height: 40px;
-    }
-
-    .video-hero-slideshow__arrow--prev {
-      left: 0.75rem;
-    }
-
-    .video-hero-slideshow__arrow--next {
-      right: 0.75rem;
+      width: 32px;
+      height: 32px;
     }
   }
 

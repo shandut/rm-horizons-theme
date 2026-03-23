@@ -1,0 +1,383 @@
+{%- comment -%}
+  Immersive Parallax Banner — full-width cinematic background
+  image or video with minimal centered text and optional parallax effect.
+{%- endcomment -%}
+
+{% liquid
+  assign overlay_opacity = section.settings.overlay_opacity | default: 40 | divided_by: 100.0
+  assign enable_parallax = section.settings.enable_parallax | default: true
+  assign min_height = section.settings.min_height | default: '70svh'
+%}
+
+<div
+  class="immersive-banner section--full-width{% if enable_parallax %} immersive-banner--parallax{% endif %}"
+  id="ImmersiveBanner-{{ section.id }}"
+  style="
+    --ib-overlay-opacity: {{ overlay_opacity }};
+    --ib-min-height: {{ min_height }};
+  "
+  data-scroll-reveal
+>
+  {%- comment -%} Background media {%- endcomment -%}
+  <div class="immersive-banner__media">
+    {% if section.settings.media_type == 'video' and section.settings.video_url != blank %}
+      <video
+        class="immersive-banner__video"
+        src="{{ section.settings.video_url }}"
+        playsinline
+        muted
+        autoplay
+        loop
+        preload="metadata"
+      ></video>
+    {% elsif section.settings.image != blank %}
+      {{
+        section.settings.image
+        | image_url: width: 2400
+        | image_tag:
+          widths: '600, 900, 1200, 1800, 2400',
+          sizes: '100vw',
+          loading: 'lazy',
+          class: 'immersive-banner__image',
+          alt: section.settings.image.alt | default: section.settings.heading
+      }}
+    {% else %}
+      <div class="immersive-banner__placeholder">
+        {{ 'lifestyle-2' | placeholder_svg_tag }}
+      </div>
+    {% endif %}
+  </div>
+
+  {%- comment -%} Overlay {%- endcomment -%}
+  <div class="immersive-banner__overlay"></div>
+
+  {%- comment -%} Content {%- endcomment -%}
+  <div class="immersive-banner__content" style="text-align: {{ section.settings.text_alignment | default: 'center' }};">
+    {% if section.settings.subheading != blank %}
+      <p class="immersive-banner__subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+
+    {% if section.settings.heading != blank %}
+      <h2 class="immersive-banner__heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    {% if section.settings.button_label != blank %}
+      <a
+        href="{{ section.settings.button_link | default: '#' }}"
+        class="immersive-banner__button"
+      >
+        {{ section.settings.button_label }}
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<script src="{{ 'scroll-reveal.js' | asset_url }}" defer="defer"></script>
+
+{% if enable_parallax %}
+<script>
+  (function() {
+    const banner = document.getElementById('ImmersiveBanner-{{ section.id }}');
+    if (!banner || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const media = banner.querySelector('.immersive-banner__media');
+    if (!media) return;
+
+    let ticking = false;
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+
+      requestAnimationFrame(() => {
+        const rect = banner.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        if (rect.bottom > 0 && rect.top < viewportHeight) {
+          const progress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+          const offset = (progress - 0.5) * 80;
+          media.style.transform = `translateY(${offset}px)`;
+        }
+
+        ticking = false;
+      });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+{% endif %}
+
+{% stylesheet %}
+  .immersive-banner {
+    position: relative;
+    width: 100%;
+    min-height: var(--ib-min-height, 70svh);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---- Background media ---- */
+  .immersive-banner__media {
+    position: absolute;
+    inset: -40px 0;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .immersive-banner__image,
+  .immersive-banner__video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .immersive-banner__placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgb(var(--color-foreground-rgb) / var(--opacity-5, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .immersive-banner__placeholder svg {
+    width: 30%;
+    height: 30%;
+    opacity: 0.2;
+  }
+
+  /* ---- Overlay ---- */
+  .immersive-banner__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, var(--ib-overlay-opacity, 0.4));
+    pointer-events: none;
+  }
+
+  /* ---- Content ---- */
+  .immersive-banner__content {
+    position: relative;
+    z-index: 2;
+    padding: clamp(2rem, 5vw, 4rem);
+    max-width: 700px;
+  }
+
+  .immersive-banner__subheading {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.75rem, 1.2vw, 1rem);
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0 0 0.75rem;
+  }
+
+  .immersive-banner__heading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: #fff;
+    margin: 0 0 1.5rem;
+  }
+
+  .immersive-banner__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 2rem;
+    font-family: var(--font-body--family);
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground-heading, #1F1007);
+    background: #fff;
+    border: 1px solid #fff;
+    border-radius: var(--button-border-radius, 3px);
+    transition:
+      background-color 0.3s var(--animation-timing-hover, ease),
+      color 0.3s var(--animation-timing-hover, ease);
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .immersive-banner__button:hover {
+    background: transparent;
+    color: #fff;
+  }
+
+  /* ---- Reduced motion ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .immersive-banner__media {
+      inset: 0;
+      transform: none !important;
+    }
+  }
+
+  /* ---- Mobile ---- */
+  @media screen and (max-width: 749px) {
+    .immersive-banner {
+      min-height: 60svh;
+    }
+
+    .immersive-banner__content {
+      padding: 1.5rem;
+    }
+
+    .immersive-banner__heading {
+      font-size: clamp(1.75rem, 8vw, 2.75rem);
+    }
+
+    .immersive-banner__button {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.7rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.immersive_banner",
+  "tag": "section",
+  "class": "immersive-banner-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Media"
+    },
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "Media type",
+      "options": [
+        { "value": "image", "label": "Image" },
+        { "value": "video", "label": "Video" }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Video URL",
+      "info": "Used when media type is set to Video."
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The spirit of the outback"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Centre" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_parallax",
+      "label": "Enable parallax effect",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "select",
+      "id": "min_height",
+      "label": "Section height",
+      "options": [
+        { "value": "50svh", "label": "Small" },
+        { "value": "60svh", "label": "Medium-small" },
+        { "value": "70svh", "label": "Medium" },
+        { "value": "80svh", "label": "Large" },
+        { "value": "100svh", "label": "Full screen" }
+      ],
+      "default": "70svh"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Immersive banner",
+      "category": "Banners",
+      "settings": {
+        "heading": "The spirit of the outback",
+        "enable_parallax": true,
+        "overlay_opacity": 40
+      }
+    }
+  ]
+}
+{% endschema %}
