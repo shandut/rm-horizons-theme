@@ -1,11 +1,10 @@
 /*
  * ------------------------------------------------------------
- * R.M. Williams Boot Product Template
+ * IMPORTANT: The contents of this file are auto-generated.
  *
- * Enhanced product page with:
- * - Colour selector (cross-product navigation via Related Products metafield)
- * - Enriched Sole Type picker (image swatches + descriptions from Sole Types metafield)
- * - Standard Width and Size variant buttons
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
 {
@@ -26,6 +25,7 @@
             "slideshow_mobile_controls_style": "counter",
             "thumbnail_position": "right",
             "thumbnail_width": 72,
+            "thumbnail_radius": 0,
             "aspect_ratio": "adapt",
             "constrain_to_viewport": true,
             "media_fit": "contain",
@@ -72,8 +72,6 @@
               "type": "group",
               "name": "Header",
               "settings": {
-                "link": "",
-                "open_in_new_tab": false,
                 "content_direction": "column",
                 "vertical_on_mobile": true,
                 "horizontal_alignment": "flex-start",
@@ -97,11 +95,13 @@
                 "border_width": 1,
                 "border_opacity": 100,
                 "border_radius": 0,
-                "placeholder": "",
                 "toggle_overlay": false,
                 "overlay_color": "#00000026",
                 "overlay_style": "solid",
                 "gradient_direction": "to top",
+                "link": "",
+                "open_in_new_tab": false,
+                "placeholder": "",
                 "padding-block-start": 0,
                 "padding-block-end": 0,
                 "padding-inline-start": 0,
@@ -177,7 +177,7 @@
             "colour_selector": {
               "type": "colour-selector",
               "settings": {
-                "delimiter": " – ",
+                "delimiter": "–",
                 "padding-block-start": 8,
                 "padding-block-end": 8,
                 "padding-inline-start": 0,
@@ -237,6 +237,12 @@
               },
               "block_order": []
             },
+            "rmw_agent_product_qa_LXUxpF": {
+              "type": "shopify://apps/rmw-agent/blocks/product-qa/019d199e-f0ca-7e33-8ce1-618d616ad9a1",
+              "settings": {
+                "system_prompt": "standardAssistant"
+              }
+            },
             "product_description": {
               "type": "text",
               "name": "Product description",
@@ -270,6 +276,7 @@
             "colour_selector",
             "variant_picker",
             "buy_buttons",
+            "rmw_agent_product_qa_LXUxpF",
             "product_description"
           ]
         }
@@ -280,6 +287,7 @@
         "equal_columns": false,
         "limit_details_width": false,
         "gap": 48,
+        "enable_sticky_add_to_cart": true,
         "color_scheme": "scheme-3",
         "padding-block-start": 0,
         "padding-block-end": 0
