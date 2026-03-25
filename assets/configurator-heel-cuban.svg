@@ -1,21 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Cuban heel — elevated, angled -->
-  <path d="
-    M 420 650
-    L 418 665
-    L 408 705
-    C 406 712, 408 718, 415 720
-    L 488 720
-    C 495 718, 497 712, 495 705
-    L 490 665
-    L 488 650
-  " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
-  <!-- Heel stack layers -->
-  <line x1="412" y1="680" x2="492" y2="680" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
-  <line x1="410" y1="692" x2="494" y2="692" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
-  <line x1="408" y1="704" x2="495" y2="704" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
-  <!-- Heel base -->
-  <rect x="406" y="718" width="92" height="6" rx="1" fill="#1F1007"/>
-  <!-- Angled front face -->
-  <path d="M 420 650 L 408 705" fill="none" stroke="#5C3A1E" stroke-width="1" opacity="0.3"/>
+  <g transform="translate(80, 120)">
+    <!-- Cuban heel — elevated, angled inward, statement -->
+    <path d="
+      M 82 462
+      L 72 485
+      L 62 520
+      L 58 555
+      L 60 575
+      L 62 582
+      L 168 582
+      L 170 575
+      L 172 555
+      L 175 520
+      L 172 485
+      L 160 468
+    " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
+    <!-- Angled heel breast -->
+    <path d="M 82 462 L 62 555" fill="none" stroke="#5C3A1E" stroke-width="1.2" opacity="0.5"/>
+    <!-- Stacked layers -->
+    <line x1="65" y1="500" x2="174" y2="500" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
+    <line x1="62" y1="520" x2="175" y2="520" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
+    <line x1="60" y1="540" x2="173" y2="540" stroke="#5C3A1E" stroke-width="0.8" opacity="0.35"/>
+    <line x1="58" y1="558" x2="172" y2="558" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
+    <line x1="60" y1="572" x2="170" y2="572" stroke="#5C3A1E" stroke-width="0.8" opacity="0.25"/>
+    <!-- Heel base -->
+    <rect x="58" y="580" width="114" height="7" rx="1.5" fill="#1F1007"/>
+    <!-- Highlight on heel face -->
+    <path d="M 120 470 L 118 555" fill="none" stroke="#5C3A1E" stroke-width="2" opacity="0.1"/>
+  </g>
 </svg>

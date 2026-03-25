@@ -1,8 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Flat heel — low profile -->
-  <rect x="410" y="665" width="80" height="12" rx="2" fill="#3E2712" stroke="#2E1A0A" stroke-width="1"/>
-  <!-- Heel base -->
-  <rect x="415" y="677" width="70" height="8" rx="1" fill="#2E1A0A"/>
-  <!-- Heel stack lines -->
-  <line x1="415" y1="672" x2="485" y2="672" stroke="#5C3A1E" stroke-width="0.5" opacity="0.4"/>
+  <g transform="translate(80, 120)">
+    <!-- Flat heel — low profile, everyday -->
+    <!-- Heel block -->
+    <path d="
+      M 82 462
+      L 78 475
+      L 76 488
+      L 76 498
+      L 170 498
+      L 170 490
+      L 168 478
+      L 160 468
+    " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
+    <!-- Heel stack layer lines -->
+    <line x1="76" y1="485" x2="170" y2="485" stroke="#5C3A1E" stroke-width="0.6" opacity="0.4"/>
+    <line x1="76" y1="492" x2="170" y2="492" stroke="#5C3A1E" stroke-width="0.6" opacity="0.3"/>
+    <!-- Heel base (rubber tip) -->
+    <rect x="74" y="496" width="98" height="5" rx="1" fill="#1F1007"/>
+    <!-- Top lip -->
+    <path d="M 82 462 C 100 466, 140 470, 160 468" fill="none" stroke="#4A2E14" stroke-width="1" opacity="0.5"/>
+  </g>
 </svg>

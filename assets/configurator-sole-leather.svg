@@ -1,18 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Sewn welt leather sole -->
-  <path d="
-    M 108 665
-    C 108 670, 110 674, 115 676
-    L 480 676
-    C 485 674, 487 670, 487 665
-  " fill="#A0724A" stroke="#7A5530" stroke-width="1.5"/>
-  <!-- Welt stitching line -->
-  <path d="
-    M 112 668
-    C 112 672, 115 675, 120 676
-    L 475 676
-    C 480 675, 483 672, 483 668
-  " fill="none" stroke="#7A5530" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.6"/>
-  <!-- Sole edge -->
-  <rect x="105" y="676" width="385" height="4" rx="2" fill="#8B6340" stroke="#6B4226" stroke-width="0.5"/>
+  <g transform="translate(80, 120)">
+    <!-- Sewn welt leather sole -->
+    <!-- Sole profile -->
+    <path d="
+      M 78 462
+      L 75 468
+      C 73 472, 72 476, 74 480
+      L 85 484
+      C 140 492, 220 488, 268 472
+      C 310 458, 338 436, 346 412
+    " fill="#A0724A" stroke="#7A5530" stroke-width="1.8"/>
+    <!-- Welt edge -->
+    <path d="
+      M 74 478
+      L 85 482
+      C 140 490, 218 486, 266 470
+      C 308 456, 336 434, 344 410
+    " fill="none" stroke="#8B6340" stroke-width="2.5" opacity="0.6"/>
+    <!-- Welt stitching -->
+    <path d="
+      M 78 475
+      C 100 482, 160 488, 260 468
+      C 310 454, 338 432, 344 408
+    " fill="none" stroke="#A08060" stroke-width="0.7" stroke-dasharray="2.5 2.5" opacity="0.5"/>
+    <!-- Sole edge detail -->
+    <path d="
+      M 74 480
+      L 85 484
+      C 140 492, 220 488, 268 472
+      C 312 458, 340 435, 348 410
+    " fill="none" stroke="#6B4226" stroke-width="0.8" opacity="0.4"/>
+  </g>
 </svg>

@@ -1,19 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Square toe — flat, structured front -->
-  <path d="
-    M 160 570
-    C 148 598, 138 618, 128 635
-    C 122 645, 118 652, 115 658
-    L 112 662
-    L 110 668
-    L 280 668
-  " fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Square edge emphasis -->
-  <path d="M 110 662 L 110 670" fill="none" stroke="#5C3A1E" stroke-width="2"/>
-  <!-- Toe cap stitching -->
-  <path d="
-    M 168 562
-    C 155 592, 142 618, 132 640
-    C 126 650, 122 656, 118 660
-  " fill="none" stroke="#6B4226" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <g transform="translate(80, 120)">
+    <!-- Square toe — flat, structured front -->
+    <path d="
+      M 120 588
+      C 95 585, 75 580, 62 572
+      C 52 565, 44 555, 42 545
+      L 40 530
+      L 40 520
+      L 44 510
+      L 55 505
+    " fill="#7A5530" stroke="#5C3A1E" stroke-width="2" opacity="0.6"/>
+    <!-- Flat front edge -->
+    <path d="M 40 520 L 40 545" fill="none" stroke="#5C3A1E" stroke-width="2.8" opacity="0.8"/>
+    <!-- Square corner emphasis -->
+    <path d="M 40 545 C 42 555, 48 562, 58 568" fill="none" stroke="#5C3A1E" stroke-width="2" opacity="0.6"/>
+    <!-- Toe cap stitch -->
+    <path d="
+      M 125 580
+      C 102 576, 82 568, 68 558
+      C 58 550, 50 540, 48 528
+    " fill="none" stroke="#A08060" stroke-width="0.8" stroke-dasharray="2.5 2.5" opacity="0.4"/>
+  </g>
 </svg>

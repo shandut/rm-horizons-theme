@@ -1,19 +1,29 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Comfort rubber sole — thicker, darker -->
-  <path d="
-    M 105 665
-    C 105 670, 108 676, 115 678
-    L 480 678
-    C 487 676, 490 670, 490 665
-  " fill="#2C2C2C" stroke="#1a1a1a" stroke-width="1.5"/>
-  <!-- Rubber texture dots -->
-  <circle cx="200" cy="672" r="1.5" fill="#444" opacity="0.4"/>
-  <circle cx="250" cy="674" r="1.5" fill="#444" opacity="0.4"/>
-  <circle cx="300" cy="672" r="1.5" fill="#444" opacity="0.4"/>
-  <circle cx="350" cy="674" r="1.5" fill="#444" opacity="0.4"/>
-  <circle cx="400" cy="672" r="1.5" fill="#444" opacity="0.4"/>
-  <!-- Sole edge -->
-  <rect x="102" y="678" width="391" height="5" rx="2" fill="#1a1a1a"/>
-  <!-- Grip line -->
-  <path d="M 140 681 L 460 681" stroke="#333" stroke-width="0.5" opacity="0.5"/>
+  <g transform="translate(80, 120)">
+    <!-- Comfort rubber sole — thicker, darker -->
+    <path d="
+      M 78 462
+      L 72 470
+      C 68 478, 66 485, 70 490
+      L 85 496
+      C 140 504, 222 498, 272 480
+      C 318 464, 345 438, 350 412
+    " fill="#2C2C2C" stroke="#1a1a1a" stroke-width="1.8"/>
+    <!-- Rubber thickness -->
+    <path d="
+      M 70 488
+      L 85 494
+      C 140 502, 220 496, 270 478
+      C 316 462, 344 436, 348 412
+    " fill="none" stroke="#3a3a3a" stroke-width="2.5" opacity="0.5"/>
+    <!-- Grip tread pattern -->
+    <path d="M 100 492 L 108 488" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 130 494 L 138 490" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 160 494 L 168 490" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 190 492 L 198 488" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 220 488 L 228 484" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 250 482 L 258 478" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 280 474 L 288 470" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+    <path d="M 310 464 L 318 460" stroke="#444" stroke-width="1.2" opacity="0.3"/>
+  </g>
 </svg>

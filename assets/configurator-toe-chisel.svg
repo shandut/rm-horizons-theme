@@ -1,22 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Chisel toe — angular, more pointed -->
-  <path d="
-    M 160 570
-    C 148 598, 135 618, 122 635
-    C 115 644, 105 652, 100 658
-    C 96 662, 96 666, 102 668
-    L 140 670
-    C 180 670, 230 670, 280 668
-  " fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
-  <!-- Chisel edge line -->
-  <path d="
-    M 105 658
-    L 140 668
-  " fill="none" stroke="#5C3A1E" stroke-width="1.5" opacity="0.6"/>
-  <!-- Toe cap stitching -->
-  <path d="
-    M 168 562
-    C 152 592, 138 618, 125 640
-    C 118 650, 112 656, 108 660
-  " fill="none" stroke="#6B4226" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
+  <g transform="translate(80, 120)">
+    <!-- Chisel toe — angular, more pointed -->
+    <path d="
+      M 120 588
+      C 90 585, 65 578, 50 565
+      C 38 552, 30 535, 32 522
+      C 33 514, 38 508, 48 505
+    " fill="#7A5530" stroke="#5C3A1E" stroke-width="2" opacity="0.6"/>
+    <!-- Extended point -->
+    <path d="
+      M 50 565
+      C 42 558, 35 548, 32 538
+      L 30 525
+    " fill="none" stroke="#5C3A1E" stroke-width="2.5" opacity="0.8"/>
+    <!-- Chisel edge line -->
+    <path d="M 32 522 L 50 522" fill="none" stroke="#5C3A1E" stroke-width="1.2" opacity="0.5"/>
+    <!-- Toe cap stitch -->
+    <path d="
+      M 125 580
+      C 100 576, 75 568, 58 555
+      C 45 544, 38 530, 40 520
+    " fill="none" stroke="#A08060" stroke-width="0.8" stroke-dasharray="2.5 2.5" opacity="0.4"/>
+  </g>
 </svg>

@@ -1,19 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <!-- Block heel — classic dress boot height -->
-  <path d="
-    M 415 655
-    L 415 665
-    L 412 680
-    L 412 700
-    L 490 700
-    L 490 680
-    L 487 665
-    L 487 655
-  " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
-  <!-- Heel stack layers -->
-  <line x1="412" y1="675" x2="490" y2="675" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
-  <line x1="412" y1="685" x2="490" y2="685" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
-  <line x1="412" y1="693" x2="490" y2="693" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
-  <!-- Heel base -->
-  <rect x="410" y="698" width="82" height="6" rx="1" fill="#1F1007"/>
+  <g transform="translate(80, 120)">
+    <!-- Block heel — classic dress boot, taller -->
+    <path d="
+      M 82 462
+      L 75 480
+      L 70 510
+      L 68 535
+      L 68 548
+      L 175 548
+      L 175 535
+      L 172 510
+      L 168 480
+      L 160 468
+    " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
+    <!-- Stacked leather layers -->
+    <line x1="69" y1="495" x2="174" y2="495" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
+    <line x1="68" y1="510" x2="175" y2="510" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
+    <line x1="68" y1="525" x2="175" y2="525" stroke="#5C3A1E" stroke-width="0.8" opacity="0.35"/>
+    <line x1="68" y1="538" x2="175" y2="538" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
+    <!-- Heel base -->
+    <rect x="66" y="546" width="111" height="6" rx="1" fill="#1F1007"/>
+    <!-- Heel breast (front face) -->
+    <path d="M 82 462 L 75 480 L 70 510 L 68 535 L 68 548" fill="none" stroke="#5C3A1E" stroke-width="1.2" opacity="0.4"/>
+  </g>
 </svg>

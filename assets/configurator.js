@@ -40,7 +40,9 @@ const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
  *   liveRegion: HTMLElement,
  *   engravingInput: HTMLInputElement,
  *   engravingCount: HTMLElement,
- *   previewCanvas: HTMLElement
+ *   previewCanvas: HTMLElement,
+ *   soleView: HTMLElement,
+ *   soleEngravingText: HTMLElement
  * }} ConfiguratorRefs
  *
  * @extends {Component<ConfiguratorRefs>}
@@ -248,9 +250,19 @@ class BootConfigurator extends Component {
     const input = /** @type {HTMLInputElement} */ (event.target);
     const text = input.value;
 
-    // Update preview
+    // Update side-view preview
     if (this.refs.layerEngraving) {
       this.refs.layerEngraving.textContent = text;
+    }
+
+    // Update sole bottom view
+    if (this.refs.soleEngravingText) {
+      this.refs.soleEngravingText.textContent = text;
+    }
+
+    // Show/hide sole view based on whether there's engraving text
+    if (this.refs.soleView) {
+      this.refs.soleView.hidden = text.length === 0;
     }
 
     // Update character count
