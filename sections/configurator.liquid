@@ -1042,8 +1042,6 @@
   .Configurator__sole-shape {
     position: relative;
     width: 100%;
-    max-width: 200px;
-    aspect-ratio: 1 / 1.6;
     border-radius: 8px;
     overflow: hidden;
     background: #f5f0e8;
@@ -1051,8 +1049,8 @@
 
   .Configurator__sole-image {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    display: block;
   }
 
   .Configurator__sole-engraving {
@@ -1097,11 +1095,11 @@
   }
 
   .Configurator__preview-row:has(.Configurator__sole-view:not([hidden])) .Configurator__preview-canvas {
-    flex: 0 0 60%;
+    flex: 1 1 50%;
   }
 
   .Configurator__preview-row:has(.Configurator__sole-view:not([hidden])) .Configurator__sole-view {
-    flex: 0 0 35%;
+    flex: 1 1 50%;
   }
 
   @media (prefers-reduced-motion: reduce) {
