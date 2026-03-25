@@ -78,29 +78,35 @@
         </button>
       </div>
 
-      {%- comment -%} Selection summary — running list of choices made so far {%- endcomment -%}
+      {%- comment -%} Selection summary — visual chips with thumbnails {%- endcomment -%}
       <div class="Configurator__summary" ref="selectionSummary" aria-label="Your selections">
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="toe" hidden>
+          <img class="Configurator__summary-thumb" ref="summaryToeImg" src="" alt="" width="28" height="28">
           <span class="Configurator__summary-label">Toe:</span>
           <span class="Configurator__summary-value" ref="summaryToe">Round Toe</span>
         </span>
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="heel" hidden>
+          <img class="Configurator__summary-thumb" ref="summaryHeelImg" src="" alt="" width="28" height="28">
           <span class="Configurator__summary-label">Heel:</span>
           <span class="Configurator__summary-value" ref="summaryHeel"></span>
         </span>
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="sole" hidden>
+          <img class="Configurator__summary-thumb" ref="summarySoleImg" src="" alt="" width="28" height="28">
           <span class="Configurator__summary-label">Sole:</span>
           <span class="Configurator__summary-value" ref="summarySole"></span>
         </span>
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="leather" hidden>
+          <span class="Configurator__summary-swatch" ref="summaryLeatherSwatch"></span>
           <span class="Configurator__summary-label">Leather:</span>
           <span class="Configurator__summary-value" ref="summaryLeather"></span>
         </span>
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="elastic" hidden>
+          <img class="Configurator__summary-thumb" ref="summaryElasticImg" src="" alt="" width="28" height="28">
           <span class="Configurator__summary-label">Elastic:</span>
           <span class="Configurator__summary-value" ref="summaryElastic"></span>
         </span>
         <span class="Configurator__summary-item" ref="summaryItems[]" data-step="tug" hidden>
+          <img class="Configurator__summary-thumb" ref="summaryTugImg" src="" alt="" width="28" height="28">
           <span class="Configurator__summary-label">Tug:</span>
           <span class="Configurator__summary-value" ref="summaryTug"></span>
         </span>
@@ -346,29 +352,41 @@
           </div>
         </fieldset>
 
-        {%- comment -%} Elastic colour {%- endcomment -%}
+        {%- comment -%} Elastic colour — with texture swatch images {%- endcomment -%}
         <fieldset class="Configurator__fieldset">
           <legend class="Configurator__legend">Elastic colour</legend>
           <div class="Configurator__option-grid Configurator__option-grid--inline">
             <label class="Configurator__option-card Configurator__option-card--small">
               <input type="radio" name="config-elastic" value="brown" checked
                 data-layer="composite"
+                data-image="{{ 'configurator-elastic-swatch-brown.png' | asset_url }}"
                 data-label="Brown" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #5C3A1E;"></span>
+              <span class="Configurator__option-visual Configurator__option-visual--swatch">
+                <img src="{{ 'configurator-elastic-swatch-brown.png' | asset_url }}" alt="" width="50" height="50"
+                  loading="lazy">
+              </span>
               <span class="Configurator__option-label">Brown</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
               <input type="radio" name="config-elastic" value="red"
                 data-layer="composite"
+                data-image="{{ 'configurator-elastic-swatch-red.png' | asset_url }}"
                 data-label="Red" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #B22222;"></span>
+              <span class="Configurator__option-visual Configurator__option-visual--swatch">
+                <img src="{{ 'configurator-elastic-swatch-red.png' | asset_url }}" alt="" width="50" height="50"
+                  loading="lazy">
+              </span>
               <span class="Configurator__option-label">Red</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
               <input type="radio" name="config-elastic" value="blue"
                 data-layer="composite"
-                data-label="Blue" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #1E3A5F;"></span>
+                data-image="{{ 'configurator-elastic-swatch-blue.png' | asset_url }}"
+                data-label="Navy Blue" on:change="/handleOptionChange">
+              <span class="Configurator__option-visual Configurator__option-visual--swatch">
+                <img src="{{ 'configurator-elastic-swatch-blue.png' | asset_url }}" alt="" width="50" height="50"
+                  loading="lazy">
+              </span>
               <span class="Configurator__option-label">Navy Blue</span>
             </label>
           </div>
@@ -427,46 +445,17 @@
           aria-hidden="true"></div>
       </div>
 
-      {%- comment -%} Sole bottom view — shows engraving text {%- endcomment -%}
+      {%- comment -%} Sole bottom view — real image with draggable engraving {%- endcomment -%}
       <div class="Configurator__sole-view" ref="soleView" hidden>
-        <p class="Configurator__sole-view-label">Sole engraving preview</p>
-        <div class="Configurator__sole-shape">
-          <svg viewBox="0 0 200 320" class="Configurator__sole-svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="soleGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="#A08060"/>
-                <stop offset="50%" stop-color="#B8956A"/>
-                <stop offset="100%" stop-color="#A08060"/>
-              </linearGradient>
-            </defs>
-            <!-- Sole outline (bottom view) -->
-            <path d="
-              M 60 30 C 40 35, 25 55, 22 80
-              L 18 140 C 16 170, 18 200, 22 230
-              C 26 260, 35 280, 50 295
-              C 65 308, 85 315, 100 315
-              C 115 315, 135 308, 150 295
-              C 165 280, 174 260, 178 230
-              C 182 200, 184 170, 182 140
-              L 178 80 C 175 55, 160 35, 140 30
-              C 125 22, 75 22, 60 30 Z
-            " fill="url(#soleGrad)" stroke="#7A5530" stroke-width="2"/>
-            <!-- Welt stitching outline -->
-            <path d="
-              M 62 34 C 44 39, 29 58, 26 82
-              L 22 142 C 20 172, 22 202, 26 232
-              C 30 260, 38 278, 52 292
-              C 66 305, 86 312, 100 312
-              C 114 312, 134 305, 148 292
-              C 162 278, 170 260, 174 232
-              C 178 202, 180 172, 178 142
-              L 174 82 C 171 58, 156 39, 138 34
-            " fill="none" stroke="#8B6340" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.5"/>
-            <!-- Heel area -->
-            <path d="M 55 50 C 65 44, 85 40, 100 40 C 115 40, 135 44, 145 50 L 148 80 C 140 74, 120 70, 100 70 C 80 70, 60 74, 52 80 Z" fill="#7A5530" opacity="0.3"/>
-          </svg>
-          <!-- Engraving text positioned on sole -->
-          <div class="Configurator__sole-engraving" ref="soleEngravingText"></div>
+        <p class="Configurator__sole-view-label">Drag to position your engraving</p>
+        <div class="Configurator__sole-shape" ref="soleContainer">
+          <img ref="soleBottomImage" class="Configurator__sole-image"
+            src="{{ 'configurator-sole-bottom-leather.png' | asset_url }}" alt="Sole bottom view"
+            draggable="false">
+          <!-- Draggable engraving text -->
+          <div class="Configurator__sole-engraving Configurator__sole-engraving--draggable"
+            ref="soleEngravingText"
+            on:pointerdown="/startDragEngraving"></div>
         </div>
       </div>
     </div>
@@ -685,6 +674,29 @@
 
   .Configurator__summary-value {
     font-weight: 500;
+  }
+
+  .Configurator__summary-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .Configurator__summary-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .Configurator__option-visual--swatch {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
   }
 
   /* ── Step panels ── */
@@ -1027,28 +1039,43 @@
   .Configurator__sole-shape {
     position: relative;
     display: inline-block;
-    width: 140px;
-    height: 224px;
+    width: 180px;
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
   }
 
-  .Configurator__sole-svg {
+  .Configurator__sole-image {
     width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 
   .Configurator__sole-engraving {
     position: absolute;
     top: 65%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     font-family: var(--font-heading--family, serif);
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #5C3A1E;
+    color: #3E2712;
     white-space: nowrap;
-    pointer-events: none;
-    text-shadow: 0 0 1px rgba(92, 58, 30, 0.3);
+    text-shadow: 0 0.5px 1px rgba(62, 39, 18, 0.3);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .Configurator__sole-engraving--draggable {
+    pointer-events: auto;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .Configurator__sole-engraving--draggable:active {
+    cursor: grabbing;
   }
 
   /* ── Preview layout update for flex column ── */

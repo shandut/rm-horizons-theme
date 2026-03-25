@@ -42,6 +42,8 @@ const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
  *   previewCanvas: HTMLElement,
  *   soleView: HTMLElement,
  *   soleEngravingText: HTMLElement,
+ *   soleBottomImage: HTMLImageElement,
+ *   soleContainer: HTMLElement,
  *   summaryItems: HTMLElement[],
  *   summaryToe: HTMLElement,
  *   summaryHeel: HTMLElement,
@@ -49,7 +51,13 @@ const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
  *   summaryLeather: HTMLElement,
  *   summaryElastic: HTMLElement,
  *   summaryTug: HTMLElement,
- *   summaryEngraving: HTMLElement
+ *   summaryEngraving: HTMLElement,
+ *   summaryToeImg: HTMLImageElement,
+ *   summaryHeelImg: HTMLImageElement,
+ *   summarySoleImg: HTMLImageElement,
+ *   summaryElasticImg: HTMLImageElement,
+ *   summaryTugImg: HTMLImageElement,
+ *   summaryLeatherSwatch: HTMLElement
  * }} ConfiguratorRefs
  *
  * @extends {Component<ConfiguratorRefs>}
@@ -297,23 +305,44 @@ class BootConfigurator extends Component {
   // ─── Selection Summary ──────────────────────────────────
 
   /**
-   * Map of radio group names to summary ref names.
-   * @type {Array<{name: string, ref: string, step: string}>}
+   * Map of radio group names to summary refs (text + optional image).
+   * @type {Array<{name: string, ref: string, imgRef?: string, swatchRef?: string}>}
    */
   static SUMMARY_MAP = [
-    { name: 'config-toe', ref: 'summaryToe', step: 'toe' },
-    { name: 'config-heel', ref: 'summaryHeel', step: 'heel' },
-    { name: 'config-sole', ref: 'summarySole', step: 'sole' },
-    { name: 'config-leather', ref: 'summaryLeather', step: 'leather' },
-    { name: 'config-elastic', ref: 'summaryElastic', step: 'elastic' },
-    { name: 'config-tug', ref: 'summaryTug', step: 'tug' },
+    { name: 'config-toe', ref: 'summaryToe', imgRef: 'summaryToeImg' },
+    { name: 'config-heel', ref: 'summaryHeel', imgRef: 'summaryHeelImg' },
+    { name: 'config-sole', ref: 'summarySole', imgRef: 'summarySoleImg' },
+    { name: 'config-leather', ref: 'summaryLeather', swatchRef: 'summaryLeatherSwatch' },
+    { name: 'config-elastic', ref: 'summaryElastic', imgRef: 'summaryElasticImg' },
+    { name: 'config-tug', ref: 'summaryTug', imgRef: 'summaryTugImg' },
   ];
 
   /**
-   * Update the selection summary chips based on current radio values.
+   * Sole bottom image mapping by sole type.
+   * @type {Record<string, string>}
+   */
+  static SOLE_BOTTOM_MAP = {
+    leather: 'configurator-sole-bottom-leather.png',
+    rubber: 'configurator-sole-bottom-rubber.png',
+    brass: 'configurator-sole-bottom-brass.png',
+  };
+
+  /**
+   * Leather colour swatch mapping.
+   * @type {Record<string, string>}
+   */
+  static LEATHER_COLOURS = {
+    chestnut: '#8B4513',
+    black: '#1a1a1a',
+    tobacco: '#6B4226',
+    cognac: '#A0522D',
+  };
+
+  /**
+   * Update the selection summary chips with thumbnails and text.
    */
   #updateSummary() {
-    for (const { name, ref, step } of BootConfigurator.SUMMARY_MAP) {
+    for (const { name, ref, imgRef, swatchRef } of BootConfigurator.SUMMARY_MAP) {
       const checked = /** @type {HTMLInputElement | null} */ (
         this.querySelector(`input[name="${name}"]:checked`)
       );
@@ -324,8 +353,30 @@ class BootConfigurator extends Component {
         const label = checked.dataset.label || checked.value;
         summaryEl.textContent = label;
         itemEl.hidden = false;
+
+        // Update thumbnail image if available
+        if (imgRef && this.refs[imgRef]) {
+          const thumbSrc = checked.dataset.image || '';
+          if (thumbSrc) {
+            this.refs[imgRef].src = thumbSrc;
+            this.refs[imgRef].style.display = '';
+          } else {
+            this.refs[imgRef].style.display = 'none';
+          }
+        }
+
+        // Update colour swatch if applicable
+        if (swatchRef && this.refs[swatchRef]) {
+          const colour = BootConfigurator.LEATHER_COLOURS[checked.value];
+          if (colour) {
+            this.refs[swatchRef].style.backgroundColor = colour;
+          }
+        }
       }
     }
+
+    // Update sole bottom image based on sole selection
+    this.#updateSoleBottomImage();
 
     // Engraving
     const engravingText = this.refs.engravingInput?.value?.trim();
@@ -338,6 +389,18 @@ class BootConfigurator extends Component {
       } else {
         engravingItem.hidden = true;
       }
+    }
+  }
+
+  /**
+   * Update the sole bottom view image based on current sole selection.
+   */
+  #updateSoleBottomImage() {
+    const soleType = this.#getSelection('config-sole') || 'leather';
+    const filename = BootConfigurator.SOLE_BOTTOM_MAP[soleType];
+    if (filename && this.refs.soleBottomImage) {
+      const assetBase = this.#assetBase.replace('configurator-boot-', '');
+      this.refs.soleBottomImage.src = `${assetBase}${filename}`;
     }
   }
 
@@ -493,6 +556,56 @@ class BootConfigurator extends Component {
       addToCartButton.textContent = `Add to Cart \u2014 ${this.#formatPrice(this.#calculateTotal())}`;
       this.#announce('Failed to add to cart. Please try again.');
     }
+  }
+
+  // ─── Draggable Engraving ────────────────────────────────
+
+  /** @type {boolean} */
+  #isDragging = false;
+
+  /** @type {{ x: number, y: number }} */
+  #dragOffset = { x: 0, y: 0 };
+
+  /**
+   * Start dragging the engraving text on the sole view.
+   * @param {PointerEvent} event
+   */
+  startDragEngraving(event) {
+    const el = this.refs.soleEngravingText;
+    const container = this.refs.soleContainer;
+    if (!el || !container) return;
+
+    event.preventDefault();
+    this.#isDragging = true;
+    el.setPointerCapture(event.pointerId);
+
+    const rect = el.getBoundingClientRect();
+    this.#dragOffset.x = event.clientX - rect.left;
+    this.#dragOffset.y = event.clientY - rect.top;
+
+    const onMove = /** @param {PointerEvent} e */ (e) => {
+      if (!this.#isDragging) return;
+      const containerRect = container.getBoundingClientRect();
+      let x = e.clientX - containerRect.left - this.#dragOffset.x;
+      let y = e.clientY - containerRect.top - this.#dragOffset.y;
+
+      // Clamp within container
+      x = Math.max(0, Math.min(x, containerRect.width - el.offsetWidth));
+      y = Math.max(0, Math.min(y, containerRect.height - el.offsetHeight));
+
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.transform = 'none';
+    };
+
+    const onUp = () => {
+      this.#isDragging = false;
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+    };
+
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
   }
 
   // ─── Accessibility ─────────────────────────────────────
