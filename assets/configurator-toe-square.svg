@@ -1,4 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <rect x="185" y="695" width="230" height="40" rx="4" fill="#4A2E14" opacity="0.9"/>
-  <text x="300" y="720" text-anchor="middle" fill="#fff" font-size="14" font-family="sans-serif">SQUARE TOE</text>
+  <!-- Square toe — flat, structured front -->
+  <path d="
+    M 160 570
+    C 148 598, 138 618, 128 635
+    C 122 645, 118 652, 115 658
+    L 112 662
+    L 110 668
+    L 280 668
+  " fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Square edge emphasis -->
+  <path d="M 110 662 L 110 670" fill="none" stroke="#5C3A1E" stroke-width="2"/>
+  <!-- Toe cap stitching -->
+  <path d="
+    M 168 562
+    C 155 592, 142 618, 132 640
+    C 126 650, 122 656, 118 660
+  " fill="none" stroke="#6B4226" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
 </svg>

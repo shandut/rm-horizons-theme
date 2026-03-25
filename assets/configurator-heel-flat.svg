@@ -1,4 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <rect x="200" y="740" width="200" height="20" rx="3" fill="#3E2712" opacity="0.9"/>
-  <text x="300" y="755" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif">FLAT</text>
+  <!-- Flat heel — low profile -->
+  <rect x="410" y="665" width="80" height="12" rx="2" fill="#3E2712" stroke="#2E1A0A" stroke-width="1"/>
+  <!-- Heel base -->
+  <rect x="415" y="677" width="70" height="8" rx="1" fill="#2E1A0A"/>
+  <!-- Heel stack lines -->
+  <line x1="415" y1="672" x2="485" y2="672" stroke="#5C3A1E" stroke-width="0.5" opacity="0.4"/>
 </svg>

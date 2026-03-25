@@ -1,4 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <polygon points="220,725 380,725 370,770 230,770" fill="#1F1007" opacity="0.9"/>
-  <text x="300" y="755" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif">CUBAN</text>
+  <!-- Cuban heel — elevated, angled -->
+  <path d="
+    M 420 650
+    L 418 665
+    L 408 705
+    C 406 712, 408 718, 415 720
+    L 488 720
+    C 495 718, 497 712, 495 705
+    L 490 665
+    L 488 650
+  " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
+  <!-- Heel stack layers -->
+  <line x1="412" y1="680" x2="492" y2="680" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
+  <line x1="410" y1="692" x2="494" y2="692" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
+  <line x1="408" y1="704" x2="495" y2="704" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
+  <!-- Heel base -->
+  <rect x="406" y="718" width="92" height="6" rx="1" fill="#1F1007"/>
+  <!-- Angled front face -->
+  <path d="M 420 650 L 408 705" fill="none" stroke="#5C3A1E" stroke-width="1" opacity="0.3"/>
 </svg>

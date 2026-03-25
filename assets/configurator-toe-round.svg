@@ -1,4 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <ellipse cx="300" cy="710" rx="130" ry="35" fill="#6B4226" opacity="0.9"/>
-  <text x="300" y="715" text-anchor="middle" fill="#fff" font-size="14" font-family="sans-serif">ROUND TOE</text>
+  <!-- Round toe — smooth curved front -->
+  <path d="
+    M 160 570
+    C 150 595, 140 615, 130 628
+    C 122 638, 116 645, 112 652
+    C 108 658, 108 662, 115 665
+    L 140 667
+    C 180 668, 230 668, 280 668
+  " fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Toe cap stitching -->
+  <path d="
+    M 170 565
+    C 158 590, 148 610, 138 630
+    C 132 640, 128 648, 125 655
+  " fill="none" stroke="#6B4226" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
 </svg>

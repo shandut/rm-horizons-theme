@@ -1,4 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <rect x="200" y="730" width="200" height="40" rx="4" fill="#2E1A0A" opacity="0.9"/>
-  <text x="300" y="755" text-anchor="middle" fill="#fff" font-size="11" font-family="sans-serif">BLOCK</text>
+  <!-- Block heel — classic dress boot height -->
+  <path d="
+    M 415 655
+    L 415 665
+    L 412 680
+    L 412 700
+    L 490 700
+    L 490 680
+    L 487 665
+    L 487 655
+  " fill="#3E2712" stroke="#2E1A0A" stroke-width="1.5"/>
+  <!-- Heel stack layers -->
+  <line x1="412" y1="675" x2="490" y2="675" stroke="#5C3A1E" stroke-width="0.8" opacity="0.5"/>
+  <line x1="412" y1="685" x2="490" y2="685" stroke="#5C3A1E" stroke-width="0.8" opacity="0.4"/>
+  <line x1="412" y1="693" x2="490" y2="693" stroke="#5C3A1E" stroke-width="0.8" opacity="0.3"/>
+  <!-- Heel base -->
+  <rect x="410" y="698" width="82" height="6" rx="1" fill="#1F1007"/>
 </svg>

@@ -1,4 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <polygon points="180,710 420,710 400,740 200,740" fill="#5C3A1E" opacity="0.9"/>
-  <text x="300" y="730" text-anchor="middle" fill="#fff" font-size="14" font-family="sans-serif">CHISEL TOE</text>
+  <!-- Chisel toe — angular, more pointed -->
+  <path d="
+    M 160 570
+    C 148 598, 135 618, 122 635
+    C 115 644, 105 652, 100 658
+    C 96 662, 96 666, 102 668
+    L 140 670
+    C 180 670, 230 670, 280 668
+  " fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Chisel edge line -->
+  <path d="
+    M 105 658
+    L 140 668
+  " fill="none" stroke="#5C3A1E" stroke-width="1.5" opacity="0.6"/>
+  <!-- Toe cap stitching -->
+  <path d="
+    M 168 562
+    C 152 592, 138 618, 125 640
+    C 118 650, 112 656, 108 660
+  " fill="none" stroke="#6B4226" stroke-width="1" stroke-dasharray="4 3" opacity="0.5"/>
 </svg>

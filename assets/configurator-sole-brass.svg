@@ -1,8 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <rect x="170" y="760" width="260" height="14" rx="6" fill="#B8860B" opacity="0.85"/>
-  <circle cx="210" cy="767" r="3" fill="#DAA520"/>
-  <circle cx="240" cy="767" r="3" fill="#DAA520"/>
-  <circle cx="360" cy="767" r="3" fill="#DAA520"/>
-  <circle cx="390" cy="767" r="3" fill="#DAA520"/>
-  <text x="300" y="772" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif">BRASS</text>
+  <!-- Brass-screwed sole -->
+  <path d="
+    M 108 665
+    C 108 670, 110 674, 115 676
+    L 480 676
+    C 485 674, 487 670, 487 665
+  " fill="#A0724A" stroke="#7A5530" stroke-width="1.5"/>
+  <!-- Brass screws -->
+  <circle cx="150" cy="672" r="3" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="150" cy="672" r="1" fill="#B8860B"/>
+  <circle cx="220" cy="672" r="3" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="220" cy="672" r="1" fill="#B8860B"/>
+  <circle cx="300" cy="672" r="3" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="300" cy="672" r="1" fill="#B8860B"/>
+  <circle cx="380" cy="672" r="3" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="380" cy="672" r="1" fill="#B8860B"/>
+  <circle cx="450" cy="672" r="3" fill="#DAA520" stroke="#B8860B" stroke-width="1"/>
+  <circle cx="450" cy="672" r="1" fill="#B8860B"/>
+  <!-- Sole edge -->
+  <rect x="105" y="676" width="385" height="4" rx="2" fill="#8B6340" stroke="#6B4226" stroke-width="0.5"/>
 </svg>

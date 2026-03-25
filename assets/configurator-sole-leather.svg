@@ -1,4 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <rect x="170" y="760" width="260" height="14" rx="6" fill="#A0724A" opacity="0.85"/>
-  <text x="300" y="772" text-anchor="middle" fill="#fff" font-size="9" font-family="sans-serif">LEATHER SOLE</text>
+  <!-- Sewn welt leather sole -->
+  <path d="
+    M 108 665
+    C 108 670, 110 674, 115 676
+    L 480 676
+    C 485 674, 487 670, 487 665
+  " fill="#A0724A" stroke="#7A5530" stroke-width="1.5"/>
+  <!-- Welt stitching line -->
+  <path d="
+    M 112 668
+    C 112 672, 115 675, 120 676
+    L 475 676
+    C 480 675, 483 672, 483 668
+  " fill="none" stroke="#7A5530" stroke-width="0.8" stroke-dasharray="3 2" opacity="0.6"/>
+  <!-- Sole edge -->
+  <rect x="105" y="676" width="385" height="4" rx="2" fill="#8B6340" stroke="#6B4226" stroke-width="0.5"/>
 </svg>

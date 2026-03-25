@@ -1,4 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
-  <path d="M220 100 C180 100 160 130 155 180 L145 350 C140 400 130 450 125 500 L120 600 C118 650 140 720 180 740 L420 740 C460 720 482 650 480 600 L475 500 C470 450 460 400 455 350 L445 180 C440 130 420 100 380 100 Z" fill="#8B6340" opacity="0.85"/>
-  <text x="300" y="420" text-anchor="middle" fill="#fff" font-size="18" font-family="serif" opacity="0.6">BODY</text>
+  <!-- Chelsea boot body — side profile, chestnut base colour -->
+  <!-- Main boot shaft and vamp -->
+  <path d="
+    M 245 180
+    C 240 180, 220 185, 215 200
+    L 200 320
+    C 195 380, 190 420, 185 460
+    C 180 500, 170 540, 160 570
+    C 150 595, 140 610, 130 620
+    C 120 630, 115 635, 115 640
+    L 110 650
+    C 108 655, 108 660, 112 662
+    L 140 665
+    C 170 665, 250 665, 350 665
+    C 400 665, 430 665, 450 665
+    L 480 662
+    C 485 660, 485 655, 483 650
+    L 478 640
+    C 475 630, 470 615, 465 600
+    C 458 575, 448 540, 440 500
+    C 432 460, 428 420, 425 380
+    L 415 300
+    C 412 270, 408 240, 400 215
+    C 395 195, 385 185, 375 180
+    Z
+  " fill="#8B6340" stroke="#5C3A1E" stroke-width="2"/>
+  <!-- Boot shaft top opening curve -->
+  <path d="M 245 180 C 270 172, 320 168, 345 170 C 360 172, 370 176, 375 180"
+    fill="none" stroke="#5C3A1E" stroke-width="2"/>
+  <!-- Ankle crease detail -->
+  <path d="M 225 350 C 260 345, 350 342, 400 348" fill="none" stroke="#6B4226" stroke-width="1" opacity="0.4"/>
+  <!-- Vamp line -->
+  <path d="M 195 480 C 230 470, 320 465, 430 475" fill="none" stroke="#6B4226" stroke-width="1.5" opacity="0.5"/>
+  <!-- Shaft side seam -->
+  <path d="M 310 180 L 305 350" fill="none" stroke="#6B4226" stroke-width="1" opacity="0.3"/>
+  <!-- Subtle highlight on shaft -->
+  <path d="M 270 200 C 265 250, 260 320, 250 400 C 240 460, 220 530, 200 580"
+    fill="none" stroke="#A0825A" stroke-width="3" opacity="0.2"/>
 </svg>
