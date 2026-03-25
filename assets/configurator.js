@@ -91,7 +91,7 @@ class BootConfigurator extends Component {
 
   /**
    * Build the composite image URL from current selections.
-   * Pattern: configurator-boot-{toe}-{heel}-{sole}-{leather}-{elastic}.png
+   * Pattern: configurator-boot-{toe}-{heel}-{sole}-{leather}-{elastic}-{tug}.png
    * @returns {string}
    */
   #buildCompositeUrl() {
@@ -100,8 +100,9 @@ class BootConfigurator extends Component {
     const sole = this.#getSelection('config-sole') || 'leather';
     const leather = this.#getSelection('config-leather') || 'chestnut';
     const elastic = this.#getSelection('config-elastic') || 'brown';
+    const tug = this.#getSelection('config-tug') || 'red';
 
-    return `${this.#assetBase}${toe}-${heel}-${sole}-${leather}-${elastic}.png`;
+    return `${this.#assetBase}${toe}-${heel}-${sole}-${leather}-${elastic}-${tug}.png`;
   }
 
   // ─── Tab / Step Navigation ─────────────────────────────

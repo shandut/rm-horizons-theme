@@ -319,20 +319,28 @@
       <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
         id="ConfigPanel-finishing" aria-labelledby="ConfigTab-finishing" hidden>
 
-        {%- comment -%} Tug colour (selection only — doesn't change preview) {%- endcomment -%}
+        {%- comment -%} Tug colour {%- endcomment -%}
         <fieldset class="Configurator__fieldset">
           <legend class="Configurator__legend">Tug colour</legend>
           <div class="Configurator__option-grid Configurator__option-grid--inline">
             <label class="Configurator__option-card Configurator__option-card--small">
               <input type="radio" name="config-tug" value="red" checked
+                data-layer="composite"
                 data-label="Red" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #B22222;"></span>
+              <span class="Configurator__option-visual Configurator__option-visual--small">
+                <img src="{{ 'configurator-tug-red.png' | asset_url }}" alt="" width="60" height="60"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
               <span class="Configurator__option-label">Red</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
               <input type="radio" name="config-tug" value="blue"
+                data-layer="composite"
                 data-label="Navy Blue" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #1E3A5F;"></span>
+              <span class="Configurator__option-visual Configurator__option-visual--small">
+                <img src="{{ 'configurator-tug-blue.png' | asset_url }}" alt="" width="60" height="60"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
               <span class="Configurator__option-label">Navy Blue</span>
             </label>
           </div>
@@ -413,7 +421,7 @@
     <div class="Configurator__preview">
       <div class="Configurator__preview-canvas" ref="previewCanvas">
         <img ref="bootPreview" class="Configurator__boot-image"
-          src="{{ 'configurator-boot-round-flat-leather-chestnut-brown.png' | asset_url }}" alt="Your configured Craftsman boot"
+          src="{{ 'configurator-boot-round-flat-leather-chestnut-brown-red.png' | asset_url }}" alt="Your configured Craftsman boot"
           draggable="false">
         <div ref="layerEngraving" class="Configurator__layer Configurator__layer--engraving"
           aria-hidden="true"></div>
@@ -792,6 +800,11 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .Configurator__option-visual--small {
+    width: 60px;
+    height: 60px;
   }
 
   .Configurator__option-label {
