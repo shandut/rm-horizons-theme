@@ -30,12 +30,7 @@ const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
  *   nextButton: HTMLButtonElement,
  *   addToCartButton: HTMLButtonElement,
  *   priceValue: HTMLElement,
- *   layerBody: HTMLImageElement,
- *   layerToe: HTMLImageElement,
- *   layerHeel: HTMLImageElement,
- *   layerSole: HTMLImageElement,
- *   layerTug: HTMLImageElement,
- *   layerElastic: HTMLImageElement,
+ *   bootPreview: HTMLImageElement,
  *   layerEngraving: HTMLElement,
  *   liveRegion: HTMLElement,
  *   engravingInput: HTMLInputElement,
@@ -228,15 +223,13 @@ class BootConfigurator extends Component {
     const input = /** @type {HTMLInputElement} */ (event.target);
     const layer = input.dataset.layer;
     const imageSrc = input.dataset.image;
-    const bodyFilter = input.dataset.bodyFilter;
 
-    if (layer === 'body' && bodyFilter !== undefined) {
-      // Leather/colour step — apply CSS filter to body layer
-      this.#updateBodyFilter(bodyFilter);
-    } else if (imageSrc && layer) {
-      // Swap the corresponding image layer
-      this.#swapLayer(layer, imageSrc);
+    if (layer === 'boot' && imageSrc) {
+      // Leather/colour step — swap the main boot preview image
+      this.#swapBootPreview(imageSrc);
     }
+    // Toe/heel/sole/tug/elastic selections don't change the main preview
+    // (they show as selected thumbnails in option cards only)
 
     this.#updatePrice();
     this.#updateNavButtons();
@@ -271,33 +264,16 @@ class BootConfigurator extends Component {
     }
   }
 
-  // ─── Preview Layer Management ──────────────────────────
+  // ─── Preview Management ─────────────────────────────────
 
   /**
-   * Layer ref name mapping.
-   * @type {Record<string, string>}
-   */
-  static LAYER_REFS = {
-    toe: 'layerToe',
-    heel: 'layerHeel',
-    sole: 'layerSole',
-    tug: 'layerTug',
-    elastic: 'layerElastic',
-  };
-
-  /**
-   * Swap an image layer with a fade transition.
-   * @param {string} layerName
+   * Swap the main boot preview image with a crossfade.
    * @param {string} newSrc
    */
-  #swapLayer(layerName, newSrc) {
-    const refName = BootConfigurator.LAYER_REFS[layerName];
-    if (!refName) return;
-
-    const img = /** @type {HTMLImageElement | undefined} */ (this.refs[refName]);
+  #swapBootPreview(newSrc) {
+    const img = this.refs.bootPreview;
     if (!img) return;
 
-    // Check reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
@@ -306,37 +282,19 @@ class BootConfigurator extends Component {
     }
 
     // Fade out → swap src → fade in
-    img.classList.add('Configurator__layer--fading');
+    img.style.opacity = '0';
 
-    const onTransitionEnd = () => {
-      img.removeEventListener('transitionend', onTransitionEnd);
+    setTimeout(() => {
       img.src = newSrc;
-
-      // Wait for image load before fading back in
       img.onload = () => {
-        img.classList.remove('Configurator__layer--fading');
+        img.style.opacity = '1';
         img.onload = null;
       };
-
-      // Fallback: if image fails to load, still fade back in
       img.onerror = () => {
-        img.classList.remove('Configurator__layer--fading');
-        img.style.opacity = '0.1';
+        img.style.opacity = '1';
         img.onerror = null;
       };
-    };
-
-    img.addEventListener('transitionend', onTransitionEnd);
-  }
-
-  /**
-   * Apply CSS filter to the body layer for leather colour.
-   * @param {string} filterValue
-   */
-  #updateBodyFilter(filterValue) {
-    if (this.refs.layerBody) {
-      this.refs.layerBody.style.filter = filterValue;
-    }
+    }, 300);
   }
 
   // ─── Price Calculation ─────────────────────────────────
