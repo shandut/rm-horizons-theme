@@ -16,6 +16,7 @@
   data-variant-id="{{ variant.id }}"
   data-product-id="{{ product.id }}"
   data-base-price="{{ base_price }}"
+  data-asset-base="{{ 'configurator-boot-' | asset_url | split: 'configurator-boot-' | first }}configurator-boot-"
 >
   {%- comment -%} Phase progress indicator {%- endcomment -%}
   <nav class="Configurator__phases" aria-label="Configuration progress">
@@ -77,6 +78,38 @@
         </button>
       </div>
 
+      {%- comment -%} Selection summary — running list of choices made so far {%- endcomment -%}
+      <div class="Configurator__summary" ref="selectionSummary" aria-label="Your selections">
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="toe" hidden>
+          <span class="Configurator__summary-label">Toe:</span>
+          <span class="Configurator__summary-value" ref="summaryToe">Round Toe</span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="heel" hidden>
+          <span class="Configurator__summary-label">Heel:</span>
+          <span class="Configurator__summary-value" ref="summaryHeel"></span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="sole" hidden>
+          <span class="Configurator__summary-label">Sole:</span>
+          <span class="Configurator__summary-value" ref="summarySole"></span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="leather" hidden>
+          <span class="Configurator__summary-label">Leather:</span>
+          <span class="Configurator__summary-value" ref="summaryLeather"></span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="elastic" hidden>
+          <span class="Configurator__summary-label">Elastic:</span>
+          <span class="Configurator__summary-value" ref="summaryElastic"></span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="tug" hidden>
+          <span class="Configurator__summary-label">Tug:</span>
+          <span class="Configurator__summary-value" ref="summaryTug"></span>
+        </span>
+        <span class="Configurator__summary-item" ref="summaryItems[]" data-step="engraving" hidden>
+          <span class="Configurator__summary-label">Engraving:</span>
+          <span class="Configurator__summary-value" ref="summaryEngraving"></span>
+        </span>
+      </div>
+
       {%- comment -%} ═══ Panel 1: Toe Shape ═══ {%- endcomment -%}
       <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
         id="ConfigPanel-toe" aria-labelledby="ConfigTab-toe">
@@ -86,7 +119,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-toe" value="round" checked
-                data-layer="toe" data-image="{{ 'configurator-toe-round.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-toe-round.png' | asset_url }}"
                 data-price-adjust="0" data-label="Round Toe"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -99,7 +132,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-toe" value="chisel"
-                data-layer="toe" data-image="{{ 'configurator-toe-chisel.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-toe-chisel.png' | asset_url }}"
                 data-price-adjust="0" data-label="Chisel Toe"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -112,7 +145,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-toe" value="square"
-                data-layer="toe" data-image="{{ 'configurator-toe-square.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-toe-square.png' | asset_url }}"
                 data-price-adjust="0" data-label="Square Toe"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -136,7 +169,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-heel" value="flat" checked
-                data-layer="heel" data-image="{{ 'configurator-heel-flat.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-heel-flat.png' | asset_url }}"
                 data-price-adjust="0" data-label="Flat Heel"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -149,7 +182,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-heel" value="block"
-                data-layer="heel" data-image="{{ 'configurator-heel-block.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-heel-block.png' | asset_url }}"
                 data-price-adjust="0" data-label="Block Heel"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -162,7 +195,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-heel" value="cuban"
-                data-layer="heel" data-image="{{ 'configurator-heel-cuban.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-heel-cuban.png' | asset_url }}"
                 data-price-adjust="5000" data-label="Cuban Heel"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -187,7 +220,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-sole" value="leather" checked
-                data-layer="sole" data-image="{{ 'configurator-sole-leather.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-sole-leather.png' | asset_url }}"
                 data-price-adjust="0" data-label="Sewn Welt Leather"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -200,7 +233,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-sole" value="rubber"
-                data-layer="sole" data-image="{{ 'configurator-sole-rubber.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-sole-rubber.png' | asset_url }}"
                 data-price-adjust="0" data-label="Comfort Rubber"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -213,7 +246,7 @@
 
             <label class="Configurator__option-card">
               <input type="radio" name="config-sole" value="brass"
-                data-layer="sole" data-image="{{ 'configurator-sole-brass.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-sole-brass.png' | asset_url }}"
                 data-price-adjust="3000" data-label="Brass-Screwed"
                 on:change="/handleOptionChange">
               <span class="Configurator__option-visual">
@@ -238,7 +271,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="chestnut" checked
-                data-layer="boot" data-image="{{ 'configurator-leather-chestnut.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-leather-chestnut.png' | asset_url }}"
                 data-price-adjust="0" data-label="Chestnut Yearling"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #8B4513;"></span>
@@ -248,7 +281,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="black"
-                data-layer="boot" data-image="{{ 'configurator-leather-black.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-leather-black.png' | asset_url }}"
                 data-price-adjust="0" data-label="Black Yearling"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
@@ -258,7 +291,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="tobacco"
-                data-layer="boot" data-image="{{ 'configurator-leather-tobacco.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-leather-tobacco.png' | asset_url }}"
                 data-price-adjust="2500" data-label="Tobacco Suede"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #6B4226;"></span>
@@ -269,7 +302,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="cognac"
-                data-layer="boot" data-image="{{ 'configurator-leather-cognac.png' | asset_url }}"
+                data-layer="composite" data-image="{{ 'configurator-leather-cognac.png' | asset_url }}"
                 data-price-adjust="7500" data-label="Cognac Kangaroo"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #A0522D;"></span>
@@ -319,25 +352,25 @@
           <legend class="Configurator__legend">Elastic colour</legend>
           <div class="Configurator__option-grid Configurator__option-grid--inline">
             <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-elastic" value="tan" checked
-                data-layer="elastic" data-image="{{ 'configurator-elastic-tan.png' | asset_url }}"
-                data-label="Tan" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #C19A6B;"></span>
-              <span class="Configurator__option-label">Tan</span>
+              <input type="radio" name="config-elastic" value="brown" checked
+                data-layer="composite"
+                data-label="Brown" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #5C3A1E;"></span>
+              <span class="Configurator__option-label">Brown</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-elastic" value="black"
-                data-layer="elastic" data-image="{{ 'configurator-elastic-black.png' | asset_url }}"
-                data-label="Black" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
-              <span class="Configurator__option-label">Black</span>
+              <input type="radio" name="config-elastic" value="red"
+                data-layer="composite"
+                data-label="Red" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #B22222;"></span>
+              <span class="Configurator__option-label">Red</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-elastic" value="brown"
-                data-layer="elastic" data-image="{{ 'configurator-elastic-brown.png' | asset_url }}"
-                data-label="Dark Brown" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #3E1707;"></span>
-              <span class="Configurator__option-label">Dark Brown</span>
+              <input type="radio" name="config-elastic" value="blue"
+                data-layer="composite"
+                data-label="Blue" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #1E3A5F;"></span>
+              <span class="Configurator__option-label">Navy Blue</span>
             </label>
           </div>
         </fieldset>
@@ -389,7 +422,7 @@
     <div class="Configurator__preview">
       <div class="Configurator__preview-canvas" ref="previewCanvas">
         <img ref="bootPreview" class="Configurator__boot-image"
-          src="{{ 'configurator-body.png' | asset_url }}" alt="Your configured Craftsman boot"
+          src="{{ 'configurator-boot-round-flat-leather-chestnut-brown.png' | asset_url }}" alt="Your configured Craftsman boot"
           draggable="false">
         <div ref="layerEngraving" class="Configurator__layer Configurator__layer--engraving"
           aria-hidden="true"></div>
@@ -609,6 +642,50 @@
   .Configurator__step-tab:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: -2px;
+  }
+
+  /* ── Selection summary ── */
+  .Configurator__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    padding: 0.75rem 0;
+    margin-bottom: 0.5rem;
+    min-height: 1.75rem;
+  }
+
+  .Configurator__summary:empty,
+  .Configurator__summary:not(:has(.Configurator__summary-item:not([hidden]))) {
+    display: none;
+  }
+
+  .Configurator__summary-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: var(--color-foreground, #4C4039);
+    background: #f5f0e8;
+    padding: 0.3rem 0.65rem;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .Configurator__summary-item[hidden] {
+    display: none;
+  }
+
+  .Configurator__summary-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    opacity: 0.65;
+  }
+
+  .Configurator__summary-value {
+    font-weight: 500;
   }
 
   /* ── Step panels ── */

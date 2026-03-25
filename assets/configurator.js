@@ -2,7 +2,7 @@ import { Component } from '@theme/component';
 import { CartAddEvent } from '@theme/events';
 
 /**
- * Step labels used for navigation button text.
+ * Step labels for navigation button text.
  * @type {string[]}
  */
 const STEP_LABELS = ['Toe Shape', 'Heel', 'Sole', 'Leather & Colour', 'Finishing'];
@@ -14,13 +14,17 @@ const STEP_LABELS = ['Toe Shape', 'Heel', 'Sole', 'Leather & Colour', 'Finishing
 const STEP_PHASES = ['build', 'build', 'build', 'customise', 'personalise'];
 
 /**
- * Phase index lookup for the progress indicator.
+ * Phase index lookup.
  * @type {Record<string, number>}
  */
 const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
 
 /**
- * Boot Configurator — 5-step Made to Order wizard with layered preview.
+ * Boot Configurator — 5-step MTO wizard with composite preview images.
+ *
+ * The preview shows a single pre-generated image for each combination of
+ * toe × heel × sole × leather × elastic. The filename is constructed from
+ * the current selections.
  *
  * @typedef {{
  *   stepTabs: HTMLButtonElement[],
@@ -37,7 +41,15 @@ const PHASE_INDEX = { build: 0, customise: 1, personalise: 2 };
  *   engravingCount: HTMLElement,
  *   previewCanvas: HTMLElement,
  *   soleView: HTMLElement,
- *   soleEngravingText: HTMLElement
+ *   soleEngravingText: HTMLElement,
+ *   summaryItems: HTMLElement[],
+ *   summaryToe: HTMLElement,
+ *   summaryHeel: HTMLElement,
+ *   summarySole: HTMLElement,
+ *   summaryLeather: HTMLElement,
+ *   summaryElastic: HTMLElement,
+ *   summaryTug: HTMLElement,
+ *   summaryEngraving: HTMLElement
  * }} ConfiguratorRefs
  *
  * @extends {Component<ConfiguratorRefs>}
@@ -49,14 +61,47 @@ class BootConfigurator extends Component {
   /** @type {number} */
   #basePrice = 0;
 
+  /** @type {string} */
+  #assetBase = '';
+
   /** @type {number | undefined} */
   #announceTimeout;
 
   connectedCallback() {
     super.connectedCallback();
     this.#basePrice = parseInt(this.dataset.basePrice || '795', 10) * 100;
+    this.#assetBase = this.dataset.assetBase || '';
     this.#updatePrice();
     this.#updateNavButtons();
+  }
+
+  // ─── Current Selections ────────────────────────────────
+
+  /**
+   * Get the current value of a radio group.
+   * @param {string} name
+   * @returns {string}
+   */
+  #getSelection(name) {
+    const checked = /** @type {HTMLInputElement | null} */ (
+      this.querySelector(`input[name="${name}"]:checked`)
+    );
+    return checked?.value || '';
+  }
+
+  /**
+   * Build the composite image URL from current selections.
+   * Pattern: configurator-boot-{toe}-{heel}-{sole}-{leather}-{elastic}.png
+   * @returns {string}
+   */
+  #buildCompositeUrl() {
+    const toe = this.#getSelection('config-toe') || 'round';
+    const heel = this.#getSelection('config-heel') || 'flat';
+    const sole = this.#getSelection('config-sole') || 'leather';
+    const leather = this.#getSelection('config-leather') || 'chestnut';
+    const elastic = this.#getSelection('config-elastic') || 'brown';
+
+    return `${this.#assetBase}${toe}-${heel}-${sole}-${leather}-${elastic}.png`;
   }
 
   // ─── Tab / Step Navigation ─────────────────────────────
@@ -111,18 +156,14 @@ class BootConfigurator extends Component {
     this.#switchToStep(nextIndex);
   }
 
-  /**
-   * Go to next step.
-   */
+  /** Go to next step. */
   nextStep() {
     if (this.#currentStep < STEP_LABELS.length - 1) {
       this.#switchToStep(this.#currentStep + 1);
     }
   }
 
-  /**
-   * Go to previous step.
-   */
+  /** Go to previous step. */
   prevStep() {
     if (this.#currentStep > 0) {
       this.#switchToStep(this.#currentStep - 1);
@@ -130,7 +171,7 @@ class BootConfigurator extends Component {
   }
 
   /**
-   * Switch to a specific step index.
+   * Switch to a specific step.
    * @param {number} index
    */
   #switchToStep(index) {
@@ -149,8 +190,7 @@ class BootConfigurator extends Component {
 
     // Update panels
     for (const [i, panel] of stepPanels.entries()) {
-      const isActive = i === index;
-      panel.hidden = !isActive;
+      panel.hidden = i !== index;
     }
 
     // Update phase indicator
@@ -169,7 +209,6 @@ class BootConfigurator extends Component {
       }
     }
 
-    // Update navigation buttons
     this.#updateNavButtons();
 
     // Focus first focusable in panel
@@ -181,7 +220,6 @@ class BootConfigurator extends Component {
       }
     }
 
-    // Announce step change
     this.#announce(`Step ${index + 1} of ${STEP_LABELS.length}: ${STEP_LABELS[index]}`);
   }
 
@@ -193,9 +231,7 @@ class BootConfigurator extends Component {
     const isFirst = this.#currentStep === 0;
     const isLast = this.#currentStep === STEP_LABELS.length - 1;
 
-    if (prevButton) {
-      prevButton.hidden = isFirst;
-    }
+    if (prevButton) prevButton.hidden = isFirst;
 
     if (nextButton) {
       nextButton.hidden = isLast;
@@ -208,7 +244,7 @@ class BootConfigurator extends Component {
     if (addToCartButton) {
       addToCartButton.hidden = !isLast;
       if (isLast) {
-        addToCartButton.textContent = `Add to Cart — ${this.#formatPrice(this.#calculateTotal())}`;
+        addToCartButton.textContent = `Add to Cart \u2014 ${this.#formatPrice(this.#calculateTotal())}`;
       }
     }
   }
@@ -216,23 +252,14 @@ class BootConfigurator extends Component {
   // ─── Option Selection ──────────────────────────────────
 
   /**
-   * Handles radio option change — updates preview and price.
+   * Handles any option change — updates preview + summary.
    * @param {Event} event
    */
   handleOptionChange(event) {
-    const input = /** @type {HTMLInputElement} */ (event.target);
-    const layer = input.dataset.layer;
-    const imageSrc = input.dataset.image;
-
-    if (layer === 'boot' && imageSrc) {
-      // Leather/colour step — swap the main boot preview image
-      this.#swapBootPreview(imageSrc);
-    }
-    // Toe/heel/sole/tug/elastic selections don't change the main preview
-    // (they show as selected thumbnails in option cards only)
-
+    this.#updateCompositePreview();
     this.#updatePrice();
     this.#updateNavButtons();
+    this.#updateSummary();
   }
 
   /**
@@ -243,7 +270,7 @@ class BootConfigurator extends Component {
     const input = /** @type {HTMLInputElement} */ (event.target);
     const text = input.value;
 
-    // Update side-view preview
+    // Update side-view engraving overlay
     if (this.refs.layerEngraving) {
       this.refs.layerEngraving.textContent = text;
     }
@@ -253,7 +280,7 @@ class BootConfigurator extends Component {
       this.refs.soleEngravingText.textContent = text;
     }
 
-    // Show/hide sole view based on whether there's engraving text
+    // Show/hide sole view
     if (this.refs.soleView) {
       this.refs.soleView.hidden = text.length === 0;
     }
@@ -262,35 +289,84 @@ class BootConfigurator extends Component {
     if (this.refs.engravingCount) {
       this.refs.engravingCount.textContent = `${text.length} / 20`;
     }
+
+    this.#updateSummary();
   }
 
-  // ─── Preview Management ─────────────────────────────────
+  // ─── Selection Summary ──────────────────────────────────
 
   /**
-   * Swap the main boot preview image with a crossfade.
-   * @param {string} newSrc
+   * Map of radio group names to summary ref names.
+   * @type {Array<{name: string, ref: string, step: string}>}
    */
-  #swapBootPreview(newSrc) {
+  static SUMMARY_MAP = [
+    { name: 'config-toe', ref: 'summaryToe', step: 'toe' },
+    { name: 'config-heel', ref: 'summaryHeel', step: 'heel' },
+    { name: 'config-sole', ref: 'summarySole', step: 'sole' },
+    { name: 'config-leather', ref: 'summaryLeather', step: 'leather' },
+    { name: 'config-elastic', ref: 'summaryElastic', step: 'elastic' },
+    { name: 'config-tug', ref: 'summaryTug', step: 'tug' },
+  ];
+
+  /**
+   * Update the selection summary chips based on current radio values.
+   */
+  #updateSummary() {
+    for (const { name, ref, step } of BootConfigurator.SUMMARY_MAP) {
+      const checked = /** @type {HTMLInputElement | null} */ (
+        this.querySelector(`input[name="${name}"]:checked`)
+      );
+      const summaryEl = this.refs[ref];
+      const itemEl = summaryEl?.closest('.Configurator__summary-item');
+
+      if (checked && summaryEl && itemEl) {
+        const label = checked.dataset.label || checked.value;
+        summaryEl.textContent = label;
+        itemEl.hidden = false;
+      }
+    }
+
+    // Engraving
+    const engravingText = this.refs.engravingInput?.value?.trim();
+    const engravingSummary = this.refs.summaryEngraving;
+    const engravingItem = engravingSummary?.closest('.Configurator__summary-item');
+    if (engravingSummary && engravingItem) {
+      if (engravingText) {
+        engravingSummary.textContent = `"${engravingText}"`;
+        engravingItem.hidden = false;
+      } else {
+        engravingItem.hidden = true;
+      }
+    }
+  }
+
+  // ─── Composite Preview ─────────────────────────────────
+
+  /**
+   * Update the boot preview to the composite matching current selections.
+   */
+  #updateCompositePreview() {
+    const url = this.#buildCompositeUrl();
     const img = this.refs.bootPreview;
-    if (!img) return;
+    if (!img || img.src === url) return;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
-      img.src = newSrc;
+      img.src = url;
       return;
     }
 
-    // Fade out → swap src → fade in
+    // Crossfade: fade out → swap → fade in
     img.style.opacity = '0';
-
     setTimeout(() => {
-      img.src = newSrc;
+      img.src = url;
       img.onload = () => {
         img.style.opacity = '1';
         img.onload = null;
       };
       img.onerror = () => {
+        // Fallback to base boot if composite not found
         img.style.opacity = '1';
         img.onerror = null;
       };
@@ -300,64 +376,54 @@ class BootConfigurator extends Component {
   // ─── Price Calculation ─────────────────────────────────
 
   /**
-   * Calculate total price in cents from all checked radio inputs.
+   * Calculate total price in cents.
    * @returns {number}
    */
   #calculateTotal() {
     let total = this.#basePrice;
-
     const checkedInputs = this.querySelectorAll('input[type="radio"]:checked[data-price-adjust]');
     for (const input of checkedInputs) {
-      const adjust = parseInt(/** @type {HTMLInputElement} */ (input).dataset.priceAdjust || '0', 10);
-      total += adjust;
+      total += parseInt(/** @type {HTMLInputElement} */ (input).dataset.priceAdjust || '0', 10);
     }
-
     return total;
   }
 
-  /**
-   * Update the displayed price.
-   */
+  /** Update the displayed price. */
   #updatePrice() {
     const total = this.#calculateTotal();
-
     if (this.refs.priceValue) {
       this.refs.priceValue.textContent = this.#formatPrice(total);
     }
   }
 
   /**
-   * Format cents as a dollar string.
+   * Format cents as dollar string.
    * @param {number} cents
    * @returns {string}
    */
   #formatPrice(cents) {
-    const dollars = cents / 100;
-    return `$${dollars.toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    return `$${(cents / 100).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   }
 
   // ─── Add to Cart ───────────────────────────────────────
 
   /**
-   * Add the configured boot to cart with line item properties.
+   * Add configured boot to cart with line item properties.
    */
   async addToCart() {
     const { addToCartButton } = this.refs;
     const variantId = this.dataset.variantId;
-
     if (!variantId || !addToCartButton) return;
 
-    // Gather selections
+    // Gather selections with human-readable labels
     const properties = {};
-
-    // Radio-based selections
     const radioGroups = [
       { name: 'config-toe', property: 'Toe Shape' },
       { name: 'config-heel', property: 'Heel' },
       { name: 'config-sole', property: 'Sole' },
       { name: 'config-leather', property: 'Leather' },
-      { name: 'config-tug', property: 'Tug Colour' },
       { name: 'config-elastic', property: 'Elastic Colour' },
+      { name: 'config-tug', property: 'Tug Colour' },
     ];
 
     for (const { name, property } of radioGroups) {
@@ -370,10 +436,9 @@ class BootConfigurator extends Component {
     }
 
     // Engraving
-    const engravingText = this.refs.engravingInput?.value?.trim() || '';
-    properties['Engraving'] = engravingText || 'None';
+    properties['Engraving'] = this.refs.engravingInput?.value?.trim() || 'None';
 
-    // Hidden properties (prefixed with _ so they don't show in cart)
+    // Hidden properties
     const totalCents = this.#calculateTotal();
     properties['_configurator_price'] = String(totalCents / 100);
     properties['_configuration_id'] = `cfg_${Date.now().toString(36)}`;
@@ -393,24 +458,19 @@ class BootConfigurator extends Component {
 
       const response = await fetch(Theme.routes.cart_add_url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(body),
       });
 
       const data = await response.json();
 
       if (data.status) {
-        // Error response
         this.#announce(`Error: ${data.message}`);
         addToCartButton.disabled = false;
         addToCartButton.textContent = originalText;
         return;
       }
 
-      // Success — dispatch event so cart drawer/icon badge updates
       this.dispatchEvent(
         new CartAddEvent({}, this.id, {
           source: 'boot-configurator',
@@ -437,21 +497,15 @@ class BootConfigurator extends Component {
   // ─── Accessibility ─────────────────────────────────────
 
   /**
-   * Announce a message to screen readers via the live region.
+   * Announce to screen readers via live region.
    * @param {string} text
    */
   #announce(text) {
-    if (this.#announceTimeout) {
-      clearTimeout(this.#announceTimeout);
-    }
-
+    if (this.#announceTimeout) clearTimeout(this.#announceTimeout);
     if (this.refs.liveRegion) {
       this.refs.liveRegion.textContent = text;
-
       this.#announceTimeout = setTimeout(() => {
-        if (this.refs.liveRegion) {
-          this.refs.liveRegion.textContent = '';
-        }
+        if (this.refs.liveRegion) this.refs.liveRegion.textContent = '';
       }, 5000);
     }
   }
