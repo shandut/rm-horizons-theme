@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <path d="M220 100 C180 100 160 130 155 180 L145 350 C140 400 130 450 125 500 L120 600 C118 650 140 720 180 740 L420 740 C460 720 482 650 480 600 L475 500 C470 450 460 400 455 350 L445 180 C440 130 420 100 380 100 Z" fill="#8B6340" opacity="0.85"/>
+  <text x="300" y="420" text-anchor="middle" fill="#fff" font-size="18" font-family="serif" opacity="0.6">BODY</text>
+</svg>

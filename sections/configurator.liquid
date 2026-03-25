@@ -1,0 +1,953 @@
+{%- comment -%}
+  Boot Configurator — "Design Your Perfect Boot"
+  5-step Made to Order configurator with layered visual preview.
+  Used on the product.configurator.json template.
+{%- endcomment -%}
+
+{% liquid
+  assign product = product
+  assign variant = product.selected_or_first_available_variant
+  assign base_price = 795
+%}
+
+<boot-configurator
+  class="Configurator"
+  id="Configurator-{{ section.id }}"
+  data-variant-id="{{ variant.id }}"
+  data-product-id="{{ product.id }}"
+  data-base-price="{{ base_price }}"
+>
+  {%- comment -%} Phase progress indicator {%- endcomment -%}
+  <nav class="Configurator__phases" aria-label="Configuration progress">
+    <ol class="Configurator__phases-list">
+      <li class="Configurator__phase Configurator__phase--active" ref="phases[]" data-phase="build" aria-current="step">
+        <span class="Configurator__phase-number">1</span>
+        <span class="Configurator__phase-label">Build</span>
+      </li>
+      <li class="Configurator__phase" ref="phases[]" data-phase="customise">
+        <span class="Configurator__phase-number">2</span>
+        <span class="Configurator__phase-label">Customise</span>
+      </li>
+      <li class="Configurator__phase" ref="phases[]" data-phase="personalise">
+        <span class="Configurator__phase-number">3</span>
+        <span class="Configurator__phase-label">Personalise</span>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="Configurator__layout">
+
+    {%- comment -%} LEFT: Options panel {%- endcomment -%}
+    <div class="Configurator__options">
+
+      <h1 class="Configurator__heading">Design Your Perfect Boot</h1>
+      <p class="Configurator__subheading">Craftsman Made to Order</p>
+
+      {%- comment -%} Step tabs {%- endcomment -%}
+      <div class="Configurator__step-nav" role="tablist" aria-label="Configuration steps">
+        <button class="Configurator__step-tab Configurator__step-tab--active" role="tab" type="button"
+          ref="stepTabs[]" aria-selected="true" aria-controls="ConfigPanel-toe" id="ConfigTab-toe"
+          tabindex="0" data-step="0" data-phase="build"
+          on:click="/activateStep" on:keydown="/handleStepKeydown">
+          1. Toe Shape
+        </button>
+        <button class="Configurator__step-tab" role="tab" type="button"
+          ref="stepTabs[]" aria-selected="false" aria-controls="ConfigPanel-heel" id="ConfigTab-heel"
+          tabindex="-1" data-step="1" data-phase="build"
+          on:click="/activateStep" on:keydown="/handleStepKeydown">
+          2. Heel
+        </button>
+        <button class="Configurator__step-tab" role="tab" type="button"
+          ref="stepTabs[]" aria-selected="false" aria-controls="ConfigPanel-sole" id="ConfigTab-sole"
+          tabindex="-1" data-step="2" data-phase="build"
+          on:click="/activateStep" on:keydown="/handleStepKeydown">
+          3. Sole
+        </button>
+        <button class="Configurator__step-tab" role="tab" type="button"
+          ref="stepTabs[]" aria-selected="false" aria-controls="ConfigPanel-leather" id="ConfigTab-leather"
+          tabindex="-1" data-step="3" data-phase="customise"
+          on:click="/activateStep" on:keydown="/handleStepKeydown">
+          4. Leather &amp; Colour
+        </button>
+        <button class="Configurator__step-tab" role="tab" type="button"
+          ref="stepTabs[]" aria-selected="false" aria-controls="ConfigPanel-finishing" id="ConfigTab-finishing"
+          tabindex="-1" data-step="4" data-phase="personalise"
+          on:click="/activateStep" on:keydown="/handleStepKeydown">
+          5. Finishing
+        </button>
+      </div>
+
+      {%- comment -%} ═══ Panel 1: Toe Shape ═══ {%- endcomment -%}
+      <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
+        id="ConfigPanel-toe" aria-labelledby="ConfigTab-toe">
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Choose your toe shape</legend>
+          <div class="Configurator__option-grid">
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-toe" value="round" checked
+                data-layer="toe" data-image="{{ 'configurator-toe-round.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Round Toe"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-toe-round.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Round Toe</span>
+              <span class="Configurator__option-desc">Classic RM Williams profile</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-toe" value="chisel"
+                data-layer="toe" data-image="{{ 'configurator-toe-chisel.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Chisel Toe"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-toe-chisel.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Chisel Toe</span>
+              <span class="Configurator__option-desc">Angular, contemporary</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-toe" value="square"
+                data-layer="toe" data-image="{{ 'configurator-toe-square.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Square Toe"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-toe-square.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Square Toe</span>
+              <span class="Configurator__option-desc">Bold, structured</span>
+            </label>
+
+          </div>
+        </fieldset>
+      </div>
+
+      {%- comment -%} ═══ Panel 2: Heel ═══ {%- endcomment -%}
+      <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
+        id="ConfigPanel-heel" aria-labelledby="ConfigTab-heel" hidden>
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Choose your heel</legend>
+          <div class="Configurator__option-grid">
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-heel" value="flat" checked
+                data-layer="heel" data-image="{{ 'configurator-heel-flat.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Flat Heel"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-heel-flat.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Flat Heel</span>
+              <span class="Configurator__option-desc">Low-profile everyday wear</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-heel" value="block"
+                data-layer="heel" data-image="{{ 'configurator-heel-block.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Block Heel"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-heel-block.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Block Heel</span>
+              <span class="Configurator__option-desc">Classic dress boot</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-heel" value="cuban"
+                data-layer="heel" data-image="{{ 'configurator-heel-cuban.svg' | asset_url }}"
+                data-price-adjust="5000" data-label="Cuban Heel"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-heel-cuban.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Cuban Heel</span>
+              <span class="Configurator__option-desc">Elevated statement</span>
+              <span class="Configurator__option-price">+$50</span>
+            </label>
+
+          </div>
+        </fieldset>
+      </div>
+
+      {%- comment -%} ═══ Panel 3: Sole ═══ {%- endcomment -%}
+      <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
+        id="ConfigPanel-sole" aria-labelledby="ConfigTab-sole" hidden>
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Choose your sole</legend>
+          <div class="Configurator__option-grid">
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-sole" value="leather" checked
+                data-layer="sole" data-image="{{ 'configurator-sole-leather.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Sewn Welt Leather"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-sole-leather.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Sewn Welt Leather</span>
+              <span class="Configurator__option-desc">Traditional craftsmanship</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-sole" value="rubber"
+                data-layer="sole" data-image="{{ 'configurator-sole-rubber.svg' | asset_url }}"
+                data-price-adjust="0" data-label="Comfort Rubber"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-sole-rubber.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Comfort Rubber</span>
+              <span class="Configurator__option-desc">All-day wearability</span>
+            </label>
+
+            <label class="Configurator__option-card">
+              <input type="radio" name="config-sole" value="brass"
+                data-layer="sole" data-image="{{ 'configurator-sole-brass.svg' | asset_url }}"
+                data-price-adjust="3000" data-label="Brass-Screwed"
+                on:change="/handleOptionChange">
+              <span class="Configurator__option-visual">
+                <img src="{{ 'configurator-sole-brass.svg' | asset_url }}" alt="" width="80" height="80"
+                  loading="lazy" onerror="this.style.display='none'">
+              </span>
+              <span class="Configurator__option-label">Brass-Screwed</span>
+              <span class="Configurator__option-desc">Heritage durability</span>
+              <span class="Configurator__option-price">+$30</span>
+            </label>
+
+          </div>
+        </fieldset>
+      </div>
+
+      {%- comment -%} ═══ Panel 4: Leather & Colour ═══ {%- endcomment -%}
+      <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
+        id="ConfigPanel-leather" aria-labelledby="ConfigTab-leather" hidden>
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Choose your leather and colour</legend>
+          <div class="Configurator__option-grid Configurator__option-grid--colour">
+
+            <label class="Configurator__option-card Configurator__option-card--swatch">
+              <input type="radio" name="config-leather" value="chestnut" checked
+                data-layer="body" data-body-filter="none"
+                data-price-adjust="0" data-label="Chestnut Yearling"
+                on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #8B4513;"></span>
+              <span class="Configurator__option-label">Chestnut Yearling</span>
+              <span class="Configurator__option-desc">Rich warm brown</span>
+            </label>
+
+            <label class="Configurator__option-card Configurator__option-card--swatch">
+              <input type="radio" name="config-leather" value="black"
+                data-layer="body" data-body-filter="brightness(0.3) saturate(0)"
+                data-price-adjust="0" data-label="Black Yearling"
+                on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
+              <span class="Configurator__option-label">Black Yearling</span>
+              <span class="Configurator__option-desc">Timeless black</span>
+            </label>
+
+            <label class="Configurator__option-card Configurator__option-card--swatch">
+              <input type="radio" name="config-leather" value="tobacco"
+                data-layer="body" data-body-filter="sepia(0.6) brightness(0.85)"
+                data-price-adjust="2500" data-label="Tobacco Suede"
+                on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #6B4226;"></span>
+              <span class="Configurator__option-label">Tobacco Suede</span>
+              <span class="Configurator__option-desc">Soft textured suede</span>
+              <span class="Configurator__option-price">+$25</span>
+            </label>
+
+            <label class="Configurator__option-card Configurator__option-card--swatch">
+              <input type="radio" name="config-leather" value="cognac"
+                data-layer="body" data-body-filter="sepia(0.3) saturate(1.2) brightness(1.05)"
+                data-price-adjust="7500" data-label="Cognac Kangaroo"
+                on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #A0522D;"></span>
+              <span class="Configurator__option-label">Cognac Kangaroo</span>
+              <span class="Configurator__option-desc">Premium exotic leather</span>
+              <span class="Configurator__option-price">+$75</span>
+            </label>
+
+          </div>
+        </fieldset>
+      </div>
+
+      {%- comment -%} ═══ Panel 5: Finishing Touches ═══ {%- endcomment -%}
+      <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
+        id="ConfigPanel-finishing" aria-labelledby="ConfigTab-finishing" hidden>
+
+        {%- comment -%} Tug colour {%- endcomment -%}
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Tug colour</legend>
+          <div class="Configurator__option-grid Configurator__option-grid--inline">
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-tug" value="tan" checked
+                data-layer="tug" data-image="{{ 'configurator-tug-tan.svg' | asset_url }}"
+                data-label="Tan" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #C19A6B;"></span>
+              <span class="Configurator__option-label">Tan</span>
+            </label>
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-tug" value="black"
+                data-layer="tug" data-image="{{ 'configurator-tug-black.svg' | asset_url }}"
+                data-label="Black" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
+              <span class="Configurator__option-label">Black</span>
+            </label>
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-tug" value="brown"
+                data-layer="tug" data-image="{{ 'configurator-tug-brown.svg' | asset_url }}"
+                data-label="Dark Brown" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #3E1707;"></span>
+              <span class="Configurator__option-label">Dark Brown</span>
+            </label>
+          </div>
+        </fieldset>
+
+        {%- comment -%} Elastic colour {%- endcomment -%}
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Elastic colour</legend>
+          <div class="Configurator__option-grid Configurator__option-grid--inline">
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-elastic" value="tan" checked
+                data-layer="elastic" data-image="{{ 'configurator-elastic-tan.svg' | asset_url }}"
+                data-label="Tan" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #C19A6B;"></span>
+              <span class="Configurator__option-label">Tan</span>
+            </label>
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-elastic" value="black"
+                data-layer="elastic" data-image="{{ 'configurator-elastic-black.svg' | asset_url }}"
+                data-label="Black" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
+              <span class="Configurator__option-label">Black</span>
+            </label>
+            <label class="Configurator__option-card Configurator__option-card--small">
+              <input type="radio" name="config-elastic" value="brown"
+                data-layer="elastic" data-image="{{ 'configurator-elastic-brown.svg' | asset_url }}"
+                data-label="Dark Brown" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #3E1707;"></span>
+              <span class="Configurator__option-label">Dark Brown</span>
+            </label>
+          </div>
+        </fieldset>
+
+        {%- comment -%} Engraving {%- endcomment -%}
+        <fieldset class="Configurator__fieldset">
+          <legend class="Configurator__legend">Sole engraving</legend>
+          <div class="Configurator__engraving-field">
+            <label for="ConfigEngraving-{{ section.id }}" class="visually-hidden">Engraving text</label>
+            <input type="text" id="ConfigEngraving-{{ section.id }}"
+              ref="engravingInput"
+              class="Configurator__engraving-input"
+              maxlength="20"
+              placeholder="Up to 20 characters (e.g. your initials)"
+              autocomplete="off"
+              on:input="/handleEngravingInput">
+            <span class="Configurator__engraving-count" ref="engravingCount">0 / 20</span>
+          </div>
+        </fieldset>
+      </div>
+
+      {%- comment -%} Price display {%- endcomment -%}
+      <div class="Configurator__price">
+        <span class="Configurator__price-label">Your Craftsman</span>
+        <span class="Configurator__price-value" ref="priceValue">${{ base_price }}</span>
+      </div>
+
+      {%- comment -%} Navigation buttons {%- endcomment -%}
+      <div class="Configurator__nav-buttons">
+        <button class="Configurator__btn Configurator__btn--secondary" ref="prevButton"
+          on:click="/prevStep" hidden>
+          <span aria-hidden="true">&larr;</span> Back
+        </button>
+        <button class="Configurator__btn Configurator__btn--primary" ref="nextButton"
+          on:click="/nextStep">
+          Next: Heel <span aria-hidden="true">&rarr;</span>
+        </button>
+        <button class="Configurator__btn Configurator__btn--cta" ref="addToCartButton"
+          on:click="/addToCart" hidden>
+          Add to Cart &mdash; ${{ base_price }}
+        </button>
+      </div>
+
+      {%- comment -%} Screen reader live region {%- endcomment -%}
+      <div ref="liveRegion" role="status" class="visually-hidden"></div>
+    </div>
+
+    {%- comment -%} RIGHT: Boot preview {%- endcomment -%}
+    <div class="Configurator__preview">
+      <div class="Configurator__preview-canvas" ref="previewCanvas">
+        <img ref="layerBody" class="Configurator__layer Configurator__layer--body"
+          src="{{ 'configurator-body.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <img ref="layerSole" class="Configurator__layer Configurator__layer--sole"
+          src="{{ 'configurator-sole-leather.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <img ref="layerHeel" class="Configurator__layer Configurator__layer--heel"
+          src="{{ 'configurator-heel-flat.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <img ref="layerToe" class="Configurator__layer Configurator__layer--toe"
+          src="{{ 'configurator-toe-round.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <img ref="layerTug" class="Configurator__layer Configurator__layer--tug"
+          src="{{ 'configurator-tug-tan.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <img ref="layerElastic" class="Configurator__layer Configurator__layer--elastic"
+          src="{{ 'configurator-elastic-tan.svg' | asset_url }}" alt="" draggable="false"
+          onerror="this.style.opacity='0.1'">
+        <div ref="layerEngraving" class="Configurator__layer Configurator__layer--engraving"
+          aria-hidden="true"></div>
+      </div>
+    </div>
+
+  </div>
+</boot-configurator>
+
+<script src="{{ 'configurator.js' | asset_url }}" type="module"></script>
+
+{% stylesheet %}
+  /* ═══════════════════════════════════════════
+     Boot Configurator — Section Styles
+     ═══════════════════════════════════════════ */
+
+  .Configurator {
+    display: block;
+    background: var(--color-background, #FDFBF7);
+    color: var(--color-foreground, #1F1007);
+  }
+
+  /* ── Phase indicator ── */
+  .Configurator__phases {
+    border-bottom: 1px solid var(--color-border, #E6DBC4);
+    padding: 0 2rem;
+  }
+
+  .Configurator__phases-list {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    list-style: none;
+    margin: 0;
+    padding: 1.25rem 0;
+  }
+
+  .Configurator__phase {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-border, #A59F9C);
+    position: relative;
+    transition: color 0.3s ease;
+  }
+
+  .Configurator__phase--active {
+    color: var(--color-foreground, #1F1007);
+    font-weight: 600;
+  }
+
+  .Configurator__phase--completed {
+    color: var(--color-foreground, #1F1007);
+  }
+
+  .Configurator__phase-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+
+  .Configurator__phase--active .Configurator__phase-number {
+    background: var(--color-foreground, #1F1007);
+    color: var(--color-background, #FDFBF7);
+    border-color: var(--color-foreground, #1F1007);
+  }
+
+  .Configurator__phase--completed .Configurator__phase-number {
+    background: var(--color-foreground, #1F1007);
+    color: var(--color-background, #FDFBF7);
+    border-color: var(--color-foreground, #1F1007);
+  }
+
+  /* Connector lines between phases */
+  .Configurator__phase:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    width: 1rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+
+  /* ── Main layout ── */
+  .Configurator__layout {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 3rem;
+    max-width: 90rem;
+    margin: 0 auto;
+    padding: 2rem 2.5rem 4rem;
+    min-height: 75vh;
+    align-items: start;
+  }
+
+  /* ── Options panel ── */
+  .Configurator__options {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .Configurator__heading {
+    font-family: var(--font-heading--family, serif);
+    font-weight: var(--font-heading--weight, 400);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground-heading, var(--color-foreground, #1F1007));
+    margin: 0 0 0.25rem;
+  }
+
+  .Configurator__subheading {
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-foreground, #4C4039);
+    opacity: 0.7;
+    margin: 0 0 1.5rem;
+  }
+
+  /* ── Step tabs ── */
+  .Configurator__step-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border, #E6DBC4);
+    margin-bottom: 1.5rem;
+  }
+
+  .Configurator__step-tab {
+    appearance: none;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.75rem 1rem;
+    color: var(--color-foreground, #4C4039);
+    opacity: 0.6;
+    transition: opacity 0.25s ease, border-color 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .Configurator__step-tab:hover {
+    opacity: 0.85;
+  }
+
+  .Configurator__step-tab--active {
+    opacity: 1;
+    border-bottom-color: var(--color-foreground, #1F1007);
+    color: var(--color-foreground, #1F1007);
+    font-weight: 600;
+  }
+
+  .Configurator__step-tab:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+
+  /* ── Step panels ── */
+  .Configurator__panel {
+    animation: configuratorFadeIn 0.3s ease;
+  }
+
+  .Configurator__panel[hidden] {
+    display: none;
+  }
+
+  @keyframes configuratorFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .Configurator__panel {
+      animation: none;
+    }
+  }
+
+  /* ── Fieldsets ── */
+  .Configurator__fieldset {
+    border: none;
+    padding: 0;
+    margin: 0 0 1.5rem;
+  }
+
+  .Configurator__legend {
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-foreground, #1F1007);
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  /* ── Option grid ── */
+  .Configurator__option-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+
+  .Configurator__option-grid--colour {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .Configurator__option-grid--inline {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  /* ── Option cards ── */
+  .Configurator__option-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.75rem;
+    border: 2px solid var(--color-border, #E6DBC4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: transparent;
+    text-align: center;
+    position: relative;
+  }
+
+  .Configurator__option-card:hover {
+    border-color: var(--color-foreground, #4C4039);
+  }
+
+  .Configurator__option-card:has(input:checked) {
+    border-color: var(--color-foreground, #1F1007);
+    box-shadow: 0 0 0 1px var(--color-foreground, #1F1007);
+  }
+
+  .Configurator__option-card:has(input:focus-visible) {
+    outline: 2px solid var(--color-foreground, #1F1007);
+    outline-offset: 2px;
+  }
+
+  .Configurator__option-card input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .Configurator__option-card--small {
+    padding: 0.75rem;
+    min-width: 5rem;
+  }
+
+  /* ── Option visuals ── */
+  .Configurator__option-visual {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f5f0e8;
+  }
+
+  .Configurator__option-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .Configurator__option-label {
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-foreground, #1F1007);
+    line-height: 1.2;
+  }
+
+  .Configurator__option-desc {
+    font-size: 0.7rem;
+    color: var(--color-foreground, #4C4039);
+    opacity: 0.7;
+    line-height: 1.3;
+  }
+
+  .Configurator__option-price {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-foreground, #1F1007);
+    opacity: 0.85;
+  }
+
+  /* ── Colour swatches ── */
+  .Configurator__swatch {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+
+  .Configurator__option-card--small .Configurator__swatch {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* ── Engraving field ── */
+  .Configurator__engraving-field {
+    max-width: 20rem;
+  }
+
+  .Configurator__engraving-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 1rem;
+    border: 1px solid var(--color-border, #A59F9C);
+    border-radius: 4px;
+    background: var(--color-background, #FDFBF7);
+    color: var(--color-foreground, #1F1007);
+    transition: border-color 0.25s ease;
+  }
+
+  .Configurator__engraving-input:focus {
+    border-color: var(--color-foreground, #1F1007);
+    outline: none;
+    box-shadow: 0 0 0 1px var(--color-foreground, #1F1007);
+  }
+
+  .Configurator__engraving-count {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--color-foreground, #4C4039);
+    opacity: 0.6;
+    text-align: right;
+    margin-top: 0.35rem;
+  }
+
+  /* ── Price display ── */
+  .Configurator__price {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 1.25rem 0;
+    border-top: 1px solid var(--color-border, #E6DBC4);
+    margin-top: 1.5rem;
+  }
+
+  .Configurator__price-label {
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--color-foreground, #4C4039);
+  }
+
+  .Configurator__price-value {
+    font-family: var(--font-heading--family, serif);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-foreground, #1F1007);
+  }
+
+  /* ── Navigation buttons ── */
+  .Configurator__nav-buttons {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 1rem;
+  }
+
+  .Configurator__btn {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body--family, sans-serif);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.875rem 2rem;
+    border-radius: 4px;
+    transition: background-color 0.25s ease, color 0.25s ease, opacity 0.25s ease;
+    min-height: 44px;
+  }
+
+  .Configurator__btn--secondary {
+    background: transparent;
+    color: var(--color-foreground, #1F1007);
+    border: 1px solid var(--color-border, #A59F9C);
+  }
+
+  .Configurator__btn--secondary:hover {
+    border-color: var(--color-foreground, #1F1007);
+  }
+
+  .Configurator__btn--primary {
+    background: var(--color-foreground, #1F1007);
+    color: var(--color-background, #FDFBF7);
+    flex: 1;
+  }
+
+  .Configurator__btn--primary:hover {
+    background: #3E1707;
+  }
+
+  .Configurator__btn--cta {
+    background: var(--color-foreground, #1F1007);
+    color: var(--color-background, #FDFBF7);
+    flex: 1;
+    font-size: 0.9rem;
+    padding: 1rem 2rem;
+  }
+
+  .Configurator__btn--cta:hover {
+    background: #3E1707;
+  }
+
+  .Configurator__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .Configurator__btn[hidden] {
+    display: none;
+  }
+
+  /* ── Preview panel ── */
+  .Configurator__preview {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    position: sticky;
+    top: 2rem;
+    padding-top: 1rem;
+  }
+
+  .Configurator__preview-canvas {
+    position: relative;
+    width: 500px;
+    height: 680px;
+    background: #f5f0e8;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  /* ── Preview layers ── */
+  .Configurator__layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    transition: opacity 0.3s ease, filter 0.4s ease;
+  }
+
+  .Configurator__layer--body   { z-index: 1; }
+  .Configurator__layer--sole   { z-index: 2; }
+  .Configurator__layer--heel   { z-index: 3; }
+  .Configurator__layer--toe    { z-index: 4; }
+  .Configurator__layer--tug    { z-index: 5; }
+  .Configurator__layer--elastic { z-index: 6; }
+
+  .Configurator__layer--engraving {
+    z-index: 7;
+    position: absolute;
+    bottom: 32%;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    font-family: var(--font-heading--family, serif);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #E6DBC4;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    pointer-events: none;
+    white-space: nowrap;
+    width: auto;
+    height: auto;
+    inset: auto;
+    text-align: center;
+  }
+
+  .Configurator__layer--fading {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .Configurator__layer {
+      transition: none;
+    }
+    .Configurator__btn {
+      transition: none;
+    }
+    .Configurator__step-tab {
+      transition: none;
+    }
+    .Configurator__option-card {
+      transition: none;
+    }
+    .Configurator__phase {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Boot Configurator",
+  "tag": "section",
+  "class": "configurator-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [],
+  "templates": ["product"],
+  "presets": [
+    {
+      "name": "Boot Configurator"
+    }
+  ]
+}
+{% endschema %}
