@@ -271,7 +271,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="chestnut" checked
-                data-layer="composite" data-image="{{ 'configurator-leather-chestnut.png' | asset_url }}"
+                data-layer="composite"
                 data-price-adjust="0" data-label="Chestnut Yearling"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #8B4513;"></span>
@@ -281,7 +281,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="black"
-                data-layer="composite" data-image="{{ 'configurator-leather-black.png' | asset_url }}"
+                data-layer="composite"
                 data-price-adjust="0" data-label="Black Yearling"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
@@ -291,7 +291,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="tobacco"
-                data-layer="composite" data-image="{{ 'configurator-leather-tobacco.png' | asset_url }}"
+                data-layer="composite"
                 data-price-adjust="2500" data-label="Tobacco Suede"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #6B4226;"></span>
@@ -302,7 +302,7 @@
 
             <label class="Configurator__option-card Configurator__option-card--swatch">
               <input type="radio" name="config-leather" value="cognac"
-                data-layer="composite" data-image="{{ 'configurator-leather-cognac.png' | asset_url }}"
+                data-layer="composite"
                 data-price-adjust="7500" data-label="Cognac Kangaroo"
                 on:change="/handleOptionChange">
               <span class="Configurator__swatch" style="background-color: #A0522D;"></span>
@@ -319,30 +319,21 @@
       <div class="Configurator__panel" role="tabpanel" ref="stepPanels[]"
         id="ConfigPanel-finishing" aria-labelledby="ConfigTab-finishing" hidden>
 
-        {%- comment -%} Tug colour {%- endcomment -%}
+        {%- comment -%} Tug colour (selection only — doesn't change preview) {%- endcomment -%}
         <fieldset class="Configurator__fieldset">
           <legend class="Configurator__legend">Tug colour</legend>
           <div class="Configurator__option-grid Configurator__option-grid--inline">
             <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-tug" value="tan" checked
-                data-layer="tug" data-image="{{ 'configurator-tug-tan.png' | asset_url }}"
-                data-label="Tan" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #C19A6B;"></span>
-              <span class="Configurator__option-label">Tan</span>
+              <input type="radio" name="config-tug" value="red" checked
+                data-label="Red" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #B22222;"></span>
+              <span class="Configurator__option-label">Red</span>
             </label>
             <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-tug" value="black"
-                data-layer="tug" data-image="{{ 'configurator-tug-black.png' | asset_url }}"
-                data-label="Black" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #1a1a1a;"></span>
-              <span class="Configurator__option-label">Black</span>
-            </label>
-            <label class="Configurator__option-card Configurator__option-card--small">
-              <input type="radio" name="config-tug" value="brown"
-                data-layer="tug" data-image="{{ 'configurator-tug-brown.png' | asset_url }}"
-                data-label="Dark Brown" on:change="/handleOptionChange">
-              <span class="Configurator__swatch" style="background-color: #3E1707;"></span>
-              <span class="Configurator__option-label">Dark Brown</span>
+              <input type="radio" name="config-tug" value="blue"
+                data-label="Navy Blue" on:change="/handleOptionChange">
+              <span class="Configurator__swatch" style="background-color: #1E3A5F;"></span>
+              <span class="Configurator__option-label">Navy Blue</span>
             </label>
           </div>
         </fieldset>
