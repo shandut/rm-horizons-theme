@@ -1,0 +1,217 @@
+{%- comment -%}
+  3D Boot Configurator (v2) — Three.js WebGL configurator
+  Liquid is "dumb" — it renders the DOM shell and embeds data.
+  JavaScript owns the entire configurator experience.
+{%- endcomment -%}
+
+{% liquid
+  assign product = product
+  assign variant = product.selected_or_first_available_variant
+%}
+
+<div
+  id="BootConfigurator3D-{{ section.id }}"
+  class="boot-configurator"
+  data-section-id="{{ section.id }}"
+  data-product-id="{{ product.id }}"
+  data-base-variant-id="{{ variant.id }}"
+  data-money-format="{{ shop.money_format | escape }}"
+  data-cart-add-url="{{ routes.cart_add_url }}"
+>
+  {%- comment -%} 3D Viewer {%- endcomment -%}
+  <div class="boot-configurator__viewer">
+    <canvas class="boot-configurator__canvas" aria-label="3D boot configurator preview"></canvas>
+    <div class="boot-configurator__loader" aria-live="polite">
+      <span class="boot-configurator__loader-text">Loading 3D preview&hellip;</span>
+    </div>
+    <noscript>
+      <img src="{{ 'configurator-body.png' | asset_url }}" alt="Boot preview" class="boot-configurator__fallback">
+    </noscript>
+  </div>
+
+  {%- comment -%} Configuration Panel — populated entirely by JS {%- endcomment -%}
+  <div class="boot-configurator__panel">
+    <div class="boot-configurator__header">
+      <h1 class="boot-configurator__title">Design Your Boot</h1>
+      <p class="boot-configurator__subtitle">3D Made to Order Configurator</p>
+    </div>
+    <div class="boot-configurator__phases"></div>
+    <div class="boot-configurator__steps"></div>
+    <div class="boot-configurator__summary"></div>
+    <div class="boot-configurator__price"></div>
+    <div class="boot-configurator__actions">
+      <button type="button" class="boot-configurator__btn boot-configurator__btn--back" hidden>Back</button>
+      <button type="button" class="boot-configurator__btn boot-configurator__btn--next">Next</button>
+      <button type="button" class="boot-configurator__btn boot-configurator__btn--add" hidden>Add to Cart</button>
+    </div>
+    <div class="boot-configurator__live-region visually-hidden" role="status"></div>
+  </div>
+
+  {%- comment -%} Configuration manifest — parsed by JS {%- endcomment -%}
+  <script type="application/json" class="boot-configurator__manifest">
+  {
+    "version": 1,
+    "basePrice": 79500,
+    "currency": "AUD",
+    "defaultConfig": {
+      "toe": "round",
+      "heel": "flat",
+      "sole": "leather",
+      "leather": "chestnut",
+      "elasticColor": "brown",
+      "tugColor": "red",
+      "width": "G",
+      "length": "9",
+      "engraving": ""
+    },
+    "steps": [
+      {
+        "id": "toe",
+        "label": "Toe Shape",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "round", "label": "Round Toe", "desc": "Classic RM Williams profile", "mesh": "GEO_toe_round" },
+          { "id": "chisel", "label": "Chisel Toe", "desc": "Angular, contemporary", "mesh": "GEO_toe_chisel" },
+          { "id": "square", "label": "Square Toe", "desc": "Bold, structured", "mesh": "GEO_toe_square" }
+        ]
+      },
+      {
+        "id": "heel",
+        "label": "Heel",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "flat", "label": "Flat Heel", "desc": "Low-profile everyday wear", "mesh": "GEO_heel_flat" },
+          { "id": "block", "label": "Block Heel", "desc": "Classic dress boot", "mesh": "GEO_heel_block", "priceAdjust": 0 },
+          { "id": "cuban", "label": "Cuban Heel", "desc": "Elevated statement", "mesh": "GEO_heel_cuban", "priceAdjust": 5000 }
+        ]
+      },
+      {
+        "id": "sole",
+        "label": "Sole",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "leather", "label": "Sewn Welt Leather", "desc": "Traditional craftsmanship", "mesh": "GEO_sole_leather" },
+          { "id": "rubber", "label": "Comfort Rubber", "desc": "All-day wearability", "mesh": "GEO_sole_rubber" },
+          { "id": "brass", "label": "Brass-Screwed", "desc": "Heritage durability", "mesh": "GEO_sole_brass", "priceAdjust": 3000 }
+        ]
+      },
+      {
+        "id": "leather",
+        "label": "Leather & Colour",
+        "phase": "customise",
+        "type": "swatches",
+        "materialTarget": "upper",
+        "options": [
+          { "id": "chestnut", "label": "Chestnut Yearling", "color": "#8B4513", "roughness": 0.62, "metalness": 0.0 },
+          { "id": "black", "label": "Black Yearling", "color": "#1a1a1a", "roughness": 0.45, "metalness": 0.0 },
+          { "id": "tobacco", "label": "Tobacco Suede", "color": "#6B4226", "roughness": 0.85, "metalness": 0.0, "priceAdjust": 2500 },
+          { "id": "cognac", "label": "Cognac Kangaroo", "color": "#A0522D", "roughness": 0.55, "metalness": 0.0, "priceAdjust": 7500 }
+        ]
+      },
+      {
+        "id": "elasticColor",
+        "label": "Elastic Colour",
+        "phase": "personalise",
+        "type": "swatches",
+        "materialTarget": "elastic",
+        "options": [
+          { "id": "brown", "label": "Brown", "color": "#5C3A1E" },
+          { "id": "red", "label": "Red", "color": "#B22222" },
+          { "id": "blue", "label": "Navy Blue", "color": "#1E3A5F" }
+        ]
+      },
+      {
+        "id": "tugColor",
+        "label": "Tug Colour",
+        "phase": "personalise",
+        "type": "swatches",
+        "materialTarget": "tug",
+        "options": [
+          { "id": "red", "label": "Red", "color": "#B22222" },
+          { "id": "blue", "label": "Navy Blue", "color": "#1E3A5F" }
+        ]
+      },
+      {
+        "id": "width",
+        "label": "Width",
+        "phase": "personalise",
+        "type": "dropdown",
+        "options": [
+          { "id": "C", "label": "C (Narrow)" },
+          { "id": "D", "label": "D" },
+          { "id": "E", "label": "E" },
+          { "id": "F", "label": "F" },
+          { "id": "G", "label": "G (Standard)" },
+          { "id": "H", "label": "H (Wide)" }
+        ]
+      },
+      {
+        "id": "length",
+        "label": "Size",
+        "phase": "personalise",
+        "type": "dropdown",
+        "options": [
+          { "id": "6", "label": "6" }, { "id": "7", "label": "7" },
+          { "id": "8", "label": "8" }, { "id": "9", "label": "9" },
+          { "id": "10", "label": "10" }, { "id": "11", "label": "11" },
+          { "id": "12", "label": "12" }, { "id": "13", "label": "13" }
+        ]
+      },
+      {
+        "id": "engraving",
+        "label": "Engraving",
+        "phase": "personalise",
+        "type": "text",
+        "maxLength": 20,
+        "placeholder": "Up to 20 characters"
+      }
+    ],
+    "rules": [
+      {
+        "when": { "sole": "rubber" },
+        "deny": { "heel": ["cuban"] },
+        "message": "Rubber sole is not available with Cuban heel."
+      }
+    ],
+    "materials": {
+      "upper": { "roughness": 0.62, "metalness": 0.0 },
+      "sole": { "color": "#8B6340", "roughness": 0.8, "metalness": 0.0 },
+      "heel": { "color": "#3E2712", "roughness": 0.7, "metalness": 0.0 },
+      "elastic": { "roughness": 0.75, "metalness": 0.0 },
+      "tug": { "roughness": 0.6, "metalness": 0.0 },
+      "welt": { "color": "#A0724A", "roughness": 0.65, "metalness": 0.0 }
+    }
+  }
+  </script>
+</div>
+
+{%- comment -%} Three.js importmap — load from CDN {%- endcomment -%}
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.172.0",
+    "three/addons/": "https://esm.sh/three@0.172.0/examples/jsm/"
+  }
+}
+</script>
+
+{{ 'boot-configurator.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'boot-configurator.bundle.js' | asset_url }}" type="module"></script>
+
+{% schema %}
+{
+  "name": "3D Boot Configurator",
+  "tag": "section",
+  "class": "boot-configurator-section",
+  "settings": [],
+  "templates": ["product"],
+  "presets": [
+    {
+      "name": "3D Boot Configurator"
+    }
+  ]
+}
+{% endschema %}

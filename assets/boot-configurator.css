@@ -1,0 +1,442 @@
+/* ═══════════════════════════════════════════════════════════
+   3D Boot Configurator (v2) — Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.boot-configurator {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  min-height: 80vh;
+  max-width: 90rem;
+  margin: 0 auto;
+  background: var(--color-background, #FDFBF7);
+  color: var(--color-foreground, #1F1007);
+}
+
+/* ── 3D Viewer ── */
+.boot-configurator__viewer {
+  position: relative;
+  min-height: 600px;
+  background: #f5f0e8;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.boot-configurator__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.boot-configurator__canvas:active {
+  cursor: grabbing;
+}
+
+.boot-configurator__loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e8;
+  z-index: 2;
+}
+
+.boot-configurator__loader[hidden] {
+  display: none;
+}
+
+.boot-configurator__loader-text {
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.85rem;
+  color: var(--color-foreground, #4C4039);
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+}
+
+.boot-configurator__fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ── Config Panel ── */
+.boot-configurator__panel {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2.5rem;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.boot-configurator__header {
+  margin-bottom: 1.5rem;
+}
+
+.boot-configurator__title {
+  font-family: var(--font-heading--family, serif);
+  font-weight: var(--font-heading--weight, 400);
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.2;
+  margin: 0 0 0.25rem;
+  color: var(--color-foreground-heading, var(--color-foreground, #1F1007));
+}
+
+.boot-configurator__subtitle {
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0;
+}
+
+/* ── Phase indicator ── */
+.boot-configurator__phases {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border, #E6DBC4);
+}
+
+.boot-configurator__phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-foreground, #A59F9C);
+}
+
+.boot-configurator__phase--active {
+  color: var(--color-foreground, #1F1007);
+  font-weight: 600;
+}
+
+.boot-configurator__phase--complete {
+  color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__phase-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.boot-configurator__phase--active .boot-configurator__phase-dot {
+  background: var(--color-foreground, #1F1007);
+  color: var(--color-background, #FDFBF7);
+  border-color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__phase--complete .boot-configurator__phase-dot {
+  background: var(--color-foreground, #1F1007);
+  color: var(--color-background, #FDFBF7);
+  border-color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__phase-line {
+  flex: 0 0 1rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+/* ── Step content ── */
+.boot-configurator__step {
+  animation: bcFadeIn 0.3s ease;
+}
+
+@keyframes bcFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.boot-configurator__step-title {
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: var(--color-foreground, #1F1007);
+}
+
+/* ── Chips (toe/heel/sole) ── */
+.boot-configurator__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.boot-configurator__chip {
+  appearance: none;
+  background: transparent;
+  border: 2px solid var(--color-border, #E6DBC4);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  min-width: 120px;
+  flex: 1;
+}
+
+.boot-configurator__chip:hover {
+  border-color: var(--color-foreground, #4C4039);
+}
+
+.boot-configurator__chip--active {
+  border-color: var(--color-foreground, #1F1007);
+  box-shadow: 0 0 0 1px var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__chip--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.boot-configurator__chip-label {
+  display: block;
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__chip-desc {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--color-foreground, #4C4039);
+  opacity: 0.7;
+  margin-top: 0.15rem;
+}
+
+.boot-configurator__chip-price {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--color-foreground, #1F1007);
+  margin-top: 0.25rem;
+}
+
+/* ── Swatches ── */
+.boot-configurator__swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.boot-configurator__swatch {
+  appearance: none;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.2s ease;
+  min-width: 70px;
+}
+
+.boot-configurator__swatch:hover {
+  border-color: var(--color-foreground, #4C4039);
+}
+
+.boot-configurator__swatch--active {
+  border-color: var(--color-foreground, #1F1007);
+  box-shadow: 0 0 0 1px var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__swatch-color {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--swatch-color);
+  margin: 0 auto 0.4rem;
+  border: 2px solid rgba(0,0,0,0.08);
+}
+
+.boot-configurator__swatch-label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--color-foreground, #1F1007);
+}
+
+/* ── Dropdown ── */
+.boot-configurator__select {
+  width: 100%;
+  max-width: 16rem;
+  padding: 0.65rem 1rem;
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.85rem;
+  border: 1px solid var(--color-border, #A59F9C);
+  border-radius: 4px;
+  background: var(--color-background, #FDFBF7);
+  color: var(--color-foreground, #1F1007);
+  cursor: pointer;
+}
+
+/* ── Text input ── */
+.boot-configurator__text-field {
+  max-width: 18rem;
+}
+
+.boot-configurator__input {
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.9rem;
+  border: 1px solid var(--color-border, #A59F9C);
+  border-radius: 4px;
+  background: var(--color-background, #FDFBF7);
+  color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__input:focus {
+  border-color: var(--color-foreground, #1F1007);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__char-count {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--color-foreground, #4C4039);
+  opacity: 0.5;
+  text-align: right;
+  margin-top: 0.3rem;
+}
+
+/* ── Summary ── */
+.boot-configurator__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 1rem 0;
+  min-height: 2rem;
+}
+
+.boot-configurator__summary-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.65rem;
+  background: #f0ebe0;
+  padding: 0.25rem 0.6rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.boot-configurator__summary-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.boot-configurator__summary-key {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+/* ── Price ── */
+.boot-configurator__price {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-border, #E6DBC4);
+}
+
+.boot-configurator__price-label {
+  font-size: 0.85rem;
+  color: var(--color-foreground, #4C4039);
+}
+
+.boot-configurator__price-value {
+  font-family: var(--font-heading--family, serif);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-foreground, #1F1007);
+}
+
+/* ── Action buttons ── */
+.boot-configurator__actions {
+  display: flex;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+.boot-configurator__btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body--family, sans-serif);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.8rem 1.5rem;
+  border-radius: 4px;
+  min-height: 44px;
+  transition: background-color 0.2s ease;
+}
+
+.boot-configurator__btn[hidden] {
+  display: none;
+}
+
+.boot-configurator__btn--back {
+  background: transparent;
+  color: var(--color-foreground, #1F1007);
+  border: 1px solid var(--color-border, #A59F9C);
+}
+
+.boot-configurator__btn--back:hover {
+  border-color: var(--color-foreground, #1F1007);
+}
+
+.boot-configurator__btn--next,
+.boot-configurator__btn--add {
+  background: var(--color-foreground, #1F1007);
+  color: var(--color-background, #FDFBF7);
+  flex: 1;
+}
+
+.boot-configurator__btn--next:hover,
+.boot-configurator__btn--add:hover {
+  background: #3E1707;
+}
+
+.boot-configurator__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .boot-configurator__step {
+    animation: none;
+  }
+  .boot-configurator__chip,
+  .boot-configurator__swatch,
+  .boot-configurator__btn {
+    transition: none;
+  }
+}
