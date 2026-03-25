@@ -435,27 +435,28 @@
       <div ref="liveRegion" role="status" class="visually-hidden"></div>
     </div>
 
-    {%- comment -%} RIGHT: Boot preview — single full-boot image that swaps per leather colour {%- endcomment -%}
+    {%- comment -%} RIGHT: Boot preview + sole view side by side {%- endcomment -%}
     <div class="Configurator__preview">
-      <div class="Configurator__preview-canvas" ref="previewCanvas">
-        <img ref="bootPreview" class="Configurator__boot-image"
-          src="{{ 'configurator-boot-round-flat-leather-chestnut-brown-red.png' | asset_url }}" alt="Your configured Craftsman boot"
-          draggable="false">
-        <div ref="layerEngraving" class="Configurator__layer Configurator__layer--engraving"
-          aria-hidden="true"></div>
-      </div>
-
-      {%- comment -%} Sole bottom view — real image with draggable engraving {%- endcomment -%}
-      <div class="Configurator__sole-view" ref="soleView" hidden>
-        <p class="Configurator__sole-view-label">Drag to position your engraving</p>
-        <div class="Configurator__sole-shape" ref="soleContainer">
-          <img ref="soleBottomImage" class="Configurator__sole-image"
-            src="{{ 'configurator-sole-bottom-leather.png' | asset_url }}" alt="Sole bottom view"
+      <div class="Configurator__preview-row" ref="previewRow">
+        {%- comment -%} Main boot composite {%- endcomment -%}
+        <div class="Configurator__preview-canvas" ref="previewCanvas">
+          <img ref="bootPreview" class="Configurator__boot-image"
+            src="{{ 'configurator-boot-round-flat-leather-chestnut-brown-red.png' | asset_url }}" alt="Your configured Craftsman boot"
             draggable="false">
-          <!-- Draggable engraving text -->
-          <div class="Configurator__sole-engraving Configurator__sole-engraving--draggable"
-            ref="soleEngravingText"
-            on:pointerdown="/startDragEngraving"></div>
+          <div ref="layerEngraving" class="Configurator__layer Configurator__layer--engraving"
+            aria-hidden="true"></div>
+        </div>
+
+        {%- comment -%} Sole bottom view — appears beside boot when engraving is entered {%- endcomment -%}
+        <div class="Configurator__sole-view" ref="soleView" hidden>
+          <p class="Configurator__sole-view-label">Drag to position engraving</p>
+          <div class="Configurator__sole-shape" ref="soleContainer">
+            <img ref="soleBottomImage" class="Configurator__sole-image"
+              src="{{ 'configurator-sole-bottom-leather.png' | asset_url }}" alt="Sole bottom view"
+              draggable="false">
+            <div class="Configurator__sole-engraving Configurator__sole-engraving--draggable"
+              ref="soleEngravingText"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1014,11 +1015,13 @@
     opacity: 0;
   }
 
-  /* ── Sole bottom view (engraving inset) ── */
+  /* ── Sole bottom view (engraving — side panel) ── */
   .Configurator__sole-view {
-    margin-top: 1.5rem;
     text-align: center;
     animation: configuratorFadeIn 0.4s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .Configurator__sole-view[hidden] {
@@ -1027,22 +1030,23 @@
 
   .Configurator__sole-view-label {
     font-family: var(--font-body--family, sans-serif);
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-foreground, #4C4039);
-    opacity: 0.6;
-    margin: 0 0 0.75rem;
+    opacity: 0.5;
+    margin: 0 0 0.5rem;
   }
 
   .Configurator__sole-shape {
     position: relative;
-    display: inline-block;
-    width: 180px;
-    height: 300px;
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1 / 1.6;
     border-radius: 8px;
     overflow: hidden;
+    background: #f5f0e8;
   }
 
   .Configurator__sole-image {
@@ -1078,14 +1082,26 @@
     cursor: grabbing;
   }
 
-  /* ── Preview layout update for flex column ── */
+  /* ── Preview layout ── */
   .Configurator__preview {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     position: sticky;
     top: 2rem;
     padding-top: 1rem;
+  }
+
+  .Configurator__preview-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .Configurator__preview-row:has(.Configurator__sole-view:not([hidden])) .Configurator__preview-canvas {
+    flex: 0 0 60%;
+  }
+
+  .Configurator__preview-row:has(.Configurator__sole-view:not([hidden])) .Configurator__sole-view {
+    flex: 0 0 35%;
   }
 
   @media (prefers-reduced-motion: reduce) {

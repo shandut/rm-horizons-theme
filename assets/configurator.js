@@ -81,6 +81,7 @@ class BootConfigurator extends Component {
     this.#assetBase = this.dataset.assetBase || '';
     this.#updatePrice();
     this.#updateNavButtons();
+    this.#initDraggableEngraving();
   }
 
   // ─── Current Selections ────────────────────────────────
@@ -560,52 +561,55 @@ class BootConfigurator extends Component {
 
   // ─── Draggable Engraving ────────────────────────────────
 
-  /** @type {boolean} */
-  #isDragging = false;
-
-  /** @type {{ x: number, y: number }} */
-  #dragOffset = { x: 0, y: 0 };
-
   /**
-   * Start dragging the engraving text on the sole view.
-   * @param {PointerEvent} event
+   * Initialize drag behavior on the sole engraving text.
+   * Called once after connectedCallback.
    */
-  startDragEngraving(event) {
+  #initDraggableEngraving() {
     const el = this.refs.soleEngravingText;
     const container = this.refs.soleContainer;
     if (!el || !container) return;
 
-    event.preventDefault();
-    this.#isDragging = true;
-    el.setPointerCapture(event.pointerId);
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
 
-    const rect = el.getBoundingClientRect();
-    this.#dragOffset.x = event.clientX - rect.left;
-    this.#dragOffset.y = event.clientY - rect.top;
+    el.addEventListener('pointerdown', (e) => {
+      if (!el.textContent?.trim()) return;
+      e.preventDefault();
+      isDragging = true;
+      el.setPointerCapture(e.pointerId);
 
-    const onMove = /** @param {PointerEvent} e */ (e) => {
-      if (!this.#isDragging) return;
+      const rect = el.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      el.style.cursor = 'grabbing';
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
       const containerRect = container.getBoundingClientRect();
-      let x = e.clientX - containerRect.left - this.#dragOffset.x;
-      let y = e.clientY - containerRect.top - this.#dragOffset.y;
+      let x = e.clientX - containerRect.left - offsetX;
+      let y = e.clientY - containerRect.top - offsetY;
 
-      // Clamp within container
+      // Clamp within container bounds
       x = Math.max(0, Math.min(x, containerRect.width - el.offsetWidth));
       y = Math.max(0, Math.min(y, containerRect.height - el.offsetHeight));
 
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
       el.style.transform = 'none';
-    };
+    });
 
-    const onUp = () => {
-      this.#isDragging = false;
-      el.removeEventListener('pointermove', onMove);
-      el.removeEventListener('pointerup', onUp);
-    };
+    el.addEventListener('pointerup', () => {
+      isDragging = false;
+      el.style.cursor = 'grab';
+    });
 
-    el.addEventListener('pointermove', onMove);
-    el.addEventListener('pointerup', onUp);
+    el.addEventListener('lostpointercapture', () => {
+      isDragging = false;
+      el.style.cursor = 'grab';
+    });
   }
 
   // ─── Accessibility ─────────────────────────────────────
