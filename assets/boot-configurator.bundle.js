@@ -307,9 +307,15 @@ class BootRenderer {
 
       // Clone material so parts colour independently
       if (Array.isArray(child.material)) {
-        child.material = child.material.map(m => m.clone());
+        child.material = child.material.map(m => {
+          const clone = m.clone();
+          // Strip texture maps so base colour is paintable
+          this.#stripTextures(clone);
+          return clone;
+        });
       } else {
         child.material = child.material.clone();
+        this.#stripTextures(child.material);
       }
 
       const meshName = (child.name || '').toLowerCase();
@@ -319,6 +325,8 @@ class BootRenderer {
       ).toLowerCase();
       const combined = meshName + ' ' + matName;
 
+      this.#debugLog.push(`  mesh: "${child.name}" | mat: "${matName}" | combined: "${combined}"`);
+
       // Try name matching
       let matched = false;
       for (const [part, keywords] of Object.entries(partMeshMap)) {
@@ -326,7 +334,7 @@ class BootRenderer {
           if (combined.includes(kw.toLowerCase())) {
             this.#partMeshes[part].push(child);
             matched = true;
-            this.#debugLog.push(`[name] "${child.name}" (mat: "${child.material.name || '?'}") → ${part}`);
+            this.#debugLog.push(`    → MATCHED [${part}] via keyword "${kw}"`);
             break;
           }
         }
@@ -336,6 +344,7 @@ class BootRenderer {
       if (!matched) {
         unmatched.push(child);
         this.#allMeshes.push(child);
+        this.#debugLog.push(`    → UNMATCHED`);
       }
     });
 
@@ -345,23 +354,29 @@ class BootRenderer {
     if (positionFallback && !anyMatched && unmatched.length > 0) {
       this.#debugLog.push('--- Position fallback triggered ---');
 
+      // Compute model bounding box for normalization
+      const modelBox = new THREE.Box3().setFromObject(model);
+      const modelHeight = modelBox.max.y - modelBox.min.y;
+      const modelMinY = modelBox.min.y;
+
       for (const mesh of unmatched) {
         const meshBox = new THREE.Box3().setFromObject(mesh);
         const worldCenter = meshBox.getCenter(new THREE.Vector3());
-        const yNorm = worldCenter.y / 2.0;
         const meshSize = new THREE.Vector3();
         meshBox.getSize(meshSize);
         const volume = meshSize.x * meshSize.y * meshSize.z;
+        // Normalize Y to 0–1 range relative to model bounds
+        const yNorm = modelHeight > 0 ? (worldCenter.y - modelMinY) / modelHeight : 0.5;
 
-        if (yNorm < 0.12) {
+        if (yNorm < 0.15) {
           this.#partMeshes.sole.push(mesh);
-          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}) → sole`);
-        } else if (volume < 0.02 && yNorm > 0.7) {
+          this.#debugLog.push(`[pos] "${mesh.name}" (yNorm:${yNorm.toFixed(2)}) → sole`);
+        } else if (volume < 0.005 && yNorm > 0.75) {
           this.#partMeshes.tug.push(mesh);
-          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}, vol:${volume.toFixed(4)}) → tug`);
+          this.#debugLog.push(`[pos] "${mesh.name}" (yNorm:${yNorm.toFixed(2)}, vol:${volume.toFixed(5)}) → tug`);
         } else {
           this.#partMeshes.upper.push(mesh);
-          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}) → upper`);
+          this.#debugLog.push(`[pos] "${mesh.name}" (yNorm:${yNorm.toFixed(2)}) → upper`);
         }
       }
     }
@@ -373,15 +388,30 @@ class BootRenderer {
       this.#debugLog.push('--- Single-mesh fallback: all → upper ---');
     }
 
-    // Debug output
-    if (new URLSearchParams(window.location.search).has('debug')) {
-      console.group('Boot Configurator — Mesh Discovery');
-      for (const line of this.#debugLog) console.log(line);
-      console.log('Part summary:', Object.fromEntries(
-        Object.entries(this.#partMeshes).map(([k, v]) => [k, v.length])
-      ));
-      console.groupEnd();
-    }
+    // Always log mesh discovery (critical for debugging GLB integration)
+    console.group('%c Boot Configurator — Mesh Discovery', 'color: #8B4513; font-weight: bold');
+    for (const line of this.#debugLog) console.log(line);
+    console.log('Part summary:', Object.fromEntries(
+      Object.entries(this.#partMeshes).map(([k, v]) => [k, v.length])
+    ));
+    console.log('Total meshes found:', this.#allMeshes.length + Object.values(this.#partMeshes).reduce((a, b) => a + b.length, 0));
+    console.groupEnd();
+  }
+
+  /**
+   * Strip texture maps from a material so base colour is directly paintable.
+   * GLB models often have baked textures that override material.color.
+   */
+  #stripTextures(mat) {
+    if (mat.map) { mat.map.dispose(); mat.map = null; }
+    if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
+    if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
+    if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
+    if (mat.aoMap) { mat.aoMap.dispose(); mat.aoMap = null; }
+    if (mat.emissiveMap) { mat.emissiveMap.dispose(); mat.emissiveMap = null; }
+    // Reset to clean PBR defaults
+    mat.color.set(0xffffff);
+    mat.needsUpdate = true;
   }
 
   // ── Material / Colour ──
@@ -395,16 +425,22 @@ class BootRenderer {
    */
   setPartColor(partName, hexColor, roughness, metalness) {
     const meshes = this.#partMeshes[partName];
-    if (!meshes || meshes.length === 0) return;
+    if (!meshes || meshes.length === 0) {
+      console.warn(`Boot configurator: no meshes for part "${partName}"`);
+      return;
+    }
 
     const targetColor = new THREE.Color(hexColor);
 
     for (const mesh of meshes) {
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const mat of mats) {
+        // Ensure no texture overrides the colour
+        if (mat.map) { mat.map.dispose(); mat.map = null; }
         this.#lerpColor(mat.color, targetColor, COLOR_LERP_MS);
         if (roughness !== undefined) mat.roughness = roughness;
         if (metalness !== undefined) mat.metalness = metalness;
+        mat.needsUpdate = true;
       }
     }
 
