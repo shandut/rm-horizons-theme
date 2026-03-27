@@ -1,22 +1,28 @@
 /**
- * 3D Boot Configurator — Three.js WebGL Application
+ * 3D Boot Configurator v2 — Three.js WebGL + GLB Model
  *
+ * Loads a real GLB model and applies real-time material/colour changes.
  * Self-contained ES module. Three.js loaded via importmap from CDN.
- * Liquid section renders the shell; this JS owns the entire experience.
+ *
+ * Path A: Colour-only configurator (single GLB, material swaps)
+ * Path B (future): Shape-swappable sub-meshes — see showMesh() stub
  */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ═══════════════════════════════════════════════════════════
 // 1. CONSTANTS
 // ═══════════════════════════════════════════════════════════
 
 const PHASES = [
-  { id: 'build', label: 'Build' },
   { id: 'customise', label: 'Customise' },
   { id: 'personalise', label: 'Personalise' },
+  // TODO Path B: re-add { id: 'build', label: 'Build' } as first phase
 ];
+
+const COLOR_LERP_MS = 300;
 
 // ═══════════════════════════════════════════════════════════
 // 2. STATE STORE
@@ -46,7 +52,6 @@ class StateStore {
 
   removeListener(fn) { this.#listeners.delete(fn); }
 
-  /** Generate deterministic config hash. */
   hash() {
     return Object.entries(this.#state)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -66,12 +71,6 @@ class RulesEngine {
     this.#rules = rules || [];
   }
 
-  /**
-   * Get denied values for a given option key based on current state.
-   * @param {string} key
-   * @param {Record<string, string>} state
-   * @returns {{ denied: Set<string>, messages: string[] }}
-   */
   evaluate(key, state) {
     const denied = new Set();
     const messages = [];
@@ -86,19 +85,11 @@ class RulesEngine {
         }
         if (rule.message) messages.push(rule.message);
       }
-
-      if (rule.allow?.[key]) {
-        // Allow means everything NOT in the list is denied
-        // (not implemented for MVP — deny-only is simpler)
-      }
     }
 
     return { denied, messages };
   }
 
-  /**
-   * Check if a specific value is valid for a key given current state.
-   */
   isValid(key, value, state) {
     const { denied } = this.evaluate(key, state);
     return !denied.has(value);
@@ -106,7 +97,7 @@ class RulesEngine {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 4. THREE.JS RENDERER
+// 4. THREE.JS RENDERER — GLB Model Loader
 // ═══════════════════════════════════════════════════════════
 
 class BootRenderer {
@@ -118,29 +109,45 @@ class BootRenderer {
   #camera;
   /** @type {OrbitControls} */
   #controls;
-  /** @type {THREE.Group} */
-  #bootGroup;
-  /** @type {Record<string, THREE.MeshStandardMaterial>} */
-  #materials = {};
-  /** @type {Record<string, THREE.Group>} */
-  #meshGroups = {};
   /** @type {number} */
   #rafId = 0;
   /** @type {boolean} */
   #needsRender = true;
   /** @type {ResizeObserver | null} */
   #resizeObserver = null;
+  /** @type {Record<string, THREE.Mesh[]>} */
+  #partMeshes = {};
+  /** @type {THREE.Mesh[]} */
+  #allMeshes = [];
+  /** @type {THREE.Group | null} */
+  #model = null;
+  /** @type {Promise<void>} */
+  ready;
+  /** @type {string[]} */
+  #debugLog = [];
 
-  constructor(canvas, container) {
+  /**
+   * @param {HTMLCanvasElement} canvas
+   * @param {HTMLElement} container
+   * @param {string} modelUrl
+   * @param {Record<string, string[]>} partMeshMap
+   * @param {boolean} positionFallback
+   * @param {(progress: number) => void} [onProgress]
+   */
+  constructor(canvas, container, modelUrl, partMeshMap, positionFallback, onProgress) {
     this.#initRenderer(canvas, container);
     this.#initScene();
     this.#initCamera(container);
     this.#initControls(canvas);
     this.#initLights();
-    this.#createPlaceholderBoot();
     this.#startRenderLoop();
     this.#initResize(container);
+
+    // Load GLB — expose as ready Promise
+    this.ready = this.#loadGLB(modelUrl, partMeshMap, positionFallback, onProgress);
   }
+
+  // ── Renderer setup ──
 
   #initRenderer(canvas, container) {
     this.#renderer = new THREE.WebGLRenderer({
@@ -151,310 +158,291 @@ class BootRenderer {
     this.#renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.#renderer.setSize(container.clientWidth, container.clientHeight);
     this.#renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.#renderer.toneMappingExposure = 1.2;
+    this.#renderer.toneMappingExposure = 1.3;
+    this.#renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.#renderer.shadowMap.enabled = true;
+    this.#renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
 
   #initScene() {
     this.#scene = new THREE.Scene();
-    this.#scene.background = new THREE.Color(0xf5f0e8);
+    // Transparent — CSS background shows through
+    this.#scene.background = null;
   }
 
   #initCamera(container) {
     const aspect = container.clientWidth / container.clientHeight;
-    this.#camera = new THREE.PerspectiveCamera(35, aspect, 0.1, 100);
-    this.#camera.position.set(3, 2, 5);
-    this.#camera.lookAt(0, 1, 0);
+    this.#camera = new THREE.PerspectiveCamera(35, aspect, 0.01, 100);
+    this.#camera.position.set(2.5, 1.2, 2.5);
+    this.#camera.lookAt(0, 0.5, 0);
   }
 
   #initControls(canvas) {
     this.#controls = new OrbitControls(this.#camera, canvas);
-    this.#controls.target.set(0, 1, 0);
+    this.#controls.target.set(0, 0.5, 0);
     this.#controls.enablePan = false;
     this.#controls.enableDamping = true;
-    this.#controls.dampingFactor = 0.08;
-    this.#controls.minDistance = 3;
+    this.#controls.dampingFactor = 0.06;
+    this.#controls.minDistance = 1;
     this.#controls.maxDistance = 8;
-    this.#controls.minPolarAngle = Math.PI * 0.2;
-    this.#controls.maxPolarAngle = Math.PI * 0.65;
+    this.#controls.minPolarAngle = Math.PI * 0.15;
+    this.#controls.maxPolarAngle = Math.PI * 0.6;
+    this.#controls.autoRotate = true;
+    this.#controls.autoRotateSpeed = 0.8;
     this.#controls.addEventListener('change', () => { this.#needsRender = true; });
     this.#controls.update();
+
+    // Stop auto-rotate on interaction
+    canvas.addEventListener('pointerdown', () => { this.#controls.autoRotate = false; });
   }
 
   #initLights() {
     // Ambient fill
-    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    const ambient = new THREE.AmbientLight(0xfff5ee, 0.4);
     this.#scene.add(ambient);
 
-    // Key light
-    const key = new THREE.DirectionalLight(0xffffff, 1.2);
+    // Key light (main)
+    const key = new THREE.DirectionalLight(0xffffff, 2.0);
     key.position.set(5, 8, 5);
-    key.castShadow = false;
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.radius = 4;
     this.#scene.add(key);
 
-    // Rim light
-    const rim = new THREE.DirectionalLight(0xffeedd, 0.4);
-    rim.position.set(-3, 4, -3);
+    // Fill light
+    const fill = new THREE.DirectionalLight(0xe8dfd5, 0.8);
+    fill.position.set(-4, 3, -2);
+    this.#scene.add(fill);
+
+    // Rim / back light
+    const rim = new THREE.DirectionalLight(0xfff0e0, 0.6);
+    rim.position.set(0, 4, -6);
     this.#scene.add(rim);
 
-    // Fill from below
-    const fill = new THREE.DirectionalLight(0xffffff, 0.2);
-    fill.position.set(0, -2, 3);
-    this.#scene.add(fill);
+    // Bottom fill (for sole)
+    const bottom = new THREE.DirectionalLight(0xe0d8d0, 0.3);
+    bottom.position.set(0, -3, 2);
+    this.#scene.add(bottom);
+
+    // Hemisphere
+    const hemi = new THREE.HemisphereLight(0xffeedd, 0x8d7b6c, 0.4);
+    this.#scene.add(hemi);
+
+    // Shadow-receiving ground plane
+    const shadowGeo = new THREE.PlaneGeometry(10, 10);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.15 });
+    const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -0.01;
+    shadowPlane.receiveShadow = true;
+    this.#scene.add(shadowPlane);
   }
 
+  // ── GLB Loading ──
+
   /**
-   * Build a Chelsea boot from Three.js primitives.
-   * Each variant part is a named mesh in a named group for easy show/hide.
+   * Load a GLB model and categorize its meshes into boot parts.
+   * @param {string} url
+   * @param {Record<string, string[]>} partMeshMap
+   * @param {boolean} positionFallback
+   * @param {(progress: number) => void} [onProgress]
    */
-  #createPlaceholderBoot() {
-    this.#bootGroup = new THREE.Group();
-    this.#bootGroup.name = 'BootRoot';
+  async #loadGLB(url, partMeshMap, positionFallback, onProgress) {
+    const loader = new GLTFLoader();
 
-    // ── Materials ──
-    this.#materials.upper = new THREE.MeshStandardMaterial({
-      color: 0x8B4513, roughness: 0.62, metalness: 0.0,
-    });
-    this.#materials.sole = new THREE.MeshStandardMaterial({
-      color: 0x8B6340, roughness: 0.8, metalness: 0.0,
-    });
-    this.#materials.heel = new THREE.MeshStandardMaterial({
-      color: 0x3E2712, roughness: 0.7, metalness: 0.0,
-    });
-    this.#materials.elastic = new THREE.MeshStandardMaterial({
-      color: 0x5C3A1E, roughness: 0.75, metalness: 0.0,
-    });
-    this.#materials.tug = new THREE.MeshStandardMaterial({
-      color: 0xB22222, roughness: 0.6, metalness: 0.0,
-    });
-    this.#materials.welt = new THREE.MeshStandardMaterial({
-      color: 0xA0724A, roughness: 0.65, metalness: 0.0,
-    });
-    this.#materials.rubber = new THREE.MeshStandardMaterial({
-      color: 0x2C2C2C, roughness: 0.9, metalness: 0.0,
-    });
-    this.#materials.brass = new THREE.MeshStandardMaterial({
-      color: 0xDAA520, roughness: 0.3, metalness: 0.6,
-    });
-
-    // ── Upper (boot shaft + vamp) ──
-    const upperGroup = new THREE.Group();
-    upperGroup.name = 'GEO_upper_main';
-
-    // Shaft (tapered cylinder)
-    const shaftGeo = new THREE.CylinderGeometry(0.45, 0.5, 1.8, 32, 1, true);
-    const shaft = new THREE.Mesh(shaftGeo, this.#materials.upper);
-    shaft.position.set(0, 1.5, 0);
-    upperGroup.add(shaft);
-
-    // Vamp (front lower section) — half sphere
-    const vampGeo = new THREE.SphereGeometry(0.55, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5);
-    const vamp = new THREE.Mesh(vampGeo, this.#materials.upper);
-    vamp.position.set(0, 0.6, 0.15);
-    vamp.rotation.x = Math.PI;
-    upperGroup.add(vamp);
-
-    // Ankle bridge
-    const ankleGeo = new THREE.CylinderGeometry(0.5, 0.55, 0.3, 32);
-    const ankle = new THREE.Mesh(ankleGeo, this.#materials.upper);
-    ankle.position.set(0, 0.6, 0);
-    upperGroup.add(ankle);
-
-    this.#bootGroup.add(upperGroup);
-    this.#meshGroups['GEO_upper_main'] = upperGroup;
-
-    // ── Toe variants ──
-    const toeGroup = new THREE.Group();
-    toeGroup.name = 'ToeGroup';
-
-    // Round toe
-    const roundGeo = new THREE.SphereGeometry(0.35, 32, 16);
-    const roundToe = new THREE.Mesh(roundGeo, this.#materials.upper);
-    roundToe.name = 'GEO_toe_round';
-    roundToe.position.set(0, 0.35, 0.65);
-    roundToe.scale.set(1.3, 0.7, 1.2);
-    toeGroup.add(roundToe);
-
-    // Chisel toe
-    const chiselGeo = new THREE.BoxGeometry(0.7, 0.4, 0.8);
-    const chiselToe = new THREE.Mesh(chiselGeo, this.#materials.upper);
-    chiselToe.name = 'GEO_toe_chisel';
-    chiselToe.position.set(0, 0.35, 0.7);
-    chiselToe.visible = false;
-    toeGroup.add(chiselToe);
-
-    // Square toe
-    const squareGeo = new THREE.BoxGeometry(0.85, 0.4, 0.7);
-    const squareToe = new THREE.Mesh(squareGeo, this.#materials.upper);
-    squareToe.name = 'GEO_toe_square';
-    squareToe.position.set(0, 0.35, 0.65);
-    squareToe.visible = false;
-    toeGroup.add(squareToe);
-
-    this.#bootGroup.add(toeGroup);
-    this.#meshGroups['GEO_toe_round'] = roundToe;
-    this.#meshGroups['GEO_toe_chisel'] = chiselToe;
-    this.#meshGroups['GEO_toe_square'] = squareToe;
-
-    // ── Heel variants ──
-    // Flat heel
-    const flatHeel = new THREE.Mesh(
-      new THREE.BoxGeometry(0.6, 0.15, 0.5),
-      this.#materials.heel
-    );
-    flatHeel.name = 'GEO_heel_flat';
-    flatHeel.position.set(0, 0.08, -0.35);
-    this.#bootGroup.add(flatHeel);
-    this.#meshGroups['GEO_heel_flat'] = flatHeel;
-
-    // Block heel
-    const blockHeel = new THREE.Mesh(
-      new THREE.BoxGeometry(0.55, 0.4, 0.45),
-      this.#materials.heel
-    );
-    blockHeel.name = 'GEO_heel_block';
-    blockHeel.position.set(0, 0.2, -0.35);
-    blockHeel.visible = false;
-    this.#bootGroup.add(blockHeel);
-    this.#meshGroups['GEO_heel_block'] = blockHeel;
-
-    // Cuban heel (trapezoidal)
-    const cubanShape = new THREE.Shape();
-    cubanShape.moveTo(-0.3, 0);
-    cubanShape.lineTo(0.3, 0);
-    cubanShape.lineTo(0.22, 0.55);
-    cubanShape.lineTo(-0.22, 0.55);
-    cubanShape.closePath();
-    const cubanGeo = new THREE.ExtrudeGeometry(cubanShape, { depth: 0.4, bevelEnabled: false });
-    const cubanHeel = new THREE.Mesh(cubanGeo, this.#materials.heel);
-    cubanHeel.name = 'GEO_heel_cuban';
-    cubanHeel.position.set(0, 0, -0.55);
-    cubanHeel.visible = false;
-    this.#bootGroup.add(cubanHeel);
-    this.#meshGroups['GEO_heel_cuban'] = cubanHeel;
-
-    // ── Sole variants ──
-    // Leather sole
-    const leatherSole = new THREE.Mesh(
-      new THREE.BoxGeometry(1.1, 0.06, 1.8),
-      this.#materials.sole
-    );
-    leatherSole.name = 'GEO_sole_leather';
-    leatherSole.position.set(0, 0.03, 0.15);
-    this.#bootGroup.add(leatherSole);
-    this.#meshGroups['GEO_sole_leather'] = leatherSole;
-
-    // Rubber sole
-    const rubberSole = new THREE.Mesh(
-      new THREE.BoxGeometry(1.15, 0.1, 1.85),
-      this.#materials.rubber
-    );
-    rubberSole.name = 'GEO_sole_rubber';
-    rubberSole.position.set(0, 0.05, 0.15);
-    rubberSole.visible = false;
-    this.#bootGroup.add(rubberSole);
-    this.#meshGroups['GEO_sole_rubber'] = rubberSole;
-
-    // Brass sole (leather + brass accents)
-    const brassSoleGroup = new THREE.Group();
-    brassSoleGroup.name = 'GEO_sole_brass';
-    const brassBase = new THREE.Mesh(
-      new THREE.BoxGeometry(1.1, 0.06, 1.8),
-      this.#materials.sole
-    );
-    brassBase.position.set(0, 0.03, 0.15);
-    brassSoleGroup.add(brassBase);
-
-    // Add brass screw heads
-    const screwGeo = new THREE.CylinderGeometry(0.025, 0.025, 0.02, 8);
-    const screwPositions = [
-      [-0.4, 0.07, 0.6], [-0.4, 0.07, 0.2], [-0.4, 0.07, -0.2], [-0.4, 0.07, -0.5],
-      [0.4, 0.07, 0.6], [0.4, 0.07, 0.2], [0.4, 0.07, -0.2], [0.4, 0.07, -0.5],
-      [0, 0.07, 0.9], [0, 0.07, -0.6],
-    ];
-    for (const [x, y, z] of screwPositions) {
-      const screw = new THREE.Mesh(screwGeo, this.#materials.brass);
-      screw.position.set(x, y, z);
-      brassSoleGroup.add(screw);
+    // Initialise partMeshes buckets
+    for (const part of Object.keys(partMeshMap)) {
+      this.#partMeshes[part] = [];
     }
-    brassSoleGroup.visible = false;
-    this.#bootGroup.add(brassSoleGroup);
-    this.#meshGroups['GEO_sole_brass'] = brassSoleGroup;
 
-    // ── Elastic panels ──
-    const elasticGeo = new THREE.PlaneGeometry(0.08, 1.0);
+    return new Promise((resolve, reject) => {
+      loader.load(
+        url,
+        (gltf) => {
+          const model = gltf.scene;
 
-    const elasticL = new THREE.Mesh(elasticGeo, this.#materials.elastic);
-    elasticL.name = 'GEO_elastic_left';
-    elasticL.position.set(-0.48, 1.2, 0);
-    elasticL.rotation.y = Math.PI * 0.5;
-    this.#bootGroup.add(elasticL);
-    this.#meshGroups['GEO_elastic_left'] = elasticL;
+          // Center and scale the model
+          const box = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 2.0 / maxDim;
+          model.scale.setScalar(scale);
+          model.position.sub(center.multiplyScalar(scale));
+          model.position.y -= (box.min.y * scale);
 
-    const elasticR = new THREE.Mesh(elasticGeo, this.#materials.elastic);
-    elasticR.name = 'GEO_elastic_right';
-    elasticR.position.set(0.48, 1.2, 0);
-    elasticR.rotation.y = -Math.PI * 0.5;
-    this.#bootGroup.add(elasticR);
-    this.#meshGroups['GEO_elastic_right'] = elasticR;
+          this.#scene.add(model);
+          this.#model = model;
 
-    // ── Tug (pull tabs) ──
-    const tugGeo = new THREE.BoxGeometry(0.12, 0.2, 0.04);
+          // Traverse and categorize meshes
+          this.#categorizeMeshes(model, partMeshMap, positionFallback);
 
-    const tugL = new THREE.Mesh(tugGeo, this.#materials.tug);
-    tugL.name = 'GEO_tug_left';
-    tugL.position.set(0, 2.5, -0.42);
-    this.#bootGroup.add(tugL);
-    this.#meshGroups['GEO_tug_left'] = tugL;
-
-    const tugR = new THREE.Mesh(tugGeo, this.#materials.tug);
-    tugR.name = 'GEO_tug_right';
-    tugR.position.set(0, 2.5, 0.42);
-    this.#bootGroup.add(tugR);
-    this.#meshGroups['GEO_tug_right'] = tugR;
-
-    // ── Welt (sole edge stitching line) ──
-    const weltGeo = new THREE.TorusGeometry(0.58, 0.015, 8, 64);
-    const welt = new THREE.Mesh(weltGeo, this.#materials.welt);
-    welt.position.set(0, 0.06, 0.15);
-    welt.rotation.x = Math.PI * 0.5;
-    welt.scale.set(1, 1.5, 1);
-    this.#bootGroup.add(welt);
-
-    // Add boot to scene
-    this.#scene.add(this.#bootGroup);
-    this.#needsRender = true;
+          this.#needsRender = true;
+          resolve();
+        },
+        (progress) => {
+          if (progress.total && onProgress) {
+            onProgress(progress.loaded / progress.total);
+          }
+        },
+        (error) => {
+          console.error('Boot configurator: GLB load failed', error);
+          reject(error);
+        }
+      );
+    });
   }
 
   /**
-   * Show one mesh and hide others in the same option group.
-   * @param {string} group - e.g. 'toe', 'heel', 'sole'
-   * @param {string} meshName - e.g. 'GEO_toe_chisel'
+   * Walk the scene graph, assign each mesh to a boot part.
    */
-  showMesh(group, meshName) {
-    const prefix = `GEO_${group}_`;
-    for (const [name, mesh] of Object.entries(this.#meshGroups)) {
-      if (name.startsWith(prefix)) {
-        mesh.visible = name === meshName;
+  #categorizeMeshes(model, partMeshMap, positionFallback) {
+    const unmatched = [];
+
+    model.traverse((child) => {
+      if (!child.isMesh) return;
+
+      child.castShadow = true;
+      child.receiveShadow = true;
+
+      // Clone material so parts colour independently
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map(m => m.clone());
+      } else {
+        child.material = child.material.clone();
+      }
+
+      const meshName = (child.name || '').toLowerCase();
+      const matName = (Array.isArray(child.material)
+        ? child.material.map(m => m.name).join(' ')
+        : child.material.name || ''
+      ).toLowerCase();
+      const combined = meshName + ' ' + matName;
+
+      // Try name matching
+      let matched = false;
+      for (const [part, keywords] of Object.entries(partMeshMap)) {
+        for (const kw of keywords) {
+          if (combined.includes(kw.toLowerCase())) {
+            this.#partMeshes[part].push(child);
+            matched = true;
+            this.#debugLog.push(`[name] "${child.name}" (mat: "${child.material.name || '?'}") → ${part}`);
+            break;
+          }
+        }
+        if (matched) break;
+      }
+
+      if (!matched) {
+        unmatched.push(child);
+        this.#allMeshes.push(child);
+      }
+    });
+
+    // Position-based fallback if no name matches found
+    const anyMatched = Object.values(this.#partMeshes).some(arr => arr.length > 0);
+
+    if (positionFallback && !anyMatched && unmatched.length > 0) {
+      this.#debugLog.push('--- Position fallback triggered ---');
+
+      for (const mesh of unmatched) {
+        const meshBox = new THREE.Box3().setFromObject(mesh);
+        const worldCenter = meshBox.getCenter(new THREE.Vector3());
+        const yNorm = worldCenter.y / 2.0;
+        const meshSize = new THREE.Vector3();
+        meshBox.getSize(meshSize);
+        const volume = meshSize.x * meshSize.y * meshSize.z;
+
+        if (yNorm < 0.12) {
+          this.#partMeshes.sole.push(mesh);
+          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}) → sole`);
+        } else if (volume < 0.02 && yNorm > 0.7) {
+          this.#partMeshes.tug.push(mesh);
+          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}, vol:${volume.toFixed(4)}) → tug`);
+        } else {
+          this.#partMeshes.upper.push(mesh);
+          this.#debugLog.push(`[pos] "${mesh.name}" (y:${yNorm.toFixed(2)}) → upper`);
+        }
       }
     }
-    this.#needsRender = true;
+
+    // Single-mesh fallback: if still nothing, assign all to upper
+    const anyMapped = Object.values(this.#partMeshes).some(arr => arr.length > 0);
+    if (!anyMapped && this.#allMeshes.length > 0) {
+      this.#partMeshes.upper = [...this.#allMeshes];
+      this.#debugLog.push('--- Single-mesh fallback: all → upper ---');
+    }
+
+    // Debug output
+    if (new URLSearchParams(window.location.search).has('debug')) {
+      console.group('Boot Configurator — Mesh Discovery');
+      for (const line of this.#debugLog) console.log(line);
+      console.log('Part summary:', Object.fromEntries(
+        Object.entries(this.#partMeshes).map(([k, v]) => [k, v.length])
+      ));
+      console.groupEnd();
+    }
   }
 
+  // ── Material / Colour ──
+
   /**
-   * Update a material's color.
-   * @param {string} materialName
+   * Set the colour of a boot part with smooth lerp transition.
+   * @param {string} partName — e.g. 'upper', 'elastic', 'tug', 'sole'
    * @param {string} hexColor
    * @param {number} [roughness]
    * @param {number} [metalness]
    */
-  setMaterialColor(materialName, hexColor, roughness, metalness) {
-    const mat = this.#materials[materialName];
-    if (!mat) return;
-    mat.color.set(hexColor);
-    if (roughness !== undefined) mat.roughness = roughness;
-    if (metalness !== undefined) mat.metalness = metalness;
+  setPartColor(partName, hexColor, roughness, metalness) {
+    const meshes = this.#partMeshes[partName];
+    if (!meshes || meshes.length === 0) return;
+
+    const targetColor = new THREE.Color(hexColor);
+
+    for (const mesh of meshes) {
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const mat of mats) {
+        this.#lerpColor(mat.color, targetColor, COLOR_LERP_MS);
+        if (roughness !== undefined) mat.roughness = roughness;
+        if (metalness !== undefined) mat.metalness = metalness;
+      }
+    }
+
     this.#needsRender = true;
   }
+
+  /**
+   * Smooth colour transition.
+   * @param {THREE.Color} current
+   * @param {THREE.Color} target
+   * @param {number} durationMs
+   */
+  #lerpColor(current, target, durationMs) {
+    const start = current.clone();
+    const startTime = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - startTime) / durationMs, 1);
+      current.lerpColors(start, target, t);
+      this.#needsRender = true;
+      if (t < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  /**
+   * TODO Path B: Show one mesh variant and hide others in the same group.
+   * For GLB sub-mesh swapping (e.g. load toe_round.glb, hide toe_chisel.glb).
+   * Currently a no-op — shape swapping requires multiple GLB sub-meshes.
+   * @param {string} _group
+   * @param {string} _meshName
+   */
+  showMesh(_group, _meshName) {
+    // Path B implementation will go here.
+    // Expected approach: load/cache GLB sub-meshes per group,
+    // toggle visibility, and update the scene graph.
+  }
+
+  // ── Render loop ──
 
   #startRenderLoop() {
     const animate = () => {
@@ -487,11 +475,11 @@ class BootRenderer {
     this.#resizeObserver?.disconnect();
     this.#controls.dispose();
 
-    // Dispose geometries and materials
     this.#scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry?.dispose();
-        if (obj.material instanceof THREE.Material) obj.material.dispose();
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        for (const m of mats) m?.dispose();
       }
     });
     this.#renderer.dispose();
@@ -527,7 +515,7 @@ class UIController {
       this.#applyStateToScene(key, value);
       this.#updateSummary();
       this.#updatePrice();
-      this.#renderCurrentStep(); // re-render to update disabled states
+      this.#renderCurrentStep();
     });
   }
 
@@ -536,7 +524,7 @@ class UIController {
     if (!container) return;
 
     const currentStep = this.#manifest.steps[this.#currentStepIndex];
-    const currentPhase = currentStep?.phase || 'build';
+    const currentPhase = currentStep?.phase || PHASES[0].id;
 
     container.innerHTML = PHASES.map((phase, i) => {
       const phaseIndex = PHASES.findIndex(p => p.id === currentPhase);
@@ -564,6 +552,7 @@ class UIController {
       <h3 class="boot-configurator__step-title">${step.label}</h3>`;
 
     if (step.type === 'chips') {
+      // TODO Path B: shape selection chips
       html += `<div class="boot-configurator__chips">`;
       for (const opt of step.options) {
         const isSelected = allState[step.id] === opt.id;
@@ -639,16 +628,16 @@ class UIController {
     const step = this.#manifest.steps.find(s => s.id === key);
     if (!step) return;
 
-    if (step.type === 'chips') {
-      const opt = step.options.find(o => o.id === value);
-      if (opt?.mesh) {
-        const group = key; // 'toe', 'heel', 'sole'
-        this.#renderer.showMesh(group, opt.mesh);
-      }
-    } else if (step.type === 'swatches' && step.materialTarget) {
+    if (step.type === 'swatches' && step.materialTarget) {
       const opt = step.options.find(o => o.id === value);
       if (opt?.color) {
-        this.#renderer.setMaterialColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
+        this.#renderer.setPartColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
+      }
+    } else if (step.type === 'chips') {
+      // TODO Path B: call renderer.showMesh(key, opt.mesh)
+      const opt = step.options.find(o => o.id === value);
+      if (opt?.mesh) {
+        this.#renderer.showMesh(key, opt.mesh);
       }
     }
   }
@@ -755,7 +744,7 @@ class UIController {
 
     try {
       addBtn.disabled = true;
-      addBtn.textContent = 'Adding…';
+      addBtn.textContent = 'Adding\u2026';
 
       const res = await fetch(cartUrl, {
         method: 'POST',
@@ -772,8 +761,7 @@ class UIController {
         return;
       }
 
-      addBtn.textContent = 'Added ✓';
-      // Dispatch native event for cart drawers
+      addBtn.textContent = 'Added \u2713';
       document.dispatchEvent(new CustomEvent('cart:add', { detail: data }));
 
       setTimeout(() => {
@@ -787,9 +775,7 @@ class UIController {
     }
   }
 
-  destroy() {
-    // Cleanup handled by garbage collection when root is removed
-  }
+  destroy() {}
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -805,7 +791,7 @@ class BootConfiguratorApp {
     this.#root = root;
   }
 
-  init() {
+  async init() {
     // Parse manifest
     const manifestEl = this.#root.querySelector('.boot-configurator__manifest');
     if (!manifestEl) { console.error('Boot configurator: no manifest found'); return; }
@@ -824,28 +810,53 @@ class BootConfiguratorApp {
     // Rules engine
     const rules = new RulesEngine(manifest.rules);
 
-    // Three.js renderer
+    // Get model URL from data attribute
+    const modelUrl = this.#root.dataset.modelUrl;
+    if (!modelUrl) {
+      console.error('Boot configurator: no data-model-url attribute');
+      return;
+    }
+
+    // UI elements
     const canvas = this.#root.querySelector('.boot-configurator__canvas');
     const viewer = this.#root.querySelector('.boot-configurator__viewer');
+    const loader = this.#root.querySelector('.boot-configurator__loader');
+    const loaderText = this.#root.querySelector('.boot-configurator__loader-text');
+    const progressFill = this.#root.querySelector('.boot-configurator__progress-fill');
     if (!canvas || !viewer) { console.error('Boot configurator: no canvas/viewer'); return; }
 
-    this.#renderer = new BootRenderer(canvas, viewer);
+    // Progress callback
+    const onProgress = (pct) => {
+      const percent = Math.round(pct * 100);
+      if (loaderText) loaderText.textContent = `Loading 3D preview\u2026 ${percent}%`;
+      if (progressFill) progressFill.style.width = `${percent}%`;
+    };
+
+    // Create renderer and load GLB
+    this.#renderer = new BootRenderer(
+      canvas, viewer, modelUrl,
+      manifest.partMeshMap || {},
+      manifest.positionFallback !== false,
+      onProgress
+    );
+
+    try {
+      await this.#renderer.ready;
+    } catch {
+      if (loaderText) loaderText.textContent = 'Failed to load 3D model.';
+      return;
+    }
 
     // Hide loader
-    const loader = this.#root.querySelector('.boot-configurator__loader');
     if (loader) loader.hidden = true;
 
-    // Apply default state to scene
+    // Apply default colours to the model
     for (const step of manifest.steps) {
       const val = manifest.defaultConfig[step.id];
-      if (!val) continue;
-
-      if (step.type === 'chips') {
-        const opt = step.options.find(o => o.id === val);
-        if (opt?.mesh) this.#renderer.showMesh(step.id, opt.mesh);
-      } else if (step.type === 'swatches' && step.materialTarget) {
-        const opt = step.options.find(o => o.id === val);
-        if (opt?.color) this.#renderer.setMaterialColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
+      if (!val || step.type !== 'swatches' || !step.materialTarget) continue;
+      const opt = step.options.find(o => o.id === val);
+      if (opt?.color) {
+        this.#renderer.setPartColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
       }
     }
 
@@ -860,7 +871,7 @@ class BootConfiguratorApp {
 }
 
 // ═══════════════════════════════════════════════════════════
-// 7. INIT — find all configurator sections and boot them
+// 7. INIT
 // ═══════════════════════════════════════════════════════════
 
 /** @type {Map<string, BootConfiguratorApp>} */
@@ -871,7 +882,6 @@ function initAll() {
     const id = root.dataset.sectionId;
     if (!id) continue;
 
-    // Destroy existing instance (theme editor re-render)
     if (instances.has(id)) {
       instances.get(id).destroy();
       instances.delete(id);
@@ -883,14 +893,13 @@ function initAll() {
   }
 }
 
-// Init on DOM ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initAll);
 } else {
   initAll();
 }
 
-// Theme editor lifecycle — reinit on section load/select
+// Theme editor lifecycle
 document.addEventListener('shopify:section:load', (e) => {
   const section = e.target?.querySelector('.boot-configurator');
   if (section) initAll();

@@ -1,7 +1,11 @@
 {%- comment -%}
   3D Boot Configurator (v2) — Three.js WebGL configurator
+  Loads a real GLB model and applies real-time colour changes.
   Liquid is "dumb" — it renders the DOM shell and embeds data.
   JavaScript owns the entire configurator experience.
+
+  Path A: Colour-only configurator (single GLB, material swaps)
+  Path B (future): Shape-swappable sub-meshes for toe/heel/sole variants
 {%- endcomment -%}
 
 {% liquid
@@ -17,12 +21,17 @@
   data-base-variant-id="{{ variant.id }}"
   data-money-format="{{ shop.money_format | escape }}"
   data-cart-add-url="{{ routes.cart_add_url }}"
+  data-model-url="https://cdn.shopify.com/3d/models/98599c409d81cbb7/RMWilliams-boot-3dimage.glb"
 >
   {%- comment -%} 3D Viewer {%- endcomment -%}
   <div class="boot-configurator__viewer">
     <canvas class="boot-configurator__canvas" aria-label="3D boot configurator preview"></canvas>
     <div class="boot-configurator__loader" aria-live="polite">
+      <div class="boot-configurator__spinner"></div>
       <span class="boot-configurator__loader-text">Loading 3D preview&hellip;</span>
+      <div class="boot-configurator__progress-bar">
+        <div class="boot-configurator__progress-fill"></div>
+      </div>
     </div>
     <noscript>
       <img src="{{ 'configurator-body.png' | asset_url }}" alt="Boot preview" class="boot-configurator__fallback">
@@ -47,57 +56,29 @@
     <div class="boot-configurator__live-region visually-hidden" role="status"></div>
   </div>
 
-  {%- comment -%} Configuration manifest — parsed by JS {%- endcomment -%}
+  {%- comment -%} Configuration manifest v2 — parsed by JS {%- endcomment -%}
   <script type="application/json" class="boot-configurator__manifest">
   {
-    "version": 1,
+    "version": 2,
+    "partMeshMap": {
+      "upper": ["upper", "body", "leather", "shaft", "vamp", "quarter", "main"],
+      "elastic": ["elastic", "gore", "panel", "gusset", "side_panel"],
+      "tug": ["tab", "pull", "loop", "tag", "strap", "tug"],
+      "sole": ["sole", "heel", "outsole", "bottom", "welt", "rand"]
+    },
+    "positionFallback": true,
     "basePrice": 79500,
     "currency": "AUD",
     "defaultConfig": {
-      "toe": "round",
-      "heel": "flat",
-      "sole": "leather",
       "leather": "chestnut",
       "elasticColor": "brown",
       "tugColor": "red",
+      "soleColor": "black",
       "width": "G",
       "length": "9",
       "engraving": ""
     },
     "steps": [
-      {
-        "id": "toe",
-        "label": "Toe Shape",
-        "phase": "build",
-        "type": "chips",
-        "options": [
-          { "id": "round", "label": "Round Toe", "desc": "Classic RM Williams profile", "mesh": "GEO_toe_round" },
-          { "id": "chisel", "label": "Chisel Toe", "desc": "Angular, contemporary", "mesh": "GEO_toe_chisel" },
-          { "id": "square", "label": "Square Toe", "desc": "Bold, structured", "mesh": "GEO_toe_square" }
-        ]
-      },
-      {
-        "id": "heel",
-        "label": "Heel",
-        "phase": "build",
-        "type": "chips",
-        "options": [
-          { "id": "flat", "label": "Flat Heel", "desc": "Low-profile everyday wear", "mesh": "GEO_heel_flat" },
-          { "id": "block", "label": "Block Heel", "desc": "Classic dress boot", "mesh": "GEO_heel_block", "priceAdjust": 0 },
-          { "id": "cuban", "label": "Cuban Heel", "desc": "Elevated statement", "mesh": "GEO_heel_cuban", "priceAdjust": 5000 }
-        ]
-      },
-      {
-        "id": "sole",
-        "label": "Sole",
-        "phase": "build",
-        "type": "chips",
-        "options": [
-          { "id": "leather", "label": "Sewn Welt Leather", "desc": "Traditional craftsmanship", "mesh": "GEO_sole_leather" },
-          { "id": "rubber", "label": "Comfort Rubber", "desc": "All-day wearability", "mesh": "GEO_sole_rubber" },
-          { "id": "brass", "label": "Brass-Screwed", "desc": "Heritage durability", "mesh": "GEO_sole_brass", "priceAdjust": 3000 }
-        ]
-      },
       {
         "id": "leather",
         "label": "Leather & Colour",
@@ -108,30 +89,54 @@
           { "id": "chestnut", "label": "Chestnut Yearling", "color": "#8B4513", "roughness": 0.62, "metalness": 0.0 },
           { "id": "black", "label": "Black Yearling", "color": "#1a1a1a", "roughness": 0.45, "metalness": 0.0 },
           { "id": "tobacco", "label": "Tobacco Suede", "color": "#6B4226", "roughness": 0.85, "metalness": 0.0, "priceAdjust": 2500 },
-          { "id": "cognac", "label": "Cognac Kangaroo", "color": "#A0522D", "roughness": 0.55, "metalness": 0.0, "priceAdjust": 7500 }
+          { "id": "cognac", "label": "Cognac Kangaroo", "color": "#A0522D", "roughness": 0.55, "metalness": 0.0, "priceAdjust": 7500 },
+          { "id": "darkchocolate", "label": "Dark Chocolate", "color": "#3B2416", "roughness": 0.58, "metalness": 0.0 },
+          { "id": "burgundy", "label": "Burgundy", "color": "#800020", "roughness": 0.52, "metalness": 0.0, "priceAdjust": 2500 },
+          { "id": "sand", "label": "Sand Suede", "color": "#D4C5A9", "roughness": 0.85, "metalness": 0.0, "priceAdjust": 2500 },
+          { "id": "slate", "label": "Dark Slate", "color": "#2F4F4F", "roughness": 0.60, "metalness": 0.0, "priceAdjust": 2500 }
         ]
       },
       {
         "id": "elasticColor",
         "label": "Elastic Colour",
-        "phase": "personalise",
+        "phase": "customise",
         "type": "swatches",
         "materialTarget": "elastic",
         "options": [
-          { "id": "brown", "label": "Brown", "color": "#5C3A1E" },
-          { "id": "red", "label": "Red", "color": "#B22222" },
-          { "id": "blue", "label": "Navy Blue", "color": "#1E3A5F" }
+          { "id": "brown", "label": "Brown", "color": "#5C3A1E", "roughness": 0.75, "metalness": 0.0 },
+          { "id": "black", "label": "Black", "color": "#1a1a1a", "roughness": 0.75, "metalness": 0.0 },
+          { "id": "darkbrown", "label": "Dark Brown", "color": "#3B2416", "roughness": 0.75, "metalness": 0.0 },
+          { "id": "grey", "label": "Grey", "color": "#808080", "roughness": 0.75, "metalness": 0.0 },
+          { "id": "camel", "label": "Camel", "color": "#C19A6B", "roughness": 0.75, "metalness": 0.0 }
         ]
       },
       {
         "id": "tugColor",
-        "label": "Tug Colour",
-        "phase": "personalise",
+        "label": "Pull Tab Colour",
+        "phase": "customise",
         "type": "swatches",
         "materialTarget": "tug",
         "options": [
-          { "id": "red", "label": "Red", "color": "#B22222" },
-          { "id": "blue", "label": "Navy Blue", "color": "#1E3A5F" }
+          { "id": "red", "label": "Red", "color": "#B22222", "roughness": 0.6, "metalness": 0.0 },
+          { "id": "blue", "label": "Navy Blue", "color": "#1E3A5F", "roughness": 0.6, "metalness": 0.0 },
+          { "id": "black", "label": "Black", "color": "#1a1a1a", "roughness": 0.6, "metalness": 0.0 },
+          { "id": "tan", "label": "Tan", "color": "#8B6914", "roughness": 0.5, "metalness": 0.0 },
+          { "id": "gold", "label": "Gold", "color": "#D4AF37", "roughness": 0.3, "metalness": 0.6 },
+          { "id": "silver", "label": "Silver", "color": "#C0C0C0", "roughness": 0.3, "metalness": 0.6 }
+        ]
+      },
+      {
+        "id": "soleColor",
+        "label": "Sole & Heel",
+        "phase": "customise",
+        "type": "swatches",
+        "materialTarget": "sole",
+        "options": [
+          { "id": "black", "label": "Black Rubber", "color": "#2C2C2C", "roughness": 0.9, "metalness": 0.0 },
+          { "id": "leathertan", "label": "Leather Tan", "color": "#8B6914", "roughness": 0.7, "metalness": 0.0 },
+          { "id": "brown", "label": "Brown", "color": "#5C3A2E", "roughness": 0.7, "metalness": 0.0 },
+          { "id": "natural", "label": "Natural", "color": "#DDD0B8", "roughness": 0.65, "metalness": 0.0 },
+          { "id": "amber", "label": "Amber", "color": "#D2691E", "roughness": 0.7, "metalness": 0.0 }
         ]
       },
       {
@@ -169,20 +174,47 @@
         "placeholder": "Up to 20 characters"
       }
     ],
-    "rules": [
+    "rules": [],
+    "_disabledSteps_PathB": [
       {
-        "when": { "sole": "rubber" },
-        "deny": { "heel": ["cuban"] },
-        "message": "Rubber sole is not available with Cuban heel."
+        "id": "toe",
+        "label": "Toe Shape",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "round", "label": "Round Toe", "desc": "Classic RM Williams profile", "mesh": "GEO_toe_round" },
+          { "id": "chisel", "label": "Chisel Toe", "desc": "Angular, contemporary", "mesh": "GEO_toe_chisel" },
+          { "id": "square", "label": "Square Toe", "desc": "Bold, structured", "mesh": "GEO_toe_square" }
+        ]
+      },
+      {
+        "id": "heel",
+        "label": "Heel",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "flat", "label": "Flat Heel", "desc": "Low-profile everyday wear", "mesh": "GEO_heel_flat" },
+          { "id": "block", "label": "Block Heel", "desc": "Classic dress boot", "mesh": "GEO_heel_block", "priceAdjust": 0 },
+          { "id": "cuban", "label": "Cuban Heel", "desc": "Elevated statement", "mesh": "GEO_heel_cuban", "priceAdjust": 5000 }
+        ]
+      },
+      {
+        "id": "sole",
+        "label": "Sole Type",
+        "phase": "build",
+        "type": "chips",
+        "options": [
+          { "id": "leather", "label": "Sewn Welt Leather", "desc": "Traditional craftsmanship", "mesh": "GEO_sole_leather" },
+          { "id": "rubber", "label": "Comfort Rubber", "desc": "All-day wearability", "mesh": "GEO_sole_rubber" },
+          { "id": "brass", "label": "Brass-Screwed", "desc": "Heritage durability", "mesh": "GEO_sole_brass", "priceAdjust": 3000 }
+        ]
       }
     ],
     "materials": {
       "upper": { "roughness": 0.62, "metalness": 0.0 },
-      "sole": { "color": "#8B6340", "roughness": 0.8, "metalness": 0.0 },
-      "heel": { "color": "#3E2712", "roughness": 0.7, "metalness": 0.0 },
+      "sole": { "color": "#2C2C2C", "roughness": 0.9, "metalness": 0.0 },
       "elastic": { "roughness": 0.75, "metalness": 0.0 },
-      "tug": { "roughness": 0.6, "metalness": 0.0 },
-      "welt": { "color": "#A0724A", "roughness": 0.65, "metalness": 0.0 }
+      "tug": { "roughness": 0.6, "metalness": 0.0 }
     }
   }
   </script>

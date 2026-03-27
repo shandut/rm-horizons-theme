@@ -16,7 +16,7 @@
 .boot-configurator__viewer {
   position: relative;
   min-height: 600px;
-  background: #f5f0e8;
+  background: linear-gradient(180deg, #f0ede8 0%, #e8e4dd 50%, #ddd8cf 100%);
   border-radius: 0;
   overflow: hidden;
 }
@@ -36,14 +36,32 @@
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #f5f0e8;
+  gap: 1rem;
+  background: linear-gradient(180deg, #f5f0e8 0%, #ebe5da 100%);
   z-index: 2;
+  transition: opacity 0.5s ease;
 }
 
 .boot-configurator__loader[hidden] {
+  opacity: 0;
+  pointer-events: none;
   display: none;
+}
+
+.boot-configurator__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--color-border, #E6DBC4);
+  border-top-color: var(--color-foreground, #1F1007);
+  border-radius: 50%;
+  animation: bcSpin 0.8s linear infinite;
+}
+
+@keyframes bcSpin {
+  to { transform: rotate(360deg); }
 }
 
 .boot-configurator__loader-text {
@@ -52,6 +70,22 @@
   color: var(--color-foreground, #4C4039);
   opacity: 0.6;
   letter-spacing: 0.05em;
+}
+
+.boot-configurator__progress-bar {
+  width: 120px;
+  height: 3px;
+  background: var(--color-border, #E6DBC4);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-configurator__progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-foreground, #1F1007);
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
 .boot-configurator__fallback {
