@@ -125,6 +125,12 @@ class BootRenderer {
   ready;
   /** @type {string[]} */
   #debugLog = [];
+  /** @type {Record<string, string[]>} */
+  #partMeshMap = {};
+  /** @type {boolean} */
+  #positionFallback = true;
+  /** @type {Map<string, THREE.Group>} GLB cache for instant swap-back */
+  #modelCache = new Map();
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -135,6 +141,9 @@ class BootRenderer {
    * @param {(progress: number) => void} [onProgress]
    */
   constructor(canvas, container, modelUrl, partMeshMap, positionFallback, onProgress) {
+    this.#partMeshMap = partMeshMap;
+    this.#positionFallback = positionFallback;
+
     this.#initRenderer(canvas, container);
     this.#initScene();
     this.#initCamera(container);
@@ -273,6 +282,7 @@ class BootRenderer {
 
           this.#scene.add(model);
           this.#model = model;
+          this.#modelCache.set(url, model);
 
           // Traverse and categorize meshes
           this.#categorizeMeshes(model, partMeshMap, positionFallback);
@@ -479,6 +489,46 @@ class BootRenderer {
     // Path B implementation will go here.
     // Expected approach: load/cache GLB sub-meshes per group,
     // toggle visibility, and update the scene graph.
+  }
+
+  /**
+   * Swap the current GLB model for a different one.
+   * Caches loaded models so switching back is instant.
+   * @param {string} url
+   * @param {(progress: number) => void} [onProgress]
+   * @returns {Promise<void>}
+   */
+  async swapModel(url, onProgress) {
+    // Remove current model from scene
+    if (this.#model) {
+      this.#model.visible = false;
+      // Don't dispose — keep in cache for swap-back
+    }
+
+    // Reset mesh assignments
+    for (const part of Object.keys(this.#partMeshes)) {
+      this.#partMeshes[part] = [];
+    }
+    this.#allMeshes = [];
+    this.#debugLog = [];
+
+    // Check cache first
+    if (this.#modelCache.has(url)) {
+      const cached = this.#modelCache.get(url);
+      cached.visible = true;
+      this.#model = cached;
+      this.#categorizeMeshes(cached, this.#partMeshMap, this.#positionFallback);
+      this.#needsRender = true;
+      return;
+    }
+
+    // Load new model
+    await this.#loadGLB(url, this.#partMeshMap, this.#positionFallback, onProgress);
+
+    // Cache it
+    if (this.#model) {
+      this.#modelCache.set(url, this.#model);
+    }
   }
 
   // ── Render loop ──
@@ -854,10 +904,11 @@ class BootConfiguratorApp {
     // Rules engine
     const rules = new RulesEngine(manifest.rules);
 
-    // Get model URL from data attribute
-    const modelUrl = this.#root.dataset.modelUrl;
+    // Resolve initial model URL: use models array first, fall back to data attribute
+    const models = manifest.models || [];
+    const modelUrl = models.length > 0 ? models[0].url : this.#root.dataset.modelUrl;
     if (!modelUrl) {
-      console.error('Boot configurator: no data-model-url attribute');
+      console.error('Boot configurator: no model URL found');
       return;
     }
 
@@ -870,13 +921,15 @@ class BootConfiguratorApp {
     if (!canvas || !viewer) { console.error('Boot configurator: no canvas/viewer'); return; }
 
     // Progress callback
+    const showLoader = () => { if (loader) loader.hidden = false; };
+    const hideLoader = () => { if (loader) loader.hidden = true; };
     const onProgress = (pct) => {
       const percent = Math.round(pct * 100);
       if (loaderText) loaderText.textContent = `Loading 3D preview\u2026 ${percent}%`;
       if (progressFill) progressFill.style.width = `${percent}%`;
     };
 
-    // Create renderer and load GLB
+    // Create renderer and load initial GLB
     this.#renderer = new BootRenderer(
       canvas, viewer, modelUrl,
       manifest.partMeshMap || {},
@@ -891,16 +944,59 @@ class BootConfiguratorApp {
       return;
     }
 
-    // Hide loader
-    if (loader) loader.hidden = true;
+    hideLoader();
 
-    // Apply default colours to the model
-    for (const step of manifest.steps) {
-      const val = manifest.defaultConfig[step.id];
-      if (!val || step.type !== 'swatches' || !step.materialTarget) continue;
-      const opt = step.options.find(o => o.id === val);
-      if (opt?.color) {
-        this.#renderer.setPartColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
+    // Helper: apply current colour selections to the model
+    const applyCurrentColours = () => {
+      for (const step of manifest.steps) {
+        const val = state.get(step.id) || manifest.defaultConfig[step.id];
+        if (!val || step.type !== 'swatches' || !step.materialTarget) continue;
+        const opt = step.options.find(o => o.id === val);
+        if (opt?.color) {
+          this.#renderer.setPartColor(step.materialTarget, opt.color, opt.roughness, opt.metalness);
+        }
+      }
+    };
+
+    // Apply default colours
+    applyCurrentColours();
+
+    // ── Model toggle (if multiple models defined) ──
+    if (models.length > 1) {
+      const toggleContainer = this.#root.querySelector('.boot-configurator__model-toggle');
+      if (toggleContainer) {
+        let activeModelId = models[0].id;
+
+        toggleContainer.hidden = false;
+        toggleContainer.innerHTML = models.map((m, i) =>
+          `<button class="boot-configurator__model-pill${i === 0 ? ' boot-configurator__model-pill--active' : ''}"
+            data-model-id="${m.id}" data-model-url="${m.url}">${m.label}</button>`
+        ).join('');
+
+        toggleContainer.addEventListener('click', async (e) => {
+          const pill = e.target.closest('[data-model-id]');
+          if (!pill || pill.dataset.modelId === activeModelId) return;
+
+          // Update active pill
+          toggleContainer.querySelectorAll('.boot-configurator__model-pill').forEach(p =>
+            p.classList.toggle('boot-configurator__model-pill--active', p === pill)
+          );
+
+          activeModelId = pill.dataset.modelId;
+
+          // Show loader for uncached models
+          showLoader();
+          if (loaderText) loaderText.textContent = 'Switching model\u2026';
+
+          try {
+            await this.#renderer.swapModel(pill.dataset.modelUrl, onProgress);
+            applyCurrentColours();
+          } catch (err) {
+            console.error('Model swap failed:', err);
+          }
+
+          hideLoader();
+        });
       }
     }
 

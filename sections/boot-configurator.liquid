@@ -26,6 +26,9 @@
   {%- comment -%} 3D Viewer {%- endcomment -%}
   <div class="boot-configurator__viewer">
     <canvas class="boot-configurator__canvas" aria-label="3D boot configurator preview"></canvas>
+    <div class="boot-configurator__model-toggle" hidden>
+      {%- comment -%} Populated by JS from manifest.models array {%- endcomment -%}
+    </div>
     <div class="boot-configurator__loader" aria-live="polite">
       <div class="boot-configurator__spinner"></div>
       <span class="boot-configurator__loader-text">Loading 3D preview&hellip;</span>
@@ -60,6 +63,18 @@
   <script type="application/json" class="boot-configurator__manifest">
   {
     "version": 2,
+    "models": [
+      {
+        "id": "detailed",
+        "label": "Detailed",
+        "url": "https://cdn.shopify.com/3d/models/98599c409d81cbb7/RMWilliams-boot-3dimage.glb"
+      },
+      {
+        "id": "compressed",
+        "label": "Compressed",
+        "url": "https://cdn.shopify.com/3d/models/c73b3fb9bbe96e1e/boot-compressed.glb"
+      }
+    ],
     "partMeshMap": {
       "upper": ["upper", "body", "leather", "shaft", "vamp", "quarter", "main"],
       "elastic": ["elastic", "gore", "panel", "gusset", "side_panel"],
