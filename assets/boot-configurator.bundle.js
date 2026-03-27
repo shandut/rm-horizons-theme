@@ -11,6 +11,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 // ═══════════════════════════════════════════════════════════
 // 1. CONSTANTS
@@ -259,6 +260,12 @@ class BootRenderer {
   async #loadGLB(url, partMeshMap, positionFallback, onProgress) {
     const loader = new GLTFLoader();
 
+    // Draco decoder for compressed GLB files (KHR_draco_mesh_compression)
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+    dracoLoader.setDecoderConfig({ type: 'js' });
+    loader.setDRACOLoader(dracoLoader);
+
     // Initialise partMeshes buckets
     for (const part of Object.keys(partMeshMap)) {
       this.#partMeshes[part] = [];
@@ -499,10 +506,11 @@ class BootRenderer {
    * @returns {Promise<void>}
    */
   async swapModel(url, onProgress) {
-    // Remove current model from scene
+    const previousModel = this.#model;
+
+    // Hide current model (keep in cache for swap-back)
     if (this.#model) {
       this.#model.visible = false;
-      // Don't dispose — keep in cache for swap-back
     }
 
     // Reset mesh assignments
@@ -522,12 +530,17 @@ class BootRenderer {
       return;
     }
 
-    // Load new model
-    await this.#loadGLB(url, this.#partMeshMap, this.#positionFallback, onProgress);
-
-    // Cache it
-    if (this.#model) {
-      this.#modelCache.set(url, this.#model);
+    // Load new model — restore previous on failure
+    try {
+      await this.#loadGLB(url, this.#partMeshMap, this.#positionFallback, onProgress);
+    } catch (err) {
+      console.error('Model swap failed, restoring previous:', err);
+      if (previousModel) {
+        previousModel.visible = true;
+        this.#model = previousModel;
+        this.#categorizeMeshes(previousModel, this.#partMeshMap, this.#positionFallback);
+      }
+      throw err;
     }
   }
 
