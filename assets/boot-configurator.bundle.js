@@ -419,20 +419,65 @@ class BootRenderer {
    * Prepare a material for colour tinting.
    *
    * Three.js computes: finalColor = material.color × baseColorTexture
-   * We KEEP the baseColorTexture (leather grain, stitching detail) and
-   * normalMap (surface bumps). We set material.color to white initially
-   * so the texture renders as-is. When a swatch is selected, we set
-   * material.color to the desired hue — this tints the texture, preserving
-   * all the baked detail while shifting the colour realistically.
+   * Problem: if the texture is already dark brown, multiplying by a colour
+   * produces barely visible differences. Solution: convert the baseColorTexture
+   * to a desaturated, lightened grayscale version. This preserves the leather
+   * grain, stitching, and surface detail while making colour tinting vivid.
+   * The normalMap provides additional surface bump detail.
    */
   #prepareForTinting(mat) {
-    // Keep mat.map (baseColorTexture) — this has the leather grain detail
-    // Keep mat.normalMap — this has the surface bump detail
+    // Convert baseColorTexture to lightened grayscale for vivid tinting
+    if (mat.map?.image) {
+      mat.map = this.#desaturateTexture(mat.map);
+    }
 
-    // Reset colour to white so texture shows as-is initially
-    // (swatch selection will tint via color × texture multiplication)
+    // Keep normalMap for surface bumps
+    // Reset colour to white initially
     mat.color.set(0xffffff);
     mat.needsUpdate = true;
+  }
+
+  /**
+   * Convert a texture to a desaturated, lightened grayscale version.
+   * Preserves grain/detail but allows material.color to tint vividly.
+   * @param {THREE.Texture} texture
+   * @returns {THREE.Texture}
+   */
+  #desaturateTexture(texture) {
+    const image = texture.image;
+    if (!image) return texture;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(image, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+      // Convert to luminance (perceptual weights)
+      const lum = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+      // Lighten: push towards white so colour multiplication shows through
+      // 0.4 = keep 40% of original luminance contrast, shift baseline to 60%
+      const val = Math.min(255, lum * 0.4 + 153);
+      data[i] = val;
+      data[i + 1] = val;
+      data[i + 2] = val;
+      // Alpha unchanged
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    const newTexture = new THREE.CanvasTexture(canvas);
+    newTexture.colorSpace = texture.colorSpace;
+    newTexture.flipY = texture.flipY;
+    newTexture.wrapS = texture.wrapS;
+    newTexture.wrapT = texture.wrapT;
+    newTexture.needsUpdate = true;
+
+    return newTexture;
   }
 
   // ── Material / Colour ──
