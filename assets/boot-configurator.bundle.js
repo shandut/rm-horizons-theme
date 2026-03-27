@@ -310,12 +310,12 @@ class BootRenderer {
         child.material = child.material.map(m => {
           const clone = m.clone();
           // Strip texture maps so base colour is paintable
-          this.#stripTextures(clone);
+          this.#prepareForTinting(clone);
           return clone;
         });
       } else {
         child.material = child.material.clone();
-        this.#stripTextures(child.material);
+        this.#prepareForTinting(child.material);
       }
 
       const meshName = (child.name || '').toLowerCase();
@@ -399,17 +399,21 @@ class BootRenderer {
   }
 
   /**
-   * Strip texture maps from a material so base colour is directly paintable.
-   * GLB models often have baked textures that override material.color.
+   * Prepare a material for colour tinting.
+   *
+   * Three.js computes: finalColor = material.color × baseColorTexture
+   * We KEEP the baseColorTexture (leather grain, stitching detail) and
+   * normalMap (surface bumps). We set material.color to white initially
+   * so the texture renders as-is. When a swatch is selected, we set
+   * material.color to the desired hue — this tints the texture, preserving
+   * all the baked detail while shifting the colour realistically.
    */
-  #stripTextures(mat) {
-    if (mat.map) { mat.map.dispose(); mat.map = null; }
-    if (mat.normalMap) { mat.normalMap.dispose(); mat.normalMap = null; }
-    if (mat.roughnessMap) { mat.roughnessMap.dispose(); mat.roughnessMap = null; }
-    if (mat.metalnessMap) { mat.metalnessMap.dispose(); mat.metalnessMap = null; }
-    if (mat.aoMap) { mat.aoMap.dispose(); mat.aoMap = null; }
-    if (mat.emissiveMap) { mat.emissiveMap.dispose(); mat.emissiveMap = null; }
-    // Reset to clean PBR defaults
+  #prepareForTinting(mat) {
+    // Keep mat.map (baseColorTexture) — this has the leather grain detail
+    // Keep mat.normalMap — this has the surface bump detail
+
+    // Reset colour to white so texture shows as-is initially
+    // (swatch selection will tint via color × texture multiplication)
     mat.color.set(0xffffff);
     mat.needsUpdate = true;
   }
@@ -435,8 +439,7 @@ class BootRenderer {
     for (const mesh of meshes) {
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const mat of mats) {
-        // Ensure no texture overrides the colour
-        if (mat.map) { mat.map.dispose(); mat.map = null; }
+        // Tint: material.color × baseColorTexture = tinted leather with detail
         this.#lerpColor(mat.color, targetColor, COLOR_LERP_MS);
         if (roughness !== undefined) mat.roughness = roughness;
         if (metalness !== undefined) mat.metalness = metalness;
