@@ -587,6 +587,11 @@ class UIController {
     let html = `<div class="boot-configurator__step">
       <h3 class="boot-configurator__step-title">${step.label}</h3>`;
 
+    // Show note if this step can't preview in 3D
+    if (step.note) {
+      html += `<p class="boot-configurator__step-note">${step.note}</p>`;
+    }
+
     if (step.type === 'chips') {
       // TODO Path B: shape selection chips
       html += `<div class="boot-configurator__chips">`;
