@@ -1,0 +1,5 @@
+# Local working copy — not deployed
+horizon/
+
+# OS files
+.DS_Store
