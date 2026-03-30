@@ -1,6 +1,455 @@
+{% doc %}
+  @prompt
+    Can you add a Father's Day banner with a side product and free gift wrapping logo on it for a section please? Can this also be in the branding of RM Williams and colours? 
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-fathers-day-banner-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-fathers-day-banner__container-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 60px;
+    position: relative;
+  }
+
+  .ai-fathers-day-banner__content-{{ ai_gen_id }} {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .ai-fathers-day-banner__badge-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: {{ block.settings.badge_background }};
+    color: {{ block.settings.badge_text_color }};
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+  }
+
+  .ai-fathers-day-banner__badge-icon-{{ ai_gen_id }} {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .ai-fathers-day-banner__heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.heading_color }};
+    margin: 0;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .ai-fathers-day-banner__text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_size }}px;
+    color: {{ block.settings.text_color }};
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .ai-fathers-day-banner__button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 32px;
+    background-color: {{ block.settings.button_background }};
+    color: {{ block.settings.button_text_color }};
+    text-decoration: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    width: fit-content;
+  }
+
+  .ai-fathers-day-banner__button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background }};
+    color: {{ block.settings.button_hover_text_color }};
+  }
+
+  .ai-fathers-day-banner__product-{{ ai_gen_id }} {
+    flex: 0 0 400px;
+    position: relative;
+  }
+
+  .ai-fathers-day-banner__product-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 500px;
+    border-radius: {{ block.settings.product_image_radius }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.product_bg_color }};
+  }
+
+  .ai-fathers-day-banner__product-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-fathers-day-banner__product-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: {{ block.settings.product_bg_color }};
+    position: relative;
+  }
+
+  .ai-fathers-day-banner__product-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+    opacity: 0.3;
+  }
+
+  .ai-fathers-day-banner__empty-state-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 20px;
+    font-size: 14px;
+    color: {{ block.settings.text_color }};
+    text-align: center;
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .ai-fathers-day-banner__product-info-{{ ai_gen_id }} {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .ai-fathers-day-banner__product-title-{{ ai_gen_id }} {
+    font-size: 18px;
+    font-weight: 600;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 8px;
+  }
+
+  .ai-fathers-day-banner__product-price-{{ ai_gen_id }} {
+    font-size: 16px;
+    color: {{ block.settings.text_color }};
+    font-weight: 500;
+  }
+
+  @media screen and (max-width: 989px) {
+    .ai-fathers-day-banner__container-{{ ai_gen_id }} {
+      flex-direction: column;
+      padding: 40px 30px;
+      gap: 30px;
+    }
+
+    .ai-fathers-day-banner__product-{{ ai_gen_id }} {
+      flex: 0 0 auto;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .ai-fathers-day-banner__product-image-{{ ai_gen_id }} {
+      height: 400px;
+    }
+
+    .ai-fathers-day-banner__heading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.heading_size }}px * 0.7);
+    }
+
+    .ai-fathers-day-banner__text-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.text_size }}px * 0.9);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-fathers-day-banner__container-{{ ai_gen_id }} {
+      padding: 30px 20px;
+    }
+
+    .ai-fathers-day-banner__product-image-{{ ai_gen_id }} {
+      height: 350px;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-fathers-day-banner-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-fathers-day-banner__container-{{ ai_gen_id }}">
+    <div class="ai-fathers-day-banner__content-{{ ai_gen_id }}">
+      {% if block.settings.show_badge %}
+        <div class="ai-fathers-day-banner__badge-{{ ai_gen_id }}">
+          <svg class="ai-fathers-day-banner__badge-icon-{{ ai_gen_id }}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+          </svg>
+          {{ block.settings.badge_text }}
+        </div>
+      {% endif %}
+
+      {% if block.settings.heading != blank %}
+        <h2 class="ai-fathers-day-banner__heading-{{ ai_gen_id }}">
+          {{ block.settings.heading }}
+        </h2>
+      {% endif %}
+
+      {% if block.settings.text != blank %}
+        <div class="ai-fathers-day-banner__text-{{ ai_gen_id }}">
+          {{ block.settings.text }}
+        </div>
+      {% endif %}
+
+      {% if block.settings.button_text != blank %}
+        <a href="{{ block.settings.button_link }}" class="ai-fathers-day-banner__button-{{ ai_gen_id }}">
+          {{ block.settings.button_text }}
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="ai-fathers-day-banner__product-{{ ai_gen_id }}">
+      <div class="ai-fathers-day-banner__product-image-{{ ai_gen_id }}">
+        {% if block.settings.product_image %}
+          <img
+            src="{{ block.settings.product_image | image_url: width: 800 }}"
+            alt="{{ block.settings.product_image.alt | escape }}"
+            loading="lazy"
+            width="{{ block.settings.product_image.width }}"
+            height="{{ block.settings.product_image.height }}"
+          >
+        {% else %}
+          <div class="ai-fathers-day-banner__product-placeholder-{{ ai_gen_id }}">
+            {{ 'product-1' | placeholder_svg_tag }}
+            <div class="ai-fathers-day-banner__empty-state-{{ ai_gen_id }}">
+              Add a product image
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if block.settings.featured_product != blank %}
+        <div class="ai-fathers-day-banner__product-info-{{ ai_gen_id }}">
+          <h3 class="ai-fathers-day-banner__product-title-{{ ai_gen_id }}">
+            {{ block.settings.featured_product.title }}
+          </h3>
+          <div class="ai-fathers-day-banner__product-price-{{ ai_gen_id }}">
+            {{ block.settings.featured_product.price | money }}
+          </div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Father's Day banner",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Father's Day Gift Guide"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Celebrate Dad with timeless Australian craftsmanship. Discover our curated collection of premium leather goods and accessories.</p>"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Shop Father's Day"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Free gift wrapping badge"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badge",
+      "label": "Show badge",
+      "default": true
+    },
+    {
+      "type": "inline_richtext",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Free Gift Wrapping"
+    },
+    {
+      "type": "color",
+      "id": "badge_background",
+      "label": "Badge background",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text color",
+      "default": "#e6dbc4"
+    },
+    {
+      "type": "header",
+      "content": "Featured product"
+    },
+    {
+      "type": "product",
+      "id": "featured_product",
+      "label": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image",
+      "label": "Product image"
+    },
+    {
+      "type": "color",
+      "id": "product_bg_color",
+      "label": "Product background",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "range",
+      "id": "product_image_radius",
+      "label": "Product image radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#e6dbc4"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 24,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Background",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#e6dbc4"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background",
+      "label": "Hover background",
+      "default": "#3e1707"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Button radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Father's Day banner"
+    }
+  ]
+}
 {% endschema %}
