@@ -1,8 +1,34 @@
 {% style %}
+  /* ── R.M. Williams Brand Fonts ── */
+
+  /* Avenir Next LT Pro — Body, UI, labels */
   @font-face {
     font-family: 'Avenir Next LT Pro';
     src: url({{ 'AvenirNextLTPro-Regular.woff2' | asset_url }}) format('woff2');
     font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Avenir Next LT Pro';
+    src: url({{ 'AvenirNextLTPro-Demi.woff2' | asset_url }}) format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Avenir Next LT Pro';
+    src: url({{ 'AvenirNextLTPro-Bold.woff2' | asset_url }}) format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  /* Beirut Display — Headings, hero text, display */
+  @font-face {
+    font-family: 'BeirutDisplay';
+    src: url({{ 'BeirutDisplay-Light.woff2' | asset_url }}) format('woff2');
+    font-weight: 300;
     font-style: normal;
     font-display: swap;
   }
@@ -162,16 +188,16 @@
     --letter-spacing-sm: 0.06em;
     --letter-spacing-md: 0.13em;
 
-    /* Font families — Avenir Next LT Pro custom font override */
+    /* Font families — R.M. Williams brand typography */
     --font-body--family: 'Avenir Next LT Pro', {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
     --font-body--style: normal;
     --font-body--weight: 400;
     --font-subheading--family: 'Avenir Next LT Pro', {{ settings.type_subheading_font.family }}, {{ settings.type_subheading_font.fallback_families }};
     --font-subheading--style: normal;
-    --font-subheading--weight: 400;
-    --font-heading--family: 'Avenir Next LT Pro', {{ settings.type_heading_font.family }}, {{ settings.type_heading_font.fallback_families }};
+    --font-subheading--weight: 600;
+    --font-heading--family: 'BeirutDisplay', Georgia, serif;
     --font-heading--style: normal;
-    --font-heading--weight: {{ settings.type_heading_font.weight }};
+    --font-heading--weight: 300;
     --font-accent--family: 'Avenir Next LT Pro', {{ settings.type_accent_font.family }}, {{ settings.type_accent_font.fallback_families }};
     --font-accent--style: normal;
     --font-accent--weight: {{ settings.type_accent_font.weight }};
