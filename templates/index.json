@@ -127,6 +127,81 @@
         "label_size": "large"
       }
     },
+    "1774868057eb64e263": {
+      "type": "_blocks",
+      "blocks": {
+        "ai_gen_block_81dc8fe_zXNM7m": {
+          "type": "ai_gen_block_81dc8fe",
+          "settings": {
+            "background_image": "shopify://shop_images/rm-giftwrapping.png",
+            "banner_height": 300,
+            "banner_height_mobile": 400,
+            "desktop_width_percent": 100,
+            "border_radius": 14,
+            "show_overlay": true,
+            "overlay_color": "#000000",
+            "overlay_opacity": 0.3,
+            "heading": "Father's Day",
+            "subheading": "Free gift wrapping on all orders",
+            "content_max_width": 1000,
+            "content_padding": 50,
+            "content_vertical_alignment": "center",
+            "content_horizontal_alignment": "center",
+            "text_alignment": "center",
+            "heading_size": 56,
+            "heading_color": "#e6dbc4",
+            "heading_spacing": 16,
+            "text_size": 18,
+            "text_color": "#ffffff",
+            "text_spacing": 24,
+            "button_text": "Shop now",
+            "button_link": "shopify://products/craftsman-boot-chestnut-yearling-leather",
+            "button_text_size": 16,
+            "button_padding_vertical": 12,
+            "button_padding_horizontal": 32,
+            "button_border_radius": 4,
+            "button_border_width": 0,
+            "button_background": "#e6dbc4",
+            "button_text_color": "#3e1707",
+            "button_border_color": "#1f1007",
+            "button_hover_background": "#3e1707",
+            "button_hover_text_color": "#ffffff",
+            "button_hover_border_color": "#3e1707"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_81dc8fe_zXNM7m"
+      ],
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "color_scheme": "",
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "border": "none",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_radius": 0,
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
     "seasonal_comforts_rmw": {
       "type": "seasonal-comforts",
       "blocks": {
@@ -495,41 +570,6 @@
     },
     "177486769293057817": {
       "type": "_blocks",
-      "blocks": {
-        "ai_gen_block_16cf362_raLJNc": {
-          "type": "ai_gen_block_16cf362",
-          "settings": {
-            "heading": "Father's Day Gift Guide",
-            "text": "<p>Celebrate Dad with timeless Australian craftsmanship. Discover our curated collection of premium leather goods and accessories.</p>",
-            "button_text": "Shop Father's Day",
-            "button_link": "shopify://collections/men",
-            "show_badge": true,
-            "badge_text": "Free Gift Wrapping",
-            "badge_background": "#1f1007",
-            "badge_text_color": "#e6dbc4",
-            "featured_product": "craftsman-boot-chestnut-kangaroo-leather",
-            "product_image": "shopify://shop_images/B543P_092727c5-7095-48a6-a6d2-cf2042b2914d.png",
-            "product_bg_color": "#f8f4ee",
-            "product_image_radius": 30,
-            "desktop_width_percent": 95,
-            "background_color": "#e6dbc4",
-            "heading_color": "#f8f4ee",
-            "text_color": "#1f1007",
-            "heading_size": 48,
-            "text_size": 16,
-            "border_radius": 8,
-            "button_background": "#1f1007",
-            "button_text_color": "#e6dbc4",
-            "button_hover_background": "#3e1707",
-            "button_hover_text_color": "#ffffff",
-            "button_border_radius": 4
-          },
-          "blocks": {}
-        }
-      },
-      "block_order": [
-        "ai_gen_block_16cf362_raLJNc"
-      ],
       "settings": {
         "content_direction": "column",
         "vertical_on_mobile": true,
@@ -562,6 +602,7 @@
   "order": [
     "video_hero_rmw",
     "explore_range_rmw",
+    "1774868057eb64e263",
     "seasonal_comforts_rmw",
     "brand_values_rmw",
     "immersive_banner_rmw",
