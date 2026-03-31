@@ -80,8 +80,8 @@
     "button_font_weight_secondary": "default",
     "content_for_index": [],
     "blocks": {
-      "3002001941284305382": {
-        "type": "shopify://apps/rmw-agent/blocks/chat-interface/019d3e2d-f51e-7d42-b830-7c0ad449542e",
+      "18422555240906954304": {
+        "type": "shopify://apps/rmw-agent/blocks/chat-interface/019d4163-8467-7051-a570-dfca29a19916",
         "disabled": false,
         "settings": {
           "chat_bubble_color": "#1F1007",
