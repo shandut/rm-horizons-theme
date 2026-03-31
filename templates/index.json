@@ -76,26 +76,6 @@
     "explore_range_rmw": {
       "type": "explore-range",
       "blocks": {
-        "tab_men": {
-          "type": "tab",
-          "settings": {
-            "tab_label": "Men",
-            "collection_1": "craftmans",
-            "image_1": "shopify://shop_images/eor-7-boots.webp",
-            "label_1": "Boots",
-            "collection_2": "men",
-            "image_2": "shopify://shop_images/eor-8-fbelt.webp",
-            "label_2": "Belts",
-            "collection_3": "",
-            "label_3": "Sweatshirts",
-            "collection_4": "",
-            "label_4": "T-shirts",
-            "collection_5": "",
-            "label_5": "Shirts",
-            "collection_6": "",
-            "label_6": "Rugbys and polos"
-          }
-        },
         "tab_women": {
           "type": "tab",
           "settings": {
@@ -113,11 +93,29 @@
             "collection_6": "",
             "label_6": "Rugbys and polos"
           }
+        },
+        "tab_men": {
+          "type": "tab",
+          "settings": {
+            "tab_label": "Men",
+            "collection_1": "",
+            "label_1": "Boots",
+            "collection_2": "",
+            "label_2": "Belts",
+            "collection_3": "",
+            "label_3": "Sweatshirts",
+            "collection_4": "",
+            "label_4": "T-shirts",
+            "collection_5": "",
+            "label_5": "Shirts",
+            "collection_6": "",
+            "label_6": "Rugbys and polos"
+          }
         }
       },
       "block_order": [
-        "tab_men",
-        "tab_women"
+        "tab_women",
+        "tab_men"
       ],
       "settings": {
         "heading": "Explore our range",
@@ -134,6 +132,7 @@
       "blocks": {
         "ai_gen_block_81dc8fe_zXNM7m": {
           "type": "ai_gen_block_81dc8fe",
+          "disabled": true,
           "settings": {
             "background_image": "shopify://shop_images/rm-giftwrapping.png",
             "banner_height": 300,
