@@ -237,8 +237,8 @@
               },
               "block_order": []
             },
-            "rmw_agent_product_qa_LXUxpF": {
-              "type": "shopify://apps/rmw-agent/blocks/product-qa/019d199e-f0ca-7e33-8ce1-618d616ad9a1",
+            "rmw_agent_product_qa_V9g6EF": {
+              "type": "shopify://apps/rmw-agent/blocks/product-qa/019d4163-8467-7051-a570-dfca29a19916",
               "settings": {
                 "system_prompt": "standardAssistant"
               }
@@ -276,7 +276,7 @@
             "colour_selector",
             "variant_picker",
             "buy_buttons",
-            "rmw_agent_product_qa_LXUxpF",
+            "rmw_agent_product_qa_V9g6EF",
             "product_description"
           ]
         }
