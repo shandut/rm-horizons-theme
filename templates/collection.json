@@ -96,6 +96,34 @@
     "section": {
       "type": "section",
       "blocks": {
+        "ai_gen_block_dd50633_9YbEGB": {
+          "type": "ai_gen_block_dd50633",
+          "settings": {
+            "show_icon": true,
+            "heading": "Free Father's Day Gift Wrapping",
+            "text": "<p>Make it extra special with complimentary gift wrapping on all Father's Day orders</p>",
+            "banner_link": "shopify://products/craftsman-boot-black-kangaroo-leather",
+            "background_image": "shopify://shop_images/banner-giftwrapping.png",
+            "background_color": "#1f1007",
+            "show_overlay": true,
+            "overlay_color": "#000000",
+            "overlay_opacity": 40,
+            "desktop_width_percent": 100,
+            "min_height": 200,
+            "padding_vertical": 40,
+            "padding_horizontal": 40,
+            "border_radius": 0,
+            "icon_size": 50,
+            "icon_spacing": 15,
+            "icon_color": "#e6dbc4",
+            "heading_size": 32,
+            "heading_spacing": 10,
+            "heading_color": "#ffffff",
+            "text_size": 16,
+            "text_color": "#e6dbc4"
+          },
+          "blocks": {}
+        },
         "text_tqQTNE": {
           "type": "text",
           "name": "Title",
@@ -150,6 +178,7 @@
         }
       },
       "block_order": [
+        "ai_gen_block_dd50633_9YbEGB",
         "text_tqQTNE",
         "text_twGGkJ"
       ],
