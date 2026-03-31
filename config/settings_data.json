@@ -80,12 +80,12 @@
     "button_font_weight_secondary": "default",
     "content_for_index": [],
     "blocks": {
-      "5854774332964932844": {
-        "type": "shopify://apps/rmw-agent/blocks/chat-interface/019d199e-f0ca-7e33-8ce1-618d616ad9a1",
+      "3002001941284305382": {
+        "type": "shopify://apps/rmw-agent/blocks/chat-interface/019d3e2d-f51e-7d42-b830-7c0ad449542e",
         "disabled": false,
         "settings": {
-          "chat_bubble_color": "#4c4039",
-          "welcome_message": "👋 Hi there! How can I help you today?",
+          "chat_bubble_color": "#1F1007",
+          "welcome_message": "Welcome to R.M.Williams. How may I assist you today?",
           "system_prompt": "standardAssistant"
         }
       }
