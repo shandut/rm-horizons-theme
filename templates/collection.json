@@ -7,8 +7,92 @@
  * made to this file may be overwritten.
  * ------------------------------------------------------------
  */
- {
+{
   "sections": {
+    "17749206314965c8e4": {
+      "type": "_blocks",
+      "blocks": {
+        "ai_gen_block_549e628_aHz8JB": {
+          "type": "ai_gen_block_549e628",
+          "disabled": true,
+          "settings": {
+            "show_icon": true,
+            "heading": "Father's Day Free Gift Wrapping",
+            "text": "<p>Make it special with complimentary gift wrapping on all Father's Day purchases</p>",
+            "show_button": true,
+            "button_text": "Shop Father's Day",
+            "button_link": "",
+            "content_alignment": "right",
+            "desktop_width_percent": 100,
+            "padding_vertical": 24,
+            "padding_horizontal": 32,
+            "content_gap": 24,
+            "mobile_gap": 16,
+            "border_radius": 3,
+            "background_color": "#e6dbc4",
+            "background_image": "shopify://shop_images/banner-giftwrapping.png",
+            "background_image_opacity": 40,
+            "heading_color": "#1f1007",
+            "text_color": "#1f1007",
+            "icon_color": "#1f1007",
+            "icon_size": 56,
+            "mobile_icon_size": 40,
+            "icon_stroke_width": 1.5,
+            "heading_size": 24,
+            "mobile_heading_size": 20,
+            "heading_weight": "700",
+            "heading_spacing": 8,
+            "text_size": 14,
+            "mobile_text_size": 14,
+            "button_background": "#1f1007",
+            "button_text_color": "#f8f4ee",
+            "button_border_color": "#1f1007",
+            "button_hover_background": "#3e1707",
+            "button_hover_text_color": "#f8f4ee",
+            "button_hover_border_color": "#3e1707",
+            "button_padding_vertical": 12,
+            "button_padding_horizontal": 24,
+            "button_border_width": 0,
+            "button_border_radius": 3,
+            "button_text_size": 14,
+            "button_font_weight": "500"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "ai_gen_block_549e628_aHz8JB"
+      ],
+      "disabled": true,
+      "settings": {
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "flex-start",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "flex-start",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 12,
+        "section_width": "page-width",
+        "section_height": "",
+        "section_height_custom": 50,
+        "color_scheme": "",
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image": "shopify://shop_images/rm-giftwrapping.png",
+        "background_image_position": "cover",
+        "border": "solid",
+        "border_width": 1,
+        "border_opacity": 100,
+        "border_radius": 0,
+        "toggle_overlay": false,
+        "overlay_color": "#00000026",
+        "overlay_style": "solid",
+        "gradient_direction": "to top",
+        "padding-block-start": 51,
+        "padding-block-end": 0
+      }
+    },
     "section": {
       "type": "section",
       "blocks": {
@@ -208,11 +292,14 @@
               "name": "t:names.swatches",
               "settings": {
                 "product_swatches_alignment": "flex-start",
+                "product_swatches_alignment_mobile": "flex-start",
+                "hide_padding": false,
                 "product_swatches_padding_top": 4,
                 "product_swatches_padding_bottom": 0,
                 "product_swatches_padding_left": 0,
                 "product_swatches_padding_right": 0
-              }
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -227,6 +314,8 @@
         "layout_type": "grid",
         "product_card_size": "medium",
         "mobile_product_card_size": "small",
+        "enable_infinite_scroll": true,
+        "products_per_page": 24,
         "product_grid_width": "centered",
         "full_width_on_mobile": true,
         "columns_gap_horizontal": 16,
@@ -240,6 +329,7 @@
     }
   },
   "order": [
+    "17749206314965c8e4",
     "section",
     "main"
   ]
