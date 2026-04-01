@@ -1,6 +1,496 @@
+{% doc %}
+  @prompt
+    Hey, I'm looking to create a Father's Day widget it for the website and I would love it in the R.M. Williams style and brand elements. I'd love to also add an image and a link to that image as well, please. 
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-fathers-day-widget-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+  }
+
+  .ai-fathers-day-container-{{ ai_gen_id }} {
+    position: relative;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-fathers-day-container-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px);
+  }
+
+  .ai-fathers-day-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    aspect-ratio: {{ block.settings.image_aspect_ratio }};
+    overflow: hidden;
+  }
+
+  .ai-fathers-day-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-fathers-day-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f8f4ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-fathers-day-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 300px;
+    max-height: 300px;
+    opacity: 0.3;
+  }
+
+  .ai-fathers-day-content-{{ ai_gen_id }} {
+    padding: {{ block.settings.content_padding }}px;
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .ai-fathers-day-badge-{{ ai_gen_id }} {
+    display: inline-block;
+    font-size: {{ block.settings.badge_font_size }}px;
+    font-weight: 500;
+    color: {{ block.settings.badge_text_color }};
+    background-color: {{ block.settings.badge_background_color }};
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-fathers-day-heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_font_size }}px;
+    font-weight: 700;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 12px 0;
+    line-height: 1.2;
+  }
+
+  .ai-fathers-day-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_font_size }}px;
+    color: {{ block.settings.text_color }};
+    margin: 0 0 20px 0;
+    line-height: 1.6;
+  }
+
+  .ai-fathers-day-button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 12px 32px;
+    background-color: {{ block.settings.button_background_color }};
+    color: {{ block.settings.button_text_color }};
+    border: {{ block.settings.button_border_width }}px solid {{ block.settings.button_border_color }};
+    border-radius: {{ block.settings.button_border_radius }}px;
+    text-decoration: none;
+    font-size: {{ block.settings.button_font_size }}px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .ai-fathers-day-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_background_color }};
+    color: {{ block.settings.button_hover_text_color }};
+    border-color: {{ block.settings.button_hover_border_color }};
+  }
+
+  .ai-fathers-day-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, {{ block.settings.overlay_opacity }}) 100%
+    );
+    pointer-events: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-fathers-day-heading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.heading_font_size }}px * 0.8);
+    }
+
+    .ai-fathers-day-text-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.text_font_size }}px * 0.9);
+    }
+
+    .ai-fathers-day-content-{{ ai_gen_id }} {
+      padding: calc({{ block.settings.content_padding }}px * 0.75);
+    }
+  }
+{% endstyle %}
+
+<div class="ai-fathers-day-widget-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  {% if block.settings.link_url != blank %}
+    <a href="{{ block.settings.link_url }}" class="ai-fathers-day-container-{{ ai_gen_id }}" style="text-decoration: none; color: inherit;">
+  {% else %}
+    <div class="ai-fathers-day-container-{{ ai_gen_id }}">
+  {% endif %}
+
+    <div class="ai-fathers-day-image-wrapper-{{ ai_gen_id }}">
+      {% if block.settings.image %}
+        <img
+          src="{{ block.settings.image | image_url: width: 1200 }}"
+          alt="{{ block.settings.image.alt | escape }}"
+          loading="lazy"
+          width="{{ block.settings.image.width }}"
+          height="{{ block.settings.image.height }}"
+          class="ai-fathers-day-image-{{ ai_gen_id }}"
+        >
+      {% else %}
+        <div class="ai-fathers-day-placeholder-{{ ai_gen_id }}">
+          {{ 'image' | placeholder_svg_tag }}
+        </div>
+      {% endif %}
+      {% if block.settings.show_overlay %}
+        <div class="ai-fathers-day-overlay-{{ ai_gen_id }}"></div>
+      {% endif %}
+    </div>
+
+    <div class="ai-fathers-day-content-{{ ai_gen_id }}">
+      {% if block.settings.badge_text != blank %}
+        <div class="ai-fathers-day-badge-{{ ai_gen_id }}">
+          {{ block.settings.badge_text }}
+        </div>
+      {% endif %}
+
+      {% if block.settings.heading != blank %}
+        <h2 class="ai-fathers-day-heading-{{ ai_gen_id }}">
+          {{ block.settings.heading }}
+        </h2>
+      {% endif %}
+
+      {% if block.settings.text != blank %}
+        <div class="ai-fathers-day-text-{{ ai_gen_id }}">
+          {{ block.settings.text }}
+        </div>
+      {% endif %}
+
+      {% if block.settings.button_text != blank and block.settings.link_url == blank %}
+        <a href="{{ block.settings.button_link }}" class="ai-fathers-day-button-{{ ai_gen_id }}">
+          {{ block.settings.button_text }}
+        </a>
+      {% endif %}
+    </div>
+
+  {% if block.settings.link_url != blank %}
+    </a>
+  {% else %}
+    </div>
+  {% endif %}
+</div>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Father's Day widget",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Image link"
+    },
+    {
+      "type": "select",
+      "id": "image_aspect_ratio",
+      "label": "Image aspect ratio",
+      "options": [
+        {
+          "value": "1/1",
+          "label": "Square (1:1)"
+        },
+        {
+          "value": "4/3",
+          "label": "Landscape (4:3)"
+        },
+        {
+          "value": "16/9",
+          "label": "Wide (16:9)"
+        },
+        {
+          "value": "3/4",
+          "label": "Portrait (3:4)"
+        }
+      ],
+      "default": "4/3"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_overlay",
+      "label": "Show image overlay",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "default": 0.3
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "Father's Day"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Gifts for Dad"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Description",
+      "default": "Celebrate the man who's always been there with timeless Australian craftsmanship."
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Shop now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "header",
+      "content": "Style"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "content_padding",
+      "label": "Content padding",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "header",
+      "content": "Badge style"
+    },
+    {
+      "type": "range",
+      "id": "badge_font_size",
+      "label": "Font size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "badge_background_color",
+      "label": "Background color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Text color",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "header",
+      "content": "Heading style"
+    },
+    {
+      "type": "range",
+      "id": "heading_font_size",
+      "label": "Font size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "header",
+      "content": "Text style"
+    },
+    {
+      "type": "range",
+      "id": "text_font_size",
+      "label": "Font size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "label": "Font size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "label": "Border width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "button_background_color",
+      "label": "Background color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Border color",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_background_color",
+      "label": "Hover background color",
+      "default": "#3e1707"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text color",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_border_color",
+      "label": "Hover border color",
+      "default": "#3e1707"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Father's Day widget"
+    }
+  ]
+}
 {% endschema %}
