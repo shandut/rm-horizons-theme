@@ -12,6 +12,43 @@
     "17749206314965c8e4": {
       "type": "_blocks",
       "blocks": {
+        "ai_gen_block_4a83916_EdAAtJ": {
+          "type": "ai_gen_block_4a83916",
+          "settings": {
+            "image": "shopify://shop_images/rm-giftwrapping.png",
+            "link_url": "",
+            "image_aspect_ratio": "4/3",
+            "show_overlay": false,
+            "overlay_opacity": 0.3,
+            "badge_text": "Father's Day",
+            "heading": "Gifts for Dad",
+            "text": "Celebrate the man who's always been there with timeless Australian craftsmanship.",
+            "text_alignment": "left",
+            "button_text": "Shop now",
+            "button_link": "",
+            "desktop_width_percent": 100,
+            "border_radius": 4,
+            "content_padding": 30,
+            "background_color": "#f8f4ee",
+            "badge_font_size": 12,
+            "badge_background_color": "#1f1007",
+            "badge_text_color": "#f8f4ee",
+            "heading_font_size": 32,
+            "heading_color": "#1f1007",
+            "text_font_size": 14,
+            "text_color": "#1f1007",
+            "button_font_size": 14,
+            "button_border_radius": 4,
+            "button_border_width": 0,
+            "button_background_color": "#1f1007",
+            "button_text_color": "#f8f4ee",
+            "button_border_color": "#1f1007",
+            "button_hover_background_color": "#3e1707",
+            "button_hover_text_color": "#f8f4ee",
+            "button_hover_border_color": "#3e1707"
+          },
+          "blocks": {}
+        },
         "ai_gen_block_549e628_aHz8JB": {
           "type": "ai_gen_block_549e628",
           "disabled": true,
@@ -61,6 +98,7 @@
         }
       },
       "block_order": [
+        "ai_gen_block_4a83916_EdAAtJ",
         "ai_gen_block_549e628_aHz8JB"
       ],
       "disabled": true,
