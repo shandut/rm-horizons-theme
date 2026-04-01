@@ -12,22 +12,6 @@
     "video_hero_rmw": {
       "type": "video-hero-slideshow",
       "blocks": {
-        "slide_drover": {
-          "type": "slide",
-          "settings": {
-            "video_url": "https://cdn.shopify.com/videos/c/o/v/621279cc42904062b1cf6314b81ac47e.mp4",
-            "mobile_video_url": "",
-            "subheading": "Timeless vintage meets the big sky",
-            "heading": "The Drover",
-            "text_alignment": "center",
-            "button_label_1": "Shop men's & kids",
-            "button_link_1": "",
-            "button_style_1": "primary",
-            "button_label_2": "Accessories & more",
-            "button_link_2": "",
-            "button_style_2": "secondary"
-          }
-        },
         "slide_new": {
           "type": "slide",
           "settings": {
@@ -40,6 +24,22 @@
             "button_link_1": "",
             "button_style_1": "primary",
             "button_label_2": "",
+            "button_link_2": "",
+            "button_style_2": "secondary"
+          }
+        },
+        "slide_drover": {
+          "type": "slide",
+          "settings": {
+            "video_url": "https://cdn.shopify.com/videos/c/o/v/621279cc42904062b1cf6314b81ac47e.mp4",
+            "mobile_video_url": "",
+            "subheading": "Timeless vintage meets the big sky",
+            "heading": "The Drover",
+            "text_alignment": "center",
+            "button_label_1": "Shop men's & kids",
+            "button_link_1": "",
+            "button_style_1": "primary",
+            "button_label_2": "Accessories & more",
             "button_link_2": "",
             "button_style_2": "secondary"
           }
@@ -62,8 +62,8 @@
         }
       },
       "block_order": [
-        "slide_drover",
         "slide_new",
+        "slide_drover",
         "slide_heritage"
       ],
       "settings": {
@@ -98,11 +98,13 @@
           "type": "tab",
           "settings": {
             "tab_label": "Men",
-            "collection_1": "",
+            "collection_1": "craftmans",
+            "image_1": "shopify://shop_images/B517P_3392747f-5cf0-46a9-98ae-d8e57afdde36.png",
             "label_1": "Boots",
             "collection_2": "",
             "label_2": "Belts",
-            "collection_3": "",
+            "collection_3": "men",
+            "image_3": "shopify://shop_images/eor-8-fbelt.webp",
             "label_3": "Sweatshirts",
             "collection_4": "",
             "label_4": "T-shirts",
