@@ -63,7 +63,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<h2>New arrivals{{ metaobjects.locations[\"cbd-melbourne\"].address.value }}</h2>",
+            "text": "<h2>New arrivals</h2>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -124,11 +124,11 @@
         "ai_gen_block_2fd63f3_AjXdwC": {
           "type": "ai_gen_block_2fd63f3",
           "settings": {
-            "metaobject_type": "",
+            "metaobject_type": "locations",
             "metaobject": "",
-            "text_field": "description",
-            "boolean_field": "is_active",
-            "image_field": "image",
+            "text_field": "address",
+            "boolean_field": "repair_shop",
+            "image_field": "shopfront_image",
             "true_label": "Active",
             "false_label": "Inactive",
             "desktop_width_percent": 100,
