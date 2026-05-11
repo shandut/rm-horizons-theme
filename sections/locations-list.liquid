@@ -1,0 +1,273 @@
+{%- comment -%}
+  Locations List — renders every entry of the `locations` metaobject
+  type as a card. Each card shows the shopfront image, address, and a
+  "Repair shop" badge when the boolean is true.
+{%- endcomment -%}
+
+{%- liquid
+  assign locations = shop.metaobjects.locations.values
+  if section.settings.repair_only
+    assign locations = locations | where: 'repair_shop', true
+  endif
+-%}
+
+<div
+  class="locations-list color-{{ section.settings.color_scheme }}"
+  id="LocationsList-{{ section.id }}"
+  style="
+    --ll-columns: {{ section.settings.columns | default: 3 }};
+    --ll-gap: {{ section.settings.gap | default: 24 }}px;
+    padding-block-start: {{ section.settings.padding_top }}px;
+    padding-block-end: {{ section.settings.padding_bottom }}px;
+  "
+>
+  {%- if section.settings.heading != blank -%}
+    <h2 class="locations-list__title">{{ section.settings.heading }}</h2>
+  {%- endif -%}
+
+  {%- if section.settings.subheading != blank -%}
+    <p class="locations-list__subheading">{{ section.settings.subheading }}</p>
+  {%- endif -%}
+
+  {%- if locations.size > 0 -%}
+    <ul class="locations-list__items" role="list">
+      {%- for location in locations -%}
+        {%- assign image = location.shopfront_image -%}
+        <li class="locations-list__item">
+          {%- if image != blank -%}
+            <div class="locations-list__media">
+              {{
+                image
+                | image_url: width: 800
+                | image_tag:
+                  widths: '300, 400, 600, 800',
+                  sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 100vw',
+                  loading: 'lazy',
+                  alt: location.address
+              }}
+            </div>
+          {%- endif -%}
+
+          <div class="locations-list__body">
+            {%- if location.repair_shop -%}
+              <span class="locations-list__badge">
+                {{- section.settings.repair_label | default: 'Repair shop' -}}
+              </span>
+            {%- endif -%}
+
+            {%- if location.address != blank -%}
+              <p class="locations-list__address">{{ location.address }}</p>
+            {%- endif -%}
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+  {%- else -%}
+    <p class="locations-list__empty">
+      {{- section.settings.empty_text | default: 'No locations to display.' -}}
+    </p>
+  {%- endif -%}
+</div>
+
+{% stylesheet %}
+  .locations-list {
+    padding-inline: clamp(1rem, 2.5vw, 2.5rem);
+    max-width: var(--normal-page-width, 120rem);
+    margin: 0 auto;
+  }
+
+  .locations-list__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: var(--font-heading--weight, 400);
+    line-height: 1.15;
+    text-align: center;
+    color: var(--color-foreground-heading, var(--color-foreground));
+    margin: 0 0 0.5rem;
+  }
+
+  .locations-list__subheading {
+    text-align: center;
+    font-family: var(--font-body--family);
+    font-size: clamp(0.875rem, 1.2vw, 1rem);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text, 0.7));
+    margin: 0 auto clamp(1.5rem, 3vw, 2.5rem);
+    max-width: 48ch;
+  }
+
+  .locations-list__items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--ll-columns, 3), 1fr);
+    gap: var(--ll-gap, 1.5rem);
+  }
+
+  .locations-list__item {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-background, #fff);
+    border-radius: var(--card-corner-radius, 4px);
+    overflow: hidden;
+    border: 1px solid rgb(var(--color-foreground-rgb) / 0.08);
+  }
+
+  .locations-list__media {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: rgb(var(--color-foreground-rgb) / 0.04);
+  }
+
+  .locations-list__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.45s var(--animation-timing-hover, ease);
+  }
+
+  .locations-list__item:hover .locations-list__media img {
+    transform: scale(1.04);
+  }
+
+  .locations-list__body {
+    padding: clamp(0.875rem, 1.5vw, 1.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .locations-list__badge {
+    align-self: flex-start;
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    background: rgb(var(--color-foreground-rgb) / 0.08);
+    border-radius: 999px;
+    padding: 0.25rem 0.625rem;
+  }
+
+  .locations-list__address {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
+    color: var(--color-foreground);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .locations-list__empty {
+    text-align: center;
+    font-family: var(--font-body--family);
+    color: rgb(var(--color-foreground-rgb) / 0.6);
+    margin: 0;
+  }
+
+  @media screen and (max-width: 749px) {
+    .locations-list__items {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media screen and (min-width: 750px) and (max-width: 989px) {
+    .locations-list__items {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Locations list",
+  "tag": "section",
+  "class": "locations-list-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our locations"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading"
+    },
+    {
+      "type": "checkbox",
+      "id": "repair_only",
+      "label": "Show repair shops only",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "repair_label",
+      "label": "Repair shop badge label",
+      "default": "Repair shop"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty-state text",
+      "default": "No locations to display."
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "Columns (desktop)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Card gap",
+      "min": 8,
+      "max": 64,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Top padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 40
+    }
+  ],
+  "presets": [
+    {
+      "name": "Locations list",
+      "category": "Content"
+    }
+  ]
+}
+{% endschema %}
