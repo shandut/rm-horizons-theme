@@ -600,6 +600,22 @@
         "padding-block-start": 0,
         "padding-block-end": 0
       }
+    },
+    "locations_list_jET3ag": {
+      "type": "locations-list",
+      "name": "Locations list",
+      "settings": {
+        "heading": "Our locations",
+        "subheading": "",
+        "repair_only": false,
+        "repair_label": "Repair shop",
+        "empty_text": "No locations to display.",
+        "color_scheme": "",
+        "columns": 3,
+        "gap": 24,
+        "padding_top": 40,
+        "padding_bottom": 40
+      }
     }
   },
   "order": [
@@ -611,6 +627,7 @@
     "immersive_banner_rmw",
     "hero_jVaWmY",
     "product_list_fa6P9H",
-    "177486769293057817"
+    "177486769293057817",
+    "locations_list_jET3ag"
   ]
 }
