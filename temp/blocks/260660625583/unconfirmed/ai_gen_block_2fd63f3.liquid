@@ -1,6 +1,365 @@
+{% doc %}
+  @prompt
+    Create a second time I can add a meta object which has a text field, a true/false boolean and also an image piece content. 
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-metaobject-card-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+  }
+
+  .ai-metaobject-card-container-{{ ai_gen_id }} {
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: {{ block.settings.padding }}px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .ai-metaobject-card-image-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-metaobject-card-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .ai-metaobject-card-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+
+  .ai-metaobject-card-image-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+  }
+
+  .ai-metaobject-card-content-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ai-metaobject-card-text-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.text_size }}px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .ai-metaobject-card-status-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: {{ block.settings.status_background_color }};
+    color: {{ block.settings.status_text_color }};
+    border-radius: {{ block.settings.status_border_radius }}px;
+    font-size: {{ block.settings.status_text_size }}px;
+    font-weight: 500;
+    width: fit-content;
+  }
+
+  .ai-metaobject-card-status-icon-{{ ai_gen_id }} {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .ai-metaobject-card-empty-state-{{ ai_gen_id }} {
+    padding: 40px 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    font-style: italic;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-metaobject-card-{{ ai_gen_id }} {
+      width: 100%;
+    }
+  }
+{% endstyle %}
+
+<metaobject-card-{{ ai_gen_id }}
+  class="ai-metaobject-card-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.metaobject != blank %}
+    {% assign metaobject_data = metaobjects[block.settings.metaobject] %}
+    
+    <div class="ai-metaobject-card-container-{{ ai_gen_id }}">
+      {% if metaobject_data[block.settings.image_field] != blank %}
+        <div class="ai-metaobject-card-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ metaobject_data[block.settings.image_field] | image_url: width: 1000 }}"
+            alt="{{ metaobject_data[block.settings.image_field].alt | escape }}"
+            loading="lazy"
+            width="{{ metaobject_data[block.settings.image_field].width }}"
+            height="{{ metaobject_data[block.settings.image_field].height }}"
+            class="ai-metaobject-card-image-{{ ai_gen_id }}"
+          >
+        </div>
+      {% else %}
+        <div class="ai-metaobject-card-image-placeholder-{{ ai_gen_id }}">
+          {{ 'image' | placeholder_svg_tag }}
+        </div>
+      {% endif %}
+
+      <div class="ai-metaobject-card-content-{{ ai_gen_id }}">
+        {% if metaobject_data[block.settings.text_field] != blank %}
+          <p class="ai-metaobject-card-text-{{ ai_gen_id }}">
+            {{ metaobject_data[block.settings.text_field] }}
+          </p>
+        {% endif %}
+
+        {% if metaobject_data[block.settings.boolean_field] != blank %}
+          <div class="ai-metaobject-card-status-{{ ai_gen_id }}">
+            {% if metaobject_data[block.settings.boolean_field] == true %}
+              <svg
+                class="ai-metaobject-card-status-icon-{{ ai_gen_id }}"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>{{ block.settings.true_label }}</span>
+            {% else %}
+              <svg
+                class="ai-metaobject-card-status-icon-{{ ai_gen_id }}"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              <span>{{ block.settings.false_label }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="ai-metaobject-card-empty-state-{{ ai_gen_id }}">
+      Next, select a metaobject to display
+    </div>
+  {% endif %}
+</metaobject-card-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class MetaobjectCard{{ai_gen_id}} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+      }
+    }
+
+    customElements.define('metaobject-card-{{ ai_gen_id }}', MetaobjectCard{{ai_gen_id}});
+  })();
+</script>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Metaobject card",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Metaobject"
+    },
+    {
+      "type": "text",
+      "id": "metaobject_type",
+      "label": "Metaobject type",
+      "info": "Enter the metaobject definition type (e.g., 'location_info')"
+    },
+    {
+      "type": "metaobject",
+      "id": "metaobject",
+      "label": "Select metaobject",
+      "metaobject_type": "location_info"
+    },
+    {
+      "type": "header",
+      "content": "Field mapping"
+    },
+    {
+      "type": "text",
+      "id": "text_field",
+      "label": "Text field key",
+      "default": "description",
+      "info": "Enter the field key for the text content"
+    },
+    {
+      "type": "text",
+      "id": "boolean_field",
+      "label": "Boolean field key",
+      "default": "is_active",
+      "info": "Enter the field key for the true/false value"
+    },
+    {
+      "type": "text",
+      "id": "image_field",
+      "label": "Image field key",
+      "default": "image",
+      "info": "Enter the field key for the image"
+    },
+    {
+      "type": "header",
+      "content": "Boolean labels"
+    },
+    {
+      "type": "text",
+      "id": "true_label",
+      "label": "True label",
+      "default": "Active"
+    },
+    {
+      "type": "text",
+      "id": "false_label",
+      "label": "False label",
+      "default": "Inactive"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Padding",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "status_background_color",
+      "label": "Status background",
+      "default": "#e6dbc4"
+    },
+    {
+      "type": "color",
+      "id": "status_text_color",
+      "label": "Status text",
+      "default": "#1f1007"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "status_text_size",
+      "label": "Status text size",
+      "min": 10,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "status_border_radius",
+      "label": "Status border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    }
+  ],
+  "presets": [
+    {
+      "name": "Metaobject card"
+    }
+  ],
+  "tag": null
+}
 {% endschema %}
