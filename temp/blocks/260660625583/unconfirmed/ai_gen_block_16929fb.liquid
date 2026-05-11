@@ -1,6 +1,364 @@
+{% doc %}
+  @prompt
+    We need to render a locations "Metafield object" which has address, repair_info as a boolean, and an image as an image. 
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-location-metaobject-{{ ai_gen_id }} {
+    display: block;
+    width: {{ block.settings.desktop_width_percent }}%;
+    max-width: 100%;
+    background-color: {{ block.settings.background_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: {{ block.settings.padding }}px;
+  }
+
+  .ai-location-metaobject-container-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: {{ block.settings.layout }};
+    gap: {{ block.settings.gap }}px;
+    align-items: flex-start;
+  }
+
+  .ai-location-metaobject-image-wrapper-{{ ai_gen_id }} {
+    flex-shrink: 0;
+    width: {{ block.settings.image_width }}px;
+    height: {{ block.settings.image_height }}px;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-location-metaobject-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ai-location-metaobject-image-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-location-metaobject-image-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+    opacity: 0.3;
+  }
+
+  .ai-location-metaobject-content-{{ ai_gen_id }} {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.content_gap }}px;
+  }
+
+  .ai-location-metaobject-address-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.address_font_size }}px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .ai-location-metaobject-repair-badge-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: {{ block.settings.badge_background_color }};
+    color: {{ block.settings.badge_text_color }};
+    border-radius: {{ block.settings.badge_border_radius }}px;
+    font-size: {{ block.settings.badge_font_size }}px;
+    font-weight: 500;
+    width: fit-content;
+  }
+
+  .ai-location-metaobject-repair-icon-{{ ai_gen_id }} {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .ai-location-metaobject-empty-state-{{ ai_gen_id }} {
+    padding: 40px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-location-metaobject-container-{{ ai_gen_id }} {
+      flex-direction: column;
+    }
+
+    .ai-location-metaobject-image-wrapper-{{ ai_gen_id }} {
+      width: 100%;
+      height: 200px;
+    }
+  }
+{% endstyle %}
+
+<div
+  class="ai-location-metaobject-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.location_metaobject %}
+    {% assign location = block.settings.location_metaobject %}
+    
+    <div class="ai-location-metaobject-container-{{ ai_gen_id }}">
+      {% if location.image %}
+        <div class="ai-location-metaobject-image-wrapper-{{ ai_gen_id }}">
+          <img
+            src="{{ location.image | image_url: width: 800 }}"
+            alt="{{ location.image.alt | escape }}"
+            class="ai-location-metaobject-image-{{ ai_gen_id }}"
+            loading="lazy"
+            width="800"
+            height="600"
+          >
+        </div>
+      {% endif %}
+
+      <div class="ai-location-metaobject-content-{{ ai_gen_id }}">
+        {% if location.address %}
+          <div class="ai-location-metaobject-address-{{ ai_gen_id }}">
+            {{ location.address }}
+          </div>
+        {% endif %}
+
+        {% if location.repair_info %}
+          <div class="ai-location-metaobject-repair-badge-{{ ai_gen_id }}">
+            <svg
+              class="ai-location-metaobject-repair-icon-{{ ai_gen_id }}"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+            </svg>
+            {{ block.settings.repair_badge_text }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="ai-location-metaobject-empty-state-{{ ai_gen_id }}">
+      Next, select a location metaobject to display
+    </div>
+  {% endif %}
+</div>
+
 {% schema %}
- {
-   "name": "AI_Block",
-   "tag": "shopify-ai-generated-block"
- }
+{
+  "name": "Location metaobject",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Location"
+    },
+    {
+      "type": "text",
+      "id": "metaobject_type",
+      "label": "Metaobject type",
+      "default": "location",
+      "info": "Enter the metaobject type handle (e.g., 'location')"
+    },
+    {
+      "type": "text",
+      "id": "location_metaobject",
+      "label": "Location metaobject handle",
+      "info": "Enter the handle of the location metaobject to display"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout direction",
+      "options": [
+        {
+          "value": "row",
+          "label": "Horizontal"
+        },
+        {
+          "value": "column",
+          "label": "Vertical"
+        }
+      ],
+      "default": "row"
+    },
+    {
+      "type": "range",
+      "id": "desktop_width_percent",
+      "label": "Desktop width",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Padding",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Gap between image and content",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "content_gap",
+      "label": "Gap between content items",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Image width",
+      "min": 100,
+      "max": 500,
+      "step": 20,
+      "unit": "px",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Image height",
+      "min": 100,
+      "max": 500,
+      "step": 20,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "label": "Image border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1f1007"
+    },
+    {
+      "type": "header",
+      "content": "Address"
+    },
+    {
+      "type": "range",
+      "id": "address_font_size",
+      "label": "Font size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "header",
+      "content": "Repair badge"
+    },
+    {
+      "type": "text",
+      "id": "repair_badge_text",
+      "label": "Badge text",
+      "default": "Repair services available"
+    },
+    {
+      "type": "color",
+      "id": "badge_background_color",
+      "label": "Badge background",
+      "default": "#1f1007"
+    },
+    {
+      "type": "color",
+      "id": "badge_text_color",
+      "label": "Badge text",
+      "default": "#f8f4ee"
+    },
+    {
+      "type": "range",
+      "id": "badge_font_size",
+      "label": "Badge font size",
+      "min": 10,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "badge_border_radius",
+      "label": "Badge border radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Location metaobject"
+    }
+  ]
+}
 {% endschema %}
