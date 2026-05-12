@@ -436,6 +436,44 @@
     },
     "1776401526adb1b39b": {
       "type": "_blocks",
+      "blocks": {
+        "metafield_price_YJPyfg": {
+          "type": "metafield-price",
+          "name": "Metafield price",
+          "settings": {
+            "label": "RRP",
+            "value": "{{ closest.product.metafields.custom.member_price.value }}",
+            "style": "compare",
+            "layout": "inline",
+            "alignment": "left",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "metafield_price_jzTXeD": {
+          "type": "metafield-price",
+          "name": "Metafield price",
+          "settings": {
+            "label": "RRP",
+            "value": "{{ closest.product.metafields.custom.member_price.value }}",
+            "style": "compare",
+            "layout": "inline",
+            "alignment": "left",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "metafield_price_YJPyfg",
+        "metafield_price_jzTXeD"
+      ],
       "settings": {
         "content_direction": "column",
         "vertical_on_mobile": true,
