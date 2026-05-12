@@ -3,3 +3,12 @@ horizon/
 
 # OS files
 .DS_Store
+
+# Secrets — never commit
+.env
+.env.*
+
+# Scripts: keep source, ignore generated artifacts
+scripts/configurator-files-manifest.json
+scripts/configurator-files-manifest.pilot.json
+scripts/.failed-uploads.json
