@@ -162,6 +162,22 @@
                 "product_price"
               ]
             },
+            "metafield_price_h6hDPE": {
+              "type": "metafield-price",
+              "name": "Metafield price",
+              "settings": {
+                "label": "Member Price",
+                "value": "${{ closest.product.metafields.custom.member_price.value }}",
+                "style": "highlight",
+                "layout": "inline",
+                "alignment": "left",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
             "divider_main": {
               "type": "_divider",
               "name": "t:names.divider",
@@ -272,6 +288,7 @@
           },
           "block_order": [
             "header_group",
+            "metafield_price_h6hDPE",
             "divider_main",
             "colour_selector",
             "variant_picker",
