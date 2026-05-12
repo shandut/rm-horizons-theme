@@ -1,0 +1,265 @@
+{%- liquid
+  assign block_settings = block.settings
+  assign label = block_settings.label
+  assign value = block_settings.value
+  assign style_variant = block_settings.style | default: 'compare'
+  assign layout = block_settings.layout | default: 'inline'
+  assign alignment = block_settings.alignment | default: 'left'
+
+  assign has_value = false
+  if value != blank
+    assign has_value = true
+  endif
+-%}
+
+{%- if has_value -%}
+  <div
+    class="metafield-price metafield-price--{{ style_variant }} metafield-price--{{ layout }} text-{{ alignment }} spacing-style"
+    data-block-id="{{ block.id }}"
+    style="
+      {% render 'spacing-style', settings: block_settings %}
+    "
+    {{ block.shopify_attributes }}
+  >
+    {%- if label != blank -%}
+      <span class="metafield-price__label">{{ label | escape }}</span>
+    {%- endif -%}
+    <span class="metafield-price__value">{{ value }}</span>
+  </div>
+{%- endif -%}
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .metafield-price {
+    display: flex;
+    gap: var(--padding-2xs, 0.4rem);
+    align-items: baseline;
+    font-family: var(--font-body--family);
+    color: var(--color-foreground);
+    line-height: 1.4;
+  }
+
+  .metafield-price--inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .metafield-price--stacked {
+    flex-direction: column;
+    gap: var(--padding-3xs, 0.2rem);
+    align-items: flex-start;
+  }
+
+  .metafield-price.text-center {
+    justify-content: center;
+  }
+  .metafield-price.text-center.metafield-price--stacked {
+    align-items: center;
+  }
+  .metafield-price.text-right {
+    justify-content: flex-end;
+  }
+  .metafield-price.text-right.metafield-price--stacked {
+    align-items: flex-end;
+  }
+
+  .metafield-price__label {
+    font-size: var(--font-size--xs, 0.75rem);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text, 0.6));
+  }
+
+  .metafield-price__value {
+    font-family: var(--font-body--family);
+  }
+
+  /* --- Compare: classic strikethrough "was" price ---------------------- */
+  .metafield-price--compare .metafield-price__value {
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text, 0.55));
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 1px;
+    font-weight: 400;
+  }
+
+  /* --- Highlight: prominent member/sale price -------------------------- */
+  .metafield-price--highlight .metafield-price__value {
+    font-family: var(--font-heading--family, var(--font-body--family));
+    font-weight: 600;
+    font-size: var(--font-size--lg, 1.125rem);
+    color: var(--color-foreground-heading, var(--color-foreground));
+  }
+  .metafield-price--highlight .metafield-price__label {
+    color: var(--color-primary, var(--color-foreground));
+  }
+
+  /* --- Note: small subdued context line -------------------------------- */
+  .metafield-price--note {
+    font-size: var(--font-size--xs, 0.8125rem);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-subdued-text, 0.7));
+  }
+  .metafield-price--note .metafield-price__label {
+    font-size: inherit;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    color: inherit;
+  }
+
+  /* --- Badge: heritage-style pill (subtle tinted bg, adapts to scheme) -- */
+  .metafield-price--badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.45em 0.9em;
+    background-color: rgb(var(--color-foreground-rgb) / 0.08);
+    color: var(--color-foreground);
+    border-radius: var(--style-border-radius-buttons-secondary, 999px);
+    font-size: var(--font-size--xs);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .metafield-price--badge.metafield-price--stacked {
+    align-items: center;
+  }
+  .metafield-price--badge .metafield-price__label {
+    color: inherit;
+    font-size: inherit;
+    letter-spacing: 0.06em;
+  }
+
+  /* Rich text from a metafield connected via dynamic source can wrap the
+     value in a <p>. Strip default margins so it sits inline cleanly. */
+  .metafield-price__value > p {
+    margin: 0;
+    display: inline;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Metafield price",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Connect any product metafield (money, text, or rich text) to the value field below using the dynamic source button. The block hides itself when the metafield is empty."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "RRP",
+      "info": "Optional label shown before the value (e.g. RRP, Member price, Was)."
+    },
+    {
+      "type": "text",
+      "id": "value",
+      "label": "Value",
+      "info": "Click the dynamic source icon to connect a product metafield."
+    },
+    {
+      "type": "header",
+      "content": "Display"
+    },
+    {
+      "type": "select",
+      "id": "style",
+      "label": "Style",
+      "options": [
+        {
+          "value": "compare",
+          "label": "Compare (strikethrough)"
+        },
+        {
+          "value": "highlight",
+          "label": "Highlight (prominent)"
+        },
+        {
+          "value": "note",
+          "label": "Note (small subdued)"
+        },
+        {
+          "value": "badge",
+          "label": "Badge (sand pill)"
+        }
+      ],
+      "default": "compare"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "inline",
+          "label": "Inline"
+        },
+        {
+          "value": "stacked",
+          "label": "Stacked"
+        }
+      ],
+      "default": "inline"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "Left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "Right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Metafield price",
+      "category": "Product"
+    }
+  ]
+}
+{% endschema %}
+{% # theme-check-enable %}
