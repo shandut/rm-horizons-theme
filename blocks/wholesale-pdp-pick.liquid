@@ -1,25 +1,31 @@
 {%- comment -%}
   Wholesale PDP Quick Pick — B2B-only variant picker dialog on the PDP.
 
-  Renders a single trigger button + a <dialog> containing every variant
-  of the current product with a ±/qty stepper. Each row shows current
-  cart quantity for that variant; edits auto-save to cart (debounced)
-  and the section is re-rendered server-side so totals stay correct.
+  Theme block intended to be dropped inside the buy-buttons area
+  (below the add-to-cart button). Renders a single trigger button +
+  a <dialog> containing every variant of the current product with a
+  ±/qty stepper. Each row shows current cart quantity for that variant;
+  edits coalesce through a 350ms debounce into a single bulk cart POST.
 
-  Visible ONLY when customer.b2b? is true — the section outputs nothing
+  Visible ONLY when customer.b2b? is true — the block outputs nothing
   for retail / logged-out visitors, so DTC PDPs are unchanged.
 {%- endcomment -%}
 
-{%- if customer.b2b? -%}
-  {%- liquid
-    assign currency_code = cart.currency.iso_code
-  -%}
+{%- liquid
+  assign block_settings = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+-%}
+
+{%- if customer.b2b? and product != blank -%}
+  {%- assign currency_code = cart.currency.iso_code -%}
 
   <div
-    class="section section--page-width spacing-style wholesale-pdp-pick-section color-{{ section.settings.color_scheme }}"
-    style="
-      {%- render 'spacing-style', settings: section.settings -%}
-    "
+    class="wholesale-pdp-pick-block"
+    style="{% render 'spacing-style', settings: block_settings %}"
+    {{ block.shopify_attributes }}
   >
     <script
       src="{{ 'wholesale-pdp-pick.js' | asset_url }}"
@@ -46,17 +52,17 @@
           <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
           <path d="M9 13h6M12 10v6"/>
         </svg>
-        <span>{{ section.settings.trigger_label | default: 'Wholesale quick pick' }}</span>
+        <span>{{ block_settings.trigger_label | default: 'Wholesale quick pick' }}</span>
         {%- if product.variants.size > 1 -%}
           <span class="wholesale-pdp-pick__trigger-count">{{ product.variants.size }} variants</span>
         {%- endif -%}
       </button>
 
-      <dialog class="wholesale-pdp-pick__dialog" ref="dialog" aria-labelledby="WholesalePickTitle-{{ section.id }}">
+      <dialog class="wholesale-pdp-pick__dialog" ref="dialog" aria-labelledby="WholesalePickTitle-{{ block.id }}">
         <article class="wholesale-pdp-pick__panel">
           <header class="wholesale-pdp-pick__header">
             <div class="wholesale-pdp-pick__title-block">
-              <h2 id="WholesalePickTitle-{{ section.id }}" class="wholesale-pdp-pick__title">{{ product.title | escape }}</h2>
+              <h2 id="WholesalePickTitle-{{ block.id }}" class="wholesale-pdp-pick__title">{{ product.title | escape }}</h2>
               <p class="wholesale-pdp-pick__subtitle">
                 {%- if customer.current_company -%}
                   {{ customer.current_company.name | escape }} pricing · update quantities to add to cart
@@ -279,25 +285,29 @@
 
 {% # theme-check-disable %}
 {% stylesheet %}
-  .wholesale-pdp-pick-section {
+  .wholesale-pdp-pick-block {
     --whl-border: rgb(var(--color-foreground-rgb, 31 16 7) / 0.12);
     --whl-row-hover: rgb(var(--color-foreground-rgb, 31 16 7) / 0.03);
     --whl-muted: rgb(var(--color-foreground-rgb, 31 16 7) / 0.55);
     --whl-success: #1f7a3f;
     --whl-error: #b32d2d;
+    display: block;
+    width: 100%;
   }
 
   .wholesale-pdp-pick { display: block; }
 
-  /* Trigger button */
+  /* Trigger button — sized to sit naturally below the add-to-cart button */
   .wholesale-pdp-pick__trigger {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
+    width: 100%;
     padding: 0.85rem 1.4rem;
-    background: var(--color-foreground);
-    color: var(--color-background);
-    border: none;
+    background: transparent;
+    color: var(--color-foreground);
+    border: 1px solid var(--color-foreground);
     border-radius: 4px;
     font: inherit;
     font-weight: 600;
@@ -305,18 +315,24 @@
     text-transform: uppercase;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: background 0.15s, color 0.15s;
   }
-  .wholesale-pdp-pick__trigger:hover { opacity: 0.92; }
+  .wholesale-pdp-pick__trigger:hover {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
   .wholesale-pdp-pick__trigger-count {
     margin-inline-start: 0.4rem;
     padding: 0.15rem 0.5rem;
-    background: rgb(var(--color-background-rgb, 255 255 255) / 0.15);
+    background: rgb(var(--color-foreground-rgb, 31 16 7) / 0.08);
     border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 500;
     letter-spacing: 0.02em;
     text-transform: none;
+  }
+  .wholesale-pdp-pick__trigger:hover .wholesale-pdp-pick__trigger-count {
+    background: rgb(var(--color-background-rgb, 255 255 255) / 0.15);
   }
 
   /* Dialog */
@@ -660,12 +676,11 @@
 {% schema %}
 {
   "name": "Wholesale PDP quick pick",
-  "tag": "section",
-  "class": "section",
+  "tag": null,
   "settings": [
     {
       "type": "paragraph",
-      "content": "Adds a B2B-only quick-pick dialog to product pages. The trigger button and dialog are only rendered for logged-in B2B partners — DTC visitors see nothing."
+      "content": "B2B-only quick-pick dialog. The trigger button and dialog are only rendered for logged-in B2B partners — DTC visitors see nothing."
     },
     {
       "type": "text",
@@ -675,43 +690,54 @@
     },
     {
       "type": "header",
-      "content": "Layout"
-    },
-    {
-      "type": "color_scheme",
-      "id": "color_scheme",
-      "label": "Color scheme",
-      "default": "scheme-1"
+      "content": "Padding"
     },
     {
       "type": "range",
       "id": "padding-block-start",
-      "label": "Top padding",
+      "label": "Top",
       "min": 0,
       "max": 60,
-      "step": 4,
+      "step": 2,
       "unit": "px",
       "default": 8
     },
     {
       "type": "range",
       "id": "padding-block-end",
-      "label": "Bottom padding",
+      "label": "Bottom",
       "min": 0,
       "max": 60,
-      "step": 4,
+      "step": 2,
       "unit": "px",
-      "default": 8
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "Left",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "Right",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
     }
   ],
   "presets": [
     {
       "name": "Wholesale PDP quick pick",
-      "category": "Wholesale"
+      "category": "t:categories.product"
     }
-  ],
-  "enabled_on": {
-    "templates": ["product"]
-  }
+  ]
 }
 {% endschema %}
