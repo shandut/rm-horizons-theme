@@ -1,7 +1,6 @@
 import { Component } from '@theme/component';
 import { CartAddEvent } from '@theme/events';
 import { fetchConfig } from '@theme/utilities';
-import { morphSection } from '@theme/section-renderer';
 import { formatMoney } from '@theme/money-formatting';
 
 /**
@@ -197,8 +196,8 @@ class WholesaleOrderList extends Component {
         return;
       }
 
-      // Sync the cart drawer / cart icon (existing listeners pick this up).
-      this.#updateSectionHTML(data);
+      // Dispatch so any cart drawer/icon on this page (or any rendered in
+      // subsequent navigation) stays in sync if a B2B buyer flips views.
       document.dispatchEvent(
         new CartAddEvent(data, this.id, {
           source: 'wholesale-order-list',
@@ -206,14 +205,11 @@ class WholesaleOrderList extends Component {
         })
       );
 
-      const itemCount = Object.values(updates).reduce((sum, n) => sum + n, 0);
-      this.#showSuccess(`${itemCount} unit${itemCount === 1 ? '' : 's'} across ${lineCount} line${lineCount === 1 ? '' : 's'} added to cart.`);
-
-      // Reset the grid so the merchant can build a new order without stale qtys.
-      for (const input of inputs) {
-        if (parseInt(input.value, 10) > 0) input.value = '0';
-      }
-      this.#recalculate();
+      // Side cart can't comfortably display dozens of size-run lines —
+      // send the buyer to the dedicated full-page B2B cart view to
+      // review, edit qtys, attach PO, and check out.
+      window.location.href = '/cart?view=b2b';
+      return;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') return;
       console.error('[wholesale-order-list] submit failed', error);
@@ -356,17 +352,6 @@ class WholesaleOrderList extends Component {
     return ids;
   }
 
-  /**
-   * Morph any updated sections returned by the cart-update endpoint.
-   * @param {{ sections?: Record<string, string> }} data
-   */
-  #updateSectionHTML(data) {
-    if (!data.sections) return;
-    for (const [id, html] of Object.entries(data.sections)) {
-      if (id === this.dataset.sectionId) continue; // never morph our own grid
-      if (typeof html === 'string') morphSection(id, html);
-    }
-  }
 }
 
 if (!customElements.get('wholesale-order-list')) {

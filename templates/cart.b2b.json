@@ -1,0 +1,13 @@
+{
+  "sections": {
+    "wholesale-cart": {
+      "type": "wholesale-cart",
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 96
+      }
+    }
+  },
+  "order": ["wholesale-cart"]
+}

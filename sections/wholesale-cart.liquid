@@ -1,0 +1,650 @@
+{%- comment -%}
+  Wholesale Cart — full-page B2B cart review/edit view.
+
+  Accessed via /cart?view=b2b — Shopify renders templates/cart.b2b.json
+  when the `?view=b2b` query parameter is present. The standard cart at
+  /cart still renders the DTC templates/cart.json — that surface is
+  untouched.
+
+  Gate matches the order pad: only B2B buyers see the editable grid.
+{%- endcomment -%}
+
+<div
+  class="section section--page-width color-{{ section.settings.color_scheme }} spacing-style wholesale-cart-section"
+  style="
+    {%- render 'spacing-style', settings: section.settings -%}
+  "
+>
+  {%- if customer.b2b? -%}
+    <script
+      src="{{ 'wholesale-cart.js' | asset_url }}"
+      type="module"
+      fetchpriority="low"
+    ></script>
+
+    <wholesale-cart
+      class="wholesale-cart"
+      data-section-id="{{ section.id }}"
+      data-currency="{{ cart.currency.iso_code }}"
+      data-money-format="{{ shop.money_format | escape }}"
+    >
+      <header class="wholesale-cart__header">
+        <div class="wholesale-cart__heading-block">
+          <h1 class="wholesale-cart__heading">Review Wholesale Order</h1>
+          <a href="/pages/wholesale-order" class="wholesale-cart__back-link">← Continue ordering</a>
+        </div>
+        <div class="wholesale-cart__account">
+          {%- if customer.current_company -%}
+            <span class="wholesale-cart__company">{{ customer.current_company.name | escape }}</span>
+          {%- endif -%}
+          {%- if customer.current_location -%}
+            <span aria-hidden="true">·</span>
+            <span class="wholesale-cart__location">{{ customer.current_location.name | escape }}</span>
+          {%- endif -%}
+        </div>
+      </header>
+
+      {%- if cart.item_count == 0 -%}
+        <div class="wholesale-cart__empty">
+          <p>Your wholesale order is empty.</p>
+          <a href="/pages/wholesale-order" class="button">Start ordering</a>
+        </div>
+      {%- else -%}
+        <div class="wholesale-cart__scroll" ref="scrollArea">
+          <table class="wholesale-cart__table" role="table" aria-label="Wholesale cart line items">
+            <thead class="wholesale-cart__thead">
+              <tr>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--style">Style</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--sku">SKU</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--size">Size</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--unit">Unit</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--qty">Qty</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--total">Line total</th>
+                <th scope="col" class="wholesale-cart__th wholesale-cart__th--remove">
+                  <span class="visually-hidden">Remove</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="wholesale-cart__tbody">
+              {%- for item in cart.items -%}
+                <tr
+                  class="wholesale-cart__row"
+                  ref="lineRows[]"
+                  data-line-key="{{ item.key }}"
+                  data-unit-price="{{ item.final_price }}"
+                >
+                  <th scope="row" class="wholesale-cart__td wholesale-cart__td--style">
+                    <div class="wholesale-cart__style-cell">
+                      {%- if item.image -%}
+                        {{
+                          item.image
+                          | image_url: width: 80
+                          | image_tag:
+                            widths: '80',
+                            class: 'wholesale-cart__thumb',
+                            sizes: '40px',
+                            loading: 'lazy',
+                            alt: item.product.title
+                        }}
+                      {%- endif -%}
+                      <a href="{{ item.url }}" class="wholesale-cart__style-link">{{ item.product.title | escape }}</a>
+                    </div>
+                  </th>
+                  <td class="wholesale-cart__td wholesale-cart__td--sku">
+                    {%- if item.sku != blank -%}{{ item.sku | escape }}{%- else -%}<span class="wholesale-cart__muted">—</span>{%- endif -%}
+                  </td>
+                  <td class="wholesale-cart__td wholesale-cart__td--size">
+                    {%- if item.variant.title != 'Default Title' -%}
+                      {{ item.variant.title | escape }}
+                    {%- else -%}
+                      <span class="wholesale-cart__muted">—</span>
+                    {%- endif -%}
+                  </td>
+                  <td class="wholesale-cart__td wholesale-cart__td--unit">
+                    {%- if item.original_price > item.final_price -%}
+                      <span class="wholesale-cart__rrp"><s>{{ item.original_price | money }}</s></span>
+                    {%- endif -%}
+                    <strong>{{ item.final_price | money }}</strong>
+                  </td>
+                  <td class="wholesale-cart__td wholesale-cart__td--qty">
+                    <div class="wholesale-cart__qty-stepper">
+                      <button
+                        type="button"
+                        class="wholesale-cart__qty-btn"
+                        data-action="decrement"
+                        data-line-key="{{ item.key }}"
+                        aria-label="Decrease quantity for {{ item.product.title | escape }}"
+                        on:click="/onStep"
+                      >−</button>
+                      <input
+                        type="number"
+                        inputmode="numeric"
+                        class="wholesale-cart__qty-input"
+                        value="{{ item.quantity }}"
+                        min="0"
+                        step="1"
+                        ref="quantityInputs[]"
+                        data-line-key="{{ item.key }}"
+                        aria-label="Quantity for {{ item.product.title | escape }} {{ item.variant.title | escape }}"
+                        on:change="/onQuantityChange"
+                        on:blur="/onQuantityBlur"
+                      >
+                      <button
+                        type="button"
+                        class="wholesale-cart__qty-btn"
+                        data-action="increment"
+                        data-line-key="{{ item.key }}"
+                        aria-label="Increase quantity for {{ item.product.title | escape }}"
+                        on:click="/onStep"
+                      >+</button>
+                    </div>
+                  </td>
+                  <td class="wholesale-cart__td wholesale-cart__td--total" ref="lineTotals[]" data-line-key="{{ item.key }}">
+                    {{ item.final_line_price | money }}
+                  </td>
+                  <td class="wholesale-cart__td wholesale-cart__td--remove">
+                    <button
+                      type="button"
+                      class="wholesale-cart__remove-btn"
+                      data-line-key="{{ item.key }}"
+                      aria-label="Remove {{ item.product.title | escape }}"
+                      on:click="/onRemove"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                        <path d="M6 6l12 12M6 18L18 6"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="wholesale-cart__footer">
+          <div class="wholesale-cart__attrs">
+            <div class="wholesale-cart__attr">
+              <label for="WholesaleCartPO-{{ section.id }}" class="wholesale-cart__attr-label">PO number</label>
+              <input
+                id="WholesaleCartPO-{{ section.id }}"
+                type="text"
+                class="wholesale-cart__attr-input"
+                value="{{ cart.attributes['PO Number'] | escape }}"
+                placeholder="Optional"
+                ref="poField"
+                autocomplete="off"
+                maxlength="60"
+                on:input="/onAttrChange"
+              >
+            </div>
+            <div class="wholesale-cart__attr wholesale-cart__attr--wide">
+              <label for="WholesaleCartNotes-{{ section.id }}" class="wholesale-cart__attr-label">Order notes</label>
+              <input
+                id="WholesaleCartNotes-{{ section.id }}"
+                type="text"
+                class="wholesale-cart__attr-input"
+                value="{{ cart.note | escape }}"
+                placeholder="Optional — shipping instructions, delivery dates…"
+                ref="notesField"
+                autocomplete="off"
+                maxlength="200"
+                on:input="/onAttrChange"
+              >
+            </div>
+          </div>
+
+          <div class="wholesale-cart__summary-grid">
+            <div class="wholesale-cart__metrics">
+              <div class="wholesale-cart__metric">
+                <span class="wholesale-cart__metric-label">Lines</span>
+                <span class="wholesale-cart__metric-value" ref="lineCount">{{ cart.items.size }}</span>
+              </div>
+              <div class="wholesale-cart__metric">
+                <span class="wholesale-cart__metric-label">Units</span>
+                <span class="wholesale-cart__metric-value" ref="totalUnits">{{ cart.item_count }}</span>
+              </div>
+              <div class="wholesale-cart__metric wholesale-cart__metric--total">
+                <span class="wholesale-cart__metric-label">Subtotal (ex. tax + ship)</span>
+                <span class="wholesale-cart__metric-value" ref="grandTotal">{{ cart.total_price | money }}</span>
+              </div>
+            </div>
+
+            <div class="wholesale-cart__actions">
+              <a href="/pages/wholesale-order" class="wholesale-cart__continue">Add more items</a>
+              <button
+                type="button"
+                class="button wholesale-cart__checkout"
+                ref="checkoutButton"
+                on:click="/checkout"
+              >Proceed to checkout →</button>
+            </div>
+          </div>
+
+          <div class="wholesale-cart__messages" aria-live="polite">
+            <span class="wholesale-cart__message wholesale-cart__message--success hidden" ref="successContainer">
+              <span ref="successText"></span>
+            </span>
+            <span class="wholesale-cart__message wholesale-cart__message--error hidden" ref="errorContainer">
+              <span ref="errorText"></span>
+            </span>
+          </div>
+        </footer>
+      {%- endif -%}
+    </wholesale-cart>
+
+  {%- else -%}
+    <div class="wholesale-cart-gate">
+      <div class="wholesale-cart-gate__inner">
+        <h1 class="wholesale-cart-gate__heading">Wholesale cart view</h1>
+        <p class="wholesale-cart-gate__body">
+          This cart view is available to logged-in B2B partners. Use the standard cart for retail orders.
+        </p>
+        <div class="wholesale-cart-gate__actions">
+          <a href="{{ routes.cart_url }}" class="button">View standard cart</a>
+          {%- unless customer -%}
+            <a href="{{ routes.account_login_url }}?return_to={{ request.path | escape }}?view=b2b" class="link">Sign in</a>
+          {%- endunless -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .wholesale-cart-section {
+    --whl-border: rgb(var(--color-foreground-rgb, 31 16 7) / 0.12);
+    --whl-row-hover: rgb(var(--color-foreground-rgb, 31 16 7) / 0.03);
+    --whl-muted: rgb(var(--color-foreground-rgb, 31 16 7) / 0.55);
+  }
+
+  .wholesale-cart {
+    display: block;
+    width: 100%;
+  }
+
+  .wholesale-cart__header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-md, 1rem);
+    align-items: baseline;
+    justify-content: space-between;
+    padding-block-end: var(--padding-md, 1rem);
+    border-block-end: 1px solid var(--whl-border);
+    margin-block-end: var(--margin-lg, 1.25rem);
+  }
+
+  .wholesale-cart__heading {
+    font-family: var(--font-heading--family, serif);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    line-height: 1.15;
+    margin: 0 0 0.25rem;
+    color: var(--color-foreground-heading, var(--color-foreground));
+  }
+
+  .wholesale-cart__back-link {
+    color: var(--whl-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+  }
+  .wholesale-cart__back-link:hover { text-decoration: underline; }
+
+  .wholesale-cart__account {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+  }
+  .wholesale-cart__company {
+    font-weight: 600;
+    color: var(--color-foreground);
+  }
+
+  .wholesale-cart__scroll {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+  }
+  .wholesale-cart__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .wholesale-cart__thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    background: var(--color-background);
+  }
+  .wholesale-cart__th {
+    text-align: start;
+    padding: 0.85rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+    border-block-end: 1px solid var(--whl-border);
+    white-space: nowrap;
+  }
+  .wholesale-cart__th--unit,
+  .wholesale-cart__th--total,
+  .wholesale-cart__th--qty { text-align: end; }
+  .wholesale-cart__th--remove { width: 2.5rem; }
+
+  .wholesale-cart__td {
+    padding: 0.75rem 0.75rem;
+    vertical-align: middle;
+    border-block-end: 1px solid var(--whl-border);
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-cart__row:hover .wholesale-cart__td { background: var(--whl-row-hover); }
+  .wholesale-cart__row:last-child .wholesale-cart__td { border-block-end: 0; }
+
+  .wholesale-cart__td--style { min-width: 16rem; }
+  .wholesale-cart__style-cell {
+    display: inline-flex;
+    gap: 0.7rem;
+    align-items: center;
+  }
+  .wholesale-cart__thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--whl-row-hover);
+    flex-shrink: 0;
+  }
+  .wholesale-cart__style-link {
+    color: var(--color-foreground);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .wholesale-cart__style-link:hover { text-decoration: underline; }
+
+  .wholesale-cart__td--sku {
+    font-size: 0.8rem;
+    color: var(--whl-muted);
+    white-space: nowrap;
+  }
+  .wholesale-cart__td--size { white-space: nowrap; }
+  .wholesale-cart__td--unit,
+  .wholesale-cart__td--total {
+    text-align: end;
+    white-space: nowrap;
+  }
+  .wholesale-cart__rrp {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--whl-muted);
+  }
+  .wholesale-cart__muted { color: var(--whl-muted); }
+
+  /* Qty stepper */
+  .wholesale-cart__qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--whl-border);
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--color-background);
+  }
+  .wholesale-cart__qty-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem 0.6rem;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--color-foreground);
+    transition: background 0.15s;
+  }
+  .wholesale-cart__qty-btn:hover { background: var(--whl-row-hover); }
+  .wholesale-cart__qty-input {
+    width: 3.5rem;
+    border: none;
+    border-inline: 1px solid var(--whl-border);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    padding: 0.4rem 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-cart__qty-input:focus {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: -2px;
+  }
+
+  .wholesale-cart__remove-btn {
+    background: transparent;
+    border: none;
+    padding: 0.4rem;
+    cursor: pointer;
+    color: var(--whl-muted);
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background 0.15s;
+  }
+  .wholesale-cart__remove-btn:hover {
+    color: #b32d2d;
+    background: rgb(179 45 45 / 0.08);
+  }
+
+  .wholesale-cart.is-busy {
+    pointer-events: none;
+    opacity: 0.55;
+    transition: opacity 0.2s;
+  }
+
+  /* Footer */
+  .wholesale-cart__footer {
+    margin-block-start: var(--margin-lg, 1.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md, 1rem);
+    position: sticky;
+    inset-block-end: 0;
+    background: var(--color-background);
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--whl-border);
+    z-index: 3;
+  }
+  .wholesale-cart__attrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .wholesale-cart__attr {
+    flex: 1 1 14rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .wholesale-cart__attr--wide { flex: 2 1 18rem; }
+  .wholesale-cart__attr-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+  }
+  .wholesale-cart__attr-input {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font: inherit;
+  }
+  .wholesale-cart__attr-input:focus {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 1px;
+  }
+
+  .wholesale-cart__summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+  }
+  .wholesale-cart__metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-end;
+  }
+  .wholesale-cart__metric {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+  .wholesale-cart__metric-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--whl-muted);
+  }
+  .wholesale-cart__metric-value {
+    font-family: var(--font-heading--family, serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-cart__metric--total .wholesale-cart__metric-value {
+    font-size: 1.6rem;
+  }
+
+  .wholesale-cart__actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+  .wholesale-cart__continue {
+    color: var(--whl-muted);
+    text-decoration: underline;
+    font-size: 0.9rem;
+  }
+  .wholesale-cart__checkout {
+    min-width: 16rem;
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+  }
+  .wholesale-cart__checkout:hover { opacity: 0.92; }
+  .wholesale-cart__checkout[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+  .wholesale-cart__messages .hidden { display: none; }
+  .wholesale-cart__message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+  .wholesale-cart__message--success { color: var(--color-foreground); }
+  .wholesale-cart__message--error { color: #b32d2d; }
+
+  /* Empty state */
+  .wholesale-cart__empty {
+    padding: 3rem 2rem;
+    text-align: center;
+    border: 1px dashed var(--whl-border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* Gate */
+  .wholesale-cart-gate {
+    display: flex;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+  .wholesale-cart-gate__inner {
+    max-width: 36rem;
+    text-align: center;
+  }
+  .wholesale-cart-gate__heading {
+    font-family: var(--font-heading--family, serif);
+    margin: 0 0 1rem;
+  }
+  .wholesale-cart-gate__body { color: var(--whl-muted); margin: 0 0 2rem; }
+  .wholesale-cart-gate__actions { display: inline-flex; gap: 1rem; align-items: center; }
+
+  /* Mobile */
+  @media (max-width: 750px) {
+    .wholesale-cart__header { flex-direction: column; align-items: stretch; }
+    .wholesale-cart__summary-grid { flex-direction: column; align-items: stretch; }
+    .wholesale-cart__actions { flex-direction: column; align-items: stretch; }
+    .wholesale-cart__checkout { width: 100%; min-width: 0; }
+    .wholesale-cart__td--style { min-width: 12rem; }
+  }
+{% endstylesheet %}
+{% # theme-check-enable %}
+
+{% schema %}
+{
+  "name": "Wholesale cart",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Full-page B2B cart view. Activated by visiting /cart?view=b2b. Visible to logged-in B2B partners; everyone else sees a redirect to the standard cart."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wholesale cart",
+      "category": "Wholesale"
+    }
+  ]
+}
+{% endschema %}
