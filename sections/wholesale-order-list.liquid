@@ -1,0 +1,967 @@
+{%- comment -%}
+  Wholesale Order Pad — B2B "Excel-on-steroids" order grid.
+
+  Reads real Shopify Plus B2B objects (customer.b2b?, customer.current_company,
+  customer.current_location, variant.price [already contextualized],
+  variant.quantity_rule, variant.quantity_price_breaks).
+
+  DTC visitors and logged-in retail customers see a gate screen — no grid
+  data is rendered for them. The full grid only renders when customer.b2b?
+  is truthy.
+{%- endcomment -%}
+
+{%- liquid
+  assign wholesale_collection = collections[section.settings.collection]
+  assign size_option_name = section.settings.size_option_name | default: 'Size'
+  assign size_option_name_lower = size_option_name | downcase
+
+  assign show_rrp_column = section.settings.show_rrp_column
+  assign show_sku_column = section.settings.show_sku_column
+  assign enable_search = section.settings.enable_search
+  assign enable_po_field = section.settings.enable_po_field
+  assign enable_notes_field = section.settings.enable_notes_field
+  assign apply_url = section.settings.apply_url | default: '/pages/company-account-request'
+-%}
+
+<div
+  class="section section--page-width color-{{ section.settings.color_scheme }} spacing-style wholesale-section"
+  style="
+    {%- render 'spacing-style', settings: section.settings -%}
+  "
+>
+  {%- if customer.b2b? -%}
+    {%- comment -%} ─── B2B grid (gated) ─── {%- endcomment -%}
+
+    <script
+      src="{{ 'wholesale-order-list.js' | asset_url }}"
+      type="module"
+      fetchpriority="low"
+    ></script>
+
+    {%- comment -%} Pre-compute the sorted set of size column values across the entire collection.
+      Use a zero-padded numeric key so "6, 6.5, 7, 10" sort correctly (Liquid `sort` is alphabetic).
+      Non-numeric values (e.g., "32R") fall back to lexicographic sort within their own slot.
+    {%- endcomment -%}
+    {%- assign size_index = '' -%}
+    {%- for product in wholesale_collection.products -%}
+      {%- for option in product.options_with_values -%}
+        {%- assign name_lower = option.name | downcase -%}
+        {%- if name_lower == size_option_name_lower -%}
+          {%- for value in option.values -%}
+            {%- assign value_str = value | strip -%}
+            {%- assign value_num = value_str | times: 10.0 | round -%}
+            {%- if value_num > 0 -%}
+              {%- assign key = '00000' | append: value_num | slice: -5, 5 -%}
+            {%- else -%}
+              {%- assign key = 'z' | append: value_str -%}
+            {%- endif -%}
+            {%- assign size_index = size_index | append: key | append: '~' | append: value_str | append: '|' -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {%- assign size_entries = size_index | split: '|' | uniq | compact | sort -%}
+
+    {%- assign sizes_array = '' -%}
+    {%- for entry in size_entries -%}
+      {%- assign parts = entry | split: '~' -%}
+      {%- assign value_str = parts | last -%}
+      {%- if value_str != blank -%}
+        {%- assign sizes_array = sizes_array | append: value_str | append: '|' -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign sizes = sizes_array | split: '|' | uniq | compact -%}
+    {%- assign sizes_count = sizes.size -%}
+
+    <wholesale-order-list
+      class="wholesale-order-list"
+      data-section-id="{{ section.id }}"
+      data-size-count="{{ sizes_count }}"
+      data-currency="{{ cart.currency.iso_code }}"
+      data-money-format="{{ shop.money_format | escape }}"
+    >
+      <header class="wholesale-order-list__header">
+        <div class="wholesale-order-list__heading-block">
+          <h1 class="wholesale-order-list__heading">{{ section.settings.heading }}</h1>
+          {%- if section.settings.subheading != blank -%}
+            <p class="wholesale-order-list__subheading">{{ section.settings.subheading }}</p>
+          {%- endif -%}
+        </div>
+        <div class="wholesale-order-list__account">
+          {%- if customer.current_company -%}
+            <span class="wholesale-order-list__company">{{ customer.current_company.name | escape }}</span>
+          {%- endif -%}
+          {%- if customer.current_location -%}
+            <span class="wholesale-order-list__location-divider" aria-hidden="true">·</span>
+            {%- assign avail_locations = customer.company_available_locations -%}
+            {%- if avail_locations.size > 1 -%}
+              <label class="visually-hidden" for="WholesaleLocation-{{ section.id }}">Buying for location</label>
+              <select
+                id="WholesaleLocation-{{ section.id }}"
+                class="wholesale-order-list__location-select"
+                ref="locationSwitcher"
+                on:change="/onLocationChange"
+              >
+                {%- for loc in avail_locations -%}
+                  <option
+                    value="{{ loc.id }}"
+                    {% if loc.id == customer.current_location.id %}selected{% endif %}
+                  >
+                    {{- loc.name | escape -}}
+                  </option>
+                {%- endfor -%}
+              </select>
+            {%- else -%}
+              <span class="wholesale-order-list__location">{{ customer.current_location.name | escape }}</span>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+      </header>
+
+      {%- if enable_search -%}
+        <div class="wholesale-order-list__toolbar">
+          <label class="visually-hidden" for="WholesaleSearch-{{ section.id }}">Search products or SKU</label>
+          <input
+            id="WholesaleSearch-{{ section.id }}"
+            type="search"
+            class="wholesale-order-list__search"
+            placeholder="Search products or SKU…"
+            ref="searchInput"
+            on:input="/onSearch"
+            autocomplete="off"
+          >
+        </div>
+      {%- endif -%}
+
+      {%- if wholesale_collection.products.size == 0 -%}
+        <div class="wholesale-order-list__empty">
+          <p>No wholesale products available in this collection. Add products to the collection or pick a different one in the theme editor.</p>
+        </div>
+      {%- else -%}
+        <div class="wholesale-order-list__scroll" ref="scrollArea">
+          <table class="wholesale-order-list__table" role="table" aria-label="Wholesale order pad">
+            <thead class="wholesale-order-list__thead">
+              <tr>
+                <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--style">Style</th>
+                {%- if show_sku_column -%}
+                  <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--sku">SKU</th>
+                {%- endif -%}
+                {%- if show_rrp_column -%}
+                  <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--rrp">RRP</th>
+                {%- endif -%}
+                <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--whl">WHL</th>
+                {%- if sizes_count > 0 -%}
+                  {%- for sz in sizes -%}
+                    <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--size">{{ sz | escape }}</th>
+                  {%- endfor -%}
+                {%- else -%}
+                  <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--qty">Qty</th>
+                {%- endif -%}
+                <th scope="col" class="wholesale-order-list__th wholesale-order-list__th--total">Line total</th>
+              </tr>
+            </thead>
+            <tbody class="wholesale-order-list__tbody">
+              {%- for product in wholesale_collection.products -%}
+                {%- liquid
+                  assign size_opt_index = -1
+                  for opt in product.options_with_values
+                    assign opt_name_lower = opt.name | downcase
+                    if opt_name_lower == size_option_name_lower
+                      assign size_opt_index = forloop.index0
+                      break
+                    endif
+                  endfor
+
+                  comment
+                    Pick the first available variant as the representative for RRP/WHL display.
+                    Within a product, B2B-contextualized prices on the same product are typically the same;
+                    differences are handled per-cell at sum time.
+                  endcomment
+                  assign rep_variant = product.first_available_variant | default: product.variants.first
+
+                  assign search_string = product.title | downcase | append: ' ' | append: rep_variant.sku | downcase
+                -%}
+                <tr
+                  class="wholesale-order-list__row"
+                  ref="rows[]"
+                  data-product-id="{{ product.id }}"
+                  data-search-string="{{ search_string | escape }}"
+                >
+                  <th scope="row" class="wholesale-order-list__td wholesale-order-list__td--style">
+                    <div class="wholesale-order-list__style-cell">
+                      {%- if product.featured_image -%}
+                        {{
+                          product.featured_image
+                          | image_url: width: 64
+                          | image_tag:
+                            widths: '64',
+                            class: 'wholesale-order-list__thumb',
+                            sizes: '32px',
+                            loading: 'lazy',
+                            alt: product.title
+                        }}
+                      {%- endif -%}
+                      <a href="{{ product.url }}" class="wholesale-order-list__style-link">{{ product.title | escape }}</a>
+                    </div>
+                  </th>
+                  {%- if show_sku_column -%}
+                    <td class="wholesale-order-list__td wholesale-order-list__td--sku">{{ rep_variant.sku | escape }}</td>
+                  {%- endif -%}
+                  {%- if show_rrp_column -%}
+                    <td class="wholesale-order-list__td wholesale-order-list__td--rrp">
+                      {%- if rep_variant.compare_at_price > rep_variant.price -%}
+                        <s>{% render 'format-price', price: rep_variant.compare_at_price %}</s>
+                      {%- elsif product.metafields.custom.rrp != blank -%}
+                        <s>{{ product.metafields.custom.rrp | money }}</s>
+                      {%- else -%}
+                        <span class="wholesale-order-list__muted">—</span>
+                      {%- endif -%}
+                    </td>
+                  {%- endif -%}
+                  <td class="wholesale-order-list__td wholesale-order-list__td--whl">
+                    <strong>{% render 'format-price', price: rep_variant.price %}</strong>
+                  </td>
+
+                  {%- if sizes_count > 0 and size_opt_index >= 0 -%}
+                    {%- for sz in sizes -%}
+                      {%- liquid
+                        assign matched = nil
+                        for v in product.variants
+                          case size_opt_index
+                            when 0
+                              assign v_size = v.option1
+                            when 1
+                              assign v_size = v.option2
+                            when 2
+                              assign v_size = v.option3
+                          endcase
+                          if v_size == sz
+                            assign matched = v
+                            break
+                          endif
+                        endfor
+                      -%}
+                      <td class="wholesale-order-list__td wholesale-order-list__td--qty">
+                        {%- if matched -%}
+                          {%- assign min_qty = matched.quantity_rule.min | default: 0 -%}
+                          {%- assign inc_qty = matched.quantity_rule.increment | default: 1 -%}
+                          {%- assign max_qty = matched.quantity_rule.max -%}
+                          <label class="visually-hidden" for="WholesaleQty-{{ section.id }}-{{ matched.id }}">
+                            {{ product.title | escape }} {{ size_option_name }} {{ sz | escape }} quantity
+                          </label>
+                          <input
+                            id="WholesaleQty-{{ section.id }}-{{ matched.id }}"
+                            type="number"
+                            inputmode="numeric"
+                            class="wholesale-order-list__qty-input{% unless matched.available %} wholesale-order-list__qty-input--oos{% endunless %}"
+                            min="0"
+                            step="{{ inc_qty }}"
+                            value="0"
+                            ref="quantityInputs[]"
+                            data-variant-id="{{ matched.id }}"
+                            data-price="{{ matched.price }}"
+                            data-row-id="{{ product.id }}"
+                            data-min="{{ min_qty }}"
+                            data-increment="{{ inc_qty }}"
+                            {% if max_qty %}data-max="{{ max_qty }}"{% endif %}
+                            {% unless matched.available %}disabled aria-disabled="true" title="Out of stock"{% endunless %}
+                            on:change="/onQuantityChange"
+                            on:blur="/onQuantityBlur"
+                          >
+                        {%- endif -%}
+                      </td>
+                    {%- endfor -%}
+                  {%- else -%}
+                    {%- comment -%} Product has no size option — single qty input spanning all size columns. {%- endcomment -%}
+                    {%- assign v = rep_variant -%}
+                    {%- assign min_qty = v.quantity_rule.min | default: 0 -%}
+                    {%- assign inc_qty = v.quantity_rule.increment | default: 1 -%}
+                    {%- assign max_qty = v.quantity_rule.max -%}
+                    {%- assign span = sizes_count -%}
+                    {%- if span < 1 -%}{%- assign span = 1 -%}{%- endif -%}
+                    <td class="wholesale-order-list__td wholesale-order-list__td--qty wholesale-order-list__td--qty-single" colspan="{{ span }}">
+                      <label class="visually-hidden" for="WholesaleQty-{{ section.id }}-{{ v.id }}">
+                        {{ product.title | escape }} quantity
+                      </label>
+                      <input
+                        id="WholesaleQty-{{ section.id }}-{{ v.id }}"
+                        type="number"
+                        inputmode="numeric"
+                        class="wholesale-order-list__qty-input wholesale-order-list__qty-input--single{% unless v.available %} wholesale-order-list__qty-input--oos{% endunless %}"
+                        min="0"
+                        step="{{ inc_qty }}"
+                        value="0"
+                        ref="quantityInputs[]"
+                        data-variant-id="{{ v.id }}"
+                        data-price="{{ v.price }}"
+                        data-row-id="{{ product.id }}"
+                        data-min="{{ min_qty }}"
+                        data-increment="{{ inc_qty }}"
+                        {% if max_qty %}data-max="{{ max_qty }}"{% endif %}
+                        {% unless v.available %}disabled aria-disabled="true" title="Out of stock"{% endunless %}
+                        on:change="/onQuantityChange"
+                        on:blur="/onQuantityBlur"
+                      >
+                    </td>
+                  {%- endif -%}
+
+                  <td class="wholesale-order-list__td wholesale-order-list__td--total">
+                    <span ref="rowTotals[]" data-row-id="{{ product.id }}">{{ 0 | money }}</span>
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        <footer class="wholesale-order-list__footer">
+          <div class="wholesale-order-list__attrs">
+            {%- if enable_po_field -%}
+              <div class="wholesale-order-list__attr">
+                <label for="WholesalePO-{{ section.id }}" class="wholesale-order-list__attr-label">PO number</label>
+                <input
+                  id="WholesalePO-{{ section.id }}"
+                  type="text"
+                  class="wholesale-order-list__attr-input"
+                  placeholder="Optional"
+                  ref="poField"
+                  autocomplete="off"
+                  maxlength="60"
+                >
+              </div>
+            {%- endif -%}
+            {%- if enable_notes_field -%}
+              <div class="wholesale-order-list__attr wholesale-order-list__attr--wide">
+                <label for="WholesaleNotes-{{ section.id }}" class="wholesale-order-list__attr-label">Order notes</label>
+                <input
+                  id="WholesaleNotes-{{ section.id }}"
+                  type="text"
+                  class="wholesale-order-list__attr-input"
+                  placeholder="Optional — shipping instructions, delivery dates…"
+                  ref="notesField"
+                  autocomplete="off"
+                  maxlength="200"
+                >
+              </div>
+            {%- endif -%}
+          </div>
+
+          <div class="wholesale-order-list__summary">
+            <div class="wholesale-order-list__metric">
+              <span class="wholesale-order-list__metric-label">Lines</span>
+              <span class="wholesale-order-list__metric-value" ref="lineCount">0</span>
+            </div>
+            <div class="wholesale-order-list__metric">
+              <span class="wholesale-order-list__metric-label">Units</span>
+              <span class="wholesale-order-list__metric-value" ref="totalUnits">0</span>
+            </div>
+            <div class="wholesale-order-list__metric wholesale-order-list__metric--total">
+              <span class="wholesale-order-list__metric-label">Subtotal</span>
+              <span class="wholesale-order-list__metric-value" ref="grandTotal">{{ 0 | money }}</span>
+            </div>
+            <button
+              type="button"
+              class="button wholesale-order-list__submit"
+              ref="submitButton"
+              on:click="/submitOrder"
+              disabled
+              aria-disabled="true"
+            >
+              <span class="wholesale-order-list__submit-label">Add all to cart</span>
+            </button>
+          </div>
+
+          <div class="wholesale-order-list__messages" aria-live="polite">
+            <span class="wholesale-order-list__message wholesale-order-list__message--success hidden" ref="successContainer">
+              <span ref="successText"></span>
+            </span>
+            <span class="wholesale-order-list__message wholesale-order-list__message--error hidden" ref="errorContainer">
+              <span ref="errorText"></span>
+            </span>
+          </div>
+        </footer>
+      {%- endif -%}
+    </wholesale-order-list>
+
+  {%- else -%}
+    {%- comment -%} ─── Gate screen (logged-out or DTC customer) ─── {%- endcomment -%}
+
+    <div class="wholesale-gate">
+      <div class="wholesale-gate__inner">
+        <h1 class="wholesale-gate__heading">{{ section.settings.gate_heading | default: 'Wholesale Ordering' }}</h1>
+        <p class="wholesale-gate__body">
+          {{ section.settings.gate_body | default: 'Wholesale ordering is available to approved trade partners. Apply for an account or sign in to place an order.' }}
+        </p>
+        <div class="wholesale-gate__actions">
+          <a href="{{ apply_url }}" class="button wholesale-gate__cta">Apply for a wholesale account</a>
+          {%- unless customer -%}
+            <a href="{{ routes.account_login_url }}?return_to={{ request.path | escape }}" class="link wholesale-gate__login">Sign in</a>
+          {%- endunless -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .wholesale-section {
+    --whl-border: rgb(var(--color-foreground-rgb, 31 16 7) / 0.12);
+    --whl-row-hover: rgb(var(--color-foreground-rgb, 31 16 7) / 0.03);
+    --whl-muted: rgb(var(--color-foreground-rgb, 31 16 7) / 0.55);
+    --whl-input-width: 4.25rem;
+  }
+
+  /* ── B2B grid ─────────────────────────────────────────────── */
+  .wholesale-order-list {
+    display: block;
+    width: 100%;
+  }
+
+  .wholesale-order-list__header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gap-md, 1rem);
+    align-items: baseline;
+    justify-content: space-between;
+    padding-block-end: var(--padding-md, 1rem);
+    border-block-end: 1px solid var(--whl-border);
+    margin-block-end: var(--margin-lg, 1.25rem);
+  }
+
+  .wholesale-order-list__heading {
+    font-family: var(--font-heading--family, serif);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    line-height: 1.15;
+    margin: 0 0 0.15rem;
+    color: var(--color-foreground-heading, var(--color-foreground));
+  }
+
+  .wholesale-order-list__subheading {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--whl-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .wholesale-order-list__account {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+  }
+
+  .wholesale-order-list__company {
+    font-weight: 600;
+    color: var(--color-foreground);
+  }
+
+  .wholesale-order-list__location-select {
+    appearance: auto;
+    border: 1px solid var(--whl-border);
+    background: transparent;
+    color: inherit;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font: inherit;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* Toolbar */
+  .wholesale-order-list__toolbar {
+    display: flex;
+    margin-block-end: var(--margin-md, 1rem);
+  }
+  .wholesale-order-list__search {
+    width: min(28rem, 100%);
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font: inherit;
+  }
+  .wholesale-order-list__search:focus {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 1px;
+  }
+
+  /* Scrollable table area */
+  .wholesale-order-list__scroll {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+  }
+
+  .wholesale-order-list__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+  }
+
+  .wholesale-order-list__thead {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 2;
+    background: var(--color-background);
+  }
+
+  .wholesale-order-list__th {
+    text-align: start;
+    padding: 0.75rem 0.6rem;
+    font-weight: 600;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+    border-block-end: 1px solid var(--whl-border);
+    white-space: nowrap;
+  }
+
+  .wholesale-order-list__th--size,
+  .wholesale-order-list__th--qty,
+  .wholesale-order-list__th--rrp,
+  .wholesale-order-list__th--whl,
+  .wholesale-order-list__th--total {
+    text-align: end;
+  }
+
+  .wholesale-order-list__td {
+    padding: 0.55rem 0.6rem;
+    vertical-align: middle;
+    border-block-end: 1px solid var(--whl-border);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wholesale-order-list__row:hover .wholesale-order-list__td {
+    background: var(--whl-row-hover);
+  }
+  .wholesale-order-list__row[hidden] {
+    display: none;
+  }
+
+  .wholesale-order-list__td--style {
+    text-align: start;
+    min-width: 14rem;
+  }
+
+  .wholesale-order-list__style-cell {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .wholesale-order-list__thumb {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--whl-row-hover);
+    flex-shrink: 0;
+  }
+  .wholesale-order-list__style-link {
+    color: var(--color-foreground);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .wholesale-order-list__style-link:hover {
+    text-decoration: underline;
+  }
+
+  .wholesale-order-list__td--sku {
+    font-size: 0.75rem;
+    color: var(--whl-muted);
+    white-space: nowrap;
+  }
+
+  .wholesale-order-list__td--rrp,
+  .wholesale-order-list__td--whl,
+  .wholesale-order-list__td--total {
+    text-align: end;
+    white-space: nowrap;
+  }
+
+  .wholesale-order-list__td--rrp {
+    color: var(--whl-muted);
+  }
+
+  .wholesale-order-list__td--qty {
+    text-align: center;
+    padding: 0.35rem 0.3rem;
+  }
+  .wholesale-order-list__td--qty-single {
+    text-align: center;
+  }
+
+  .wholesale-order-list__qty-input {
+    width: var(--whl-input-width);
+    max-width: 100%;
+    padding: 0.4rem 0.45rem;
+    border: 1px solid var(--whl-border);
+    border-radius: 3px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: end;
+  }
+  .wholesale-order-list__qty-input--single {
+    width: 7rem;
+  }
+  .wholesale-order-list__qty-input:focus {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 1px;
+  }
+  .wholesale-order-list__qty-input[value]:not([value="0"]) {
+    border-color: var(--color-foreground);
+  }
+  .wholesale-order-list__qty-input--oos {
+    background: var(--whl-row-hover);
+    color: var(--whl-muted);
+  }
+  .wholesale-order-list__muted {
+    color: var(--whl-muted);
+  }
+
+  /* Empty state */
+  .wholesale-order-list__empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--whl-muted);
+    border: 1px dashed var(--whl-border);
+    border-radius: 4px;
+  }
+
+  /* Footer / summary */
+  .wholesale-order-list__footer {
+    margin-block-start: var(--margin-lg, 1.25rem);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md, 1rem);
+    position: sticky;
+    inset-block-end: 0;
+    background: var(--color-background);
+    padding-block-start: 1rem;
+    border-block-start: 1px solid var(--whl-border);
+    z-index: 3;
+  }
+
+  .wholesale-order-list__attrs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .wholesale-order-list__attr {
+    flex: 1 1 12rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .wholesale-order-list__attr--wide {
+    flex: 2 1 18rem;
+  }
+  .wholesale-order-list__attr-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+  }
+  .wholesale-order-list__attr-input {
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font: inherit;
+  }
+
+  .wholesale-order-list__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .wholesale-order-list__metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.15;
+  }
+  .wholesale-order-list__metric-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--whl-muted);
+  }
+  .wholesale-order-list__metric-value {
+    font-family: var(--font-heading--family, serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-order-list__metric--total .wholesale-order-list__metric-value {
+    font-size: 1.4rem;
+  }
+
+  .wholesale-order-list__submit {
+    min-width: 14rem;
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border: none;
+    padding: 0.9rem 1.6rem;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  .wholesale-order-list__submit[disabled],
+  .wholesale-order-list__submit[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .wholesale-order-list__submit:not([disabled]):hover {
+    opacity: 0.92;
+  }
+  .wholesale-order-list.is-busy .wholesale-order-list__submit-label::after {
+    content: '…';
+  }
+
+  .wholesale-order-list__messages .hidden {
+    display: none;
+  }
+  .wholesale-order-list__message {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+  }
+  .wholesale-order-list__message--success {
+    color: var(--color-foreground);
+  }
+  .wholesale-order-list__message--error {
+    color: #b32d2d;
+  }
+
+  /* ── Gate screen ──────────────────────────────────────────── */
+  .wholesale-gate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 50vh;
+    padding: 3rem 1.5rem;
+  }
+  .wholesale-gate__inner {
+    max-width: 36rem;
+    text-align: center;
+  }
+  .wholesale-gate__heading {
+    font-family: var(--font-heading--family, serif);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    margin: 0 0 1rem;
+    color: var(--color-foreground-heading, var(--color-foreground));
+  }
+  .wholesale-gate__body {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0 0 2rem;
+    color: var(--whl-muted);
+  }
+  .wholesale-gate__actions {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .wholesale-gate__cta {
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border: none;
+    padding: 0.9rem 2rem;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .wholesale-gate__cta:hover {
+    opacity: 0.92;
+  }
+  .wholesale-gate__login {
+    color: var(--whl-muted);
+    text-decoration: underline;
+    font-size: 0.9rem;
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 750px) {
+    .wholesale-order-list__header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .wholesale-order-list__account {
+      justify-content: flex-start;
+    }
+    .wholesale-order-list__summary {
+      justify-content: space-between;
+      width: 100%;
+    }
+    .wholesale-order-list__submit {
+      width: 100%;
+      min-width: 0;
+    }
+    .wholesale-order-list__td--style {
+      min-width: 10rem;
+    }
+  }
+{% endstylesheet %}
+{% # theme-check-enable %}
+
+{% schema %}
+{
+  "name": "Wholesale order pad",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "B2B-only wholesale ordering grid. Visible to logged-in B2B partners; everyone else sees the gate screen."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Wholesale Order Pad"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Trade pricing · single-cart bulk order"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Wholesale collection"
+    },
+    {
+      "type": "text",
+      "id": "size_option_name",
+      "label": "Size option name",
+      "default": "Size",
+      "info": "Product option treated as the size axis (case-insensitive). Products without this option get a single quantity cell."
+    },
+    {
+      "type": "header",
+      "content": "Columns"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rrp_column",
+      "label": "Show RRP column",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sku_column",
+      "label": "Show SKU column",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Toolbar"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_search",
+      "label": "Show search bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_po_field",
+      "label": "Show PO number field",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_notes_field",
+      "label": "Show order notes field",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Gate screen"
+    },
+    {
+      "type": "text",
+      "id": "gate_heading",
+      "label": "Gate heading",
+      "default": "Wholesale Ordering"
+    },
+    {
+      "type": "textarea",
+      "id": "gate_body",
+      "label": "Gate body copy",
+      "default": "Wholesale ordering is available to approved trade partners. Apply for an account or sign in to place an order."
+    },
+    {
+      "type": "url",
+      "id": "apply_url",
+      "label": "Apply-for-account URL",
+      "info": "Link target for the 'Apply for a wholesale account' button on the gate screen."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wholesale order pad",
+      "category": "Wholesale",
+      "settings": {
+        "heading": "Wholesale Order Pad",
+        "subheading": "Trade pricing · single-cart bulk order"
+      }
+    }
+  ],
+  "enabled_on": {
+    "templates": ["page"]
+  }
+}
+{% endschema %}

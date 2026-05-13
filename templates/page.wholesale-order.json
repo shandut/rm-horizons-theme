@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "wholesale": {
+      "type": "wholesale-order-list",
+      "settings": {
+        "heading": "Wholesale Order Pad",
+        "subheading": "Trade pricing · single-cart bulk order",
+        "size_option_name": "Size",
+        "show_rrp_column": true,
+        "show_sku_column": true,
+        "enable_search": true,
+        "enable_po_field": true,
+        "enable_notes_field": true,
+        "gate_heading": "Wholesale Ordering",
+        "gate_body": "Wholesale ordering is available to approved trade partners. Apply for an account or sign in to place an order.",
+        "color_scheme": "scheme-1",
+        "padding-block-start": 48,
+        "padding-block-end": 96
+      }
+    }
+  },
+  "order": ["wholesale"]
+}
