@@ -253,6 +253,18 @@
               },
               "block_order": []
             },
+            "wholesale_pdp_pick_KFUnEf": {
+              "type": "wholesale-pdp-pick",
+              "name": "Wholesale PDP quick pick",
+              "settings": {
+                "trigger_label": "Wholesale quick pick",
+                "padding-block-start": 8,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
             "rmw_agent_product_qa_GthJGN": {
               "type": "shopify://apps/rmw-agent/blocks/product-qa/019d94de-95bb-75d9-9df1-c3849a63fbd0",
               "settings": {
@@ -293,6 +305,7 @@
             "colour_selector",
             "variant_picker",
             "buy_buttons",
+            "wholesale_pdp_pick_KFUnEf",
             "rmw_agent_product_qa_GthJGN",
             "product_description"
           ]
