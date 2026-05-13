@@ -1,0 +1,717 @@
+{%- comment -%}
+  Wholesale PDP Quick Pick — B2B-only variant picker dialog on the PDP.
+
+  Renders a single trigger button + a <dialog> containing every variant
+  of the current product with a ±/qty stepper. Each row shows current
+  cart quantity for that variant; edits auto-save to cart (debounced)
+  and the section is re-rendered server-side so totals stay correct.
+
+  Visible ONLY when customer.b2b? is true — the section outputs nothing
+  for retail / logged-out visitors, so DTC PDPs are unchanged.
+{%- endcomment -%}
+
+{%- if customer.b2b? -%}
+  {%- liquid
+    assign currency_code = cart.currency.iso_code
+  -%}
+
+  <div
+    class="section section--page-width spacing-style wholesale-pdp-pick-section color-{{ section.settings.color_scheme }}"
+    style="
+      {%- render 'spacing-style', settings: section.settings -%}
+    "
+  >
+    <script
+      src="{{ 'wholesale-pdp-pick.js' | asset_url }}"
+      type="module"
+      fetchpriority="low"
+    ></script>
+
+    <wholesale-pdp-pick
+      class="wholesale-pdp-pick"
+      data-section-id="{{ section.id }}"
+      data-product-id="{{ product.id }}"
+      data-currency="{{ currency_code }}"
+      data-money-format="{{ shop.money_format | escape }}"
+    >
+      <button
+        type="button"
+        class="wholesale-pdp-pick__trigger"
+        ref="trigger"
+        on:click="/openDialog"
+        aria-haspopup="dialog"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <rect x="3" y="6" width="18" height="14" rx="1"/>
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          <path d="M9 13h6M12 10v6"/>
+        </svg>
+        <span>{{ section.settings.trigger_label | default: 'Wholesale quick pick' }}</span>
+        {%- if product.variants.size > 1 -%}
+          <span class="wholesale-pdp-pick__trigger-count">{{ product.variants.size }} variants</span>
+        {%- endif -%}
+      </button>
+
+      <dialog class="wholesale-pdp-pick__dialog" ref="dialog" aria-labelledby="WholesalePickTitle-{{ section.id }}">
+        <article class="wholesale-pdp-pick__panel">
+          <header class="wholesale-pdp-pick__header">
+            <div class="wholesale-pdp-pick__title-block">
+              <h2 id="WholesalePickTitle-{{ section.id }}" class="wholesale-pdp-pick__title">{{ product.title | escape }}</h2>
+              <p class="wholesale-pdp-pick__subtitle">
+                {%- if customer.current_company -%}
+                  {{ customer.current_company.name | escape }} pricing · update quantities to add to cart
+                {%- else -%}
+                  Wholesale pricing · update quantities to add to cart
+                {%- endif -%}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="wholesale-pdp-pick__close"
+              ref="closeButton"
+              on:click="/closeDialog"
+              aria-label="Close wholesale quick pick"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M6 18L18 6"/>
+              </svg>
+            </button>
+          </header>
+
+          {%- if product.variants.size == 0 -%}
+            <div class="wholesale-pdp-pick__empty">
+              <p>This product has no variants to order.</p>
+            </div>
+          {%- else -%}
+            <div class="wholesale-pdp-pick__list-head" aria-hidden="true">
+              <span>Variant</span>
+              <span>Quantity</span>
+              <span>Price</span>
+              <span>Variant total</span>
+            </div>
+
+            <ul class="wholesale-pdp-pick__list" role="list">
+              {%- for variant in product.variants -%}
+                {%- liquid
+                  comment
+                    Look up the line currently in cart for this variant (if any)
+                    so the stepper opens with the buyer's current quantity.
+                  endcomment
+                  assign in_cart_qty = 0
+                  assign in_cart_key = ''
+                  for item in cart.items
+                    if item.variant_id == variant.id
+                      assign in_cart_qty = item.quantity
+                      assign in_cart_key = item.key
+                      break
+                    endif
+                  endfor
+
+                  assign min_qty = variant.quantity_rule.min | default: 0
+                  assign inc_qty = variant.quantity_rule.increment | default: 1
+                  assign max_qty = variant.quantity_rule.max
+                  assign line_total_cents = variant.price | times: in_cart_qty
+                -%}
+                <li
+                  class="wholesale-pdp-pick__row"
+                  ref="rows[]"
+                  data-variant-id="{{ variant.id }}"
+                  data-price="{{ variant.price }}"
+                  data-line-key="{{ in_cart_key }}"
+                >
+                  <div class="wholesale-pdp-pick__variant">
+                    {%- if variant.featured_image -%}
+                      {{
+                        variant.featured_image
+                        | image_url: width: 96
+                        | image_tag:
+                          widths: '96',
+                          class: 'wholesale-pdp-pick__thumb',
+                          sizes: '48px',
+                          loading: 'lazy',
+                          alt: variant.title
+                      }}
+                    {%- elsif product.featured_image -%}
+                      {{
+                        product.featured_image
+                        | image_url: width: 96
+                        | image_tag:
+                          widths: '96',
+                          class: 'wholesale-pdp-pick__thumb',
+                          sizes: '48px',
+                          loading: 'lazy',
+                          alt: product.title
+                      }}
+                    {%- endif -%}
+                    <div class="wholesale-pdp-pick__variant-meta">
+                      <span class="wholesale-pdp-pick__variant-title">
+                        {%- if variant.title != 'Default Title' -%}
+                          {{ variant.title | escape }}
+                        {%- else -%}
+                          {{ product.title | escape }}
+                        {%- endif -%}
+                      </span>
+                      {%- if variant.sku != blank -%}
+                        <span class="wholesale-pdp-pick__variant-sku">{{ variant.sku | escape }}</span>
+                      {%- endif -%}
+                      {%- unless variant.available -%}
+                        <span class="wholesale-pdp-pick__badge">Out of stock</span>
+                      {%- endunless -%}
+                    </div>
+                  </div>
+
+                  <div class="wholesale-pdp-pick__qty">
+                    <div class="wholesale-pdp-pick__stepper">
+                      <button
+                        type="button"
+                        class="wholesale-pdp-pick__step-btn"
+                        data-action="decrement"
+                        data-variant-id="{{ variant.id }}"
+                        aria-label="Decrease quantity"
+                        on:click="/onStep"
+                        {% unless variant.available %}disabled{% endunless %}
+                      >−</button>
+                      <input
+                        type="number"
+                        inputmode="numeric"
+                        class="wholesale-pdp-pick__qty-input"
+                        ref="quantityInputs[]"
+                        data-variant-id="{{ variant.id }}"
+                        data-price="{{ variant.price }}"
+                        data-min="{{ min_qty }}"
+                        data-increment="{{ inc_qty }}"
+                        {% if max_qty %}data-max="{{ max_qty }}"{% endif %}
+                        value="{{ in_cart_qty }}"
+                        min="0"
+                        step="{{ inc_qty }}"
+                        aria-label="Quantity for {{ variant.title | escape }}"
+                        on:change="/onQuantityChange"
+                        on:blur="/onQuantityBlur"
+                        {% unless variant.available %}disabled{% endunless %}
+                      >
+                      <button
+                        type="button"
+                        class="wholesale-pdp-pick__step-btn"
+                        data-action="increment"
+                        data-variant-id="{{ variant.id }}"
+                        aria-label="Increase quantity"
+                        on:click="/onStep"
+                        {% unless variant.available %}disabled{% endunless %}
+                      >+</button>
+                    </div>
+                    <button
+                      type="button"
+                      class="wholesale-pdp-pick__remove"
+                      data-variant-id="{{ variant.id }}"
+                      aria-label="Remove from cart"
+                      on:click="/onRemove"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="wholesale-pdp-pick__unit">
+                    {{ variant.price | money }}<span class="wholesale-pdp-pick__unit-suffix">/ea</span>
+                  </div>
+
+                  <div class="wholesale-pdp-pick__total" ref="lineTotals[]" data-variant-id="{{ variant.id }}">
+                    {{ line_total_cents | money }}
+                  </div>
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          <footer class="wholesale-pdp-pick__footer">
+            <div class="wholesale-pdp-pick__footer-actions">
+              <a href="{{ routes.cart_url }}?view=b2b" class="wholesale-pdp-pick__cart-link">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                  <path d="M6 6h15l-1.5 9h-12L6 6zM6 6L5 3H2"/>
+                  <circle cx="9" cy="20" r="1"/>
+                  <circle cx="18" cy="20" r="1"/>
+                </svg>
+                <span>View cart</span>
+              </a>
+              <button
+                type="button"
+                class="wholesale-pdp-pick__clear"
+                ref="clearButton"
+                on:click="/clearAll"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                  <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                </svg>
+                <span>Clear all</span>
+              </button>
+            </div>
+
+            <div class="wholesale-pdp-pick__totals">
+              <div class="wholesale-pdp-pick__total-metric">
+                <span class="wholesale-pdp-pick__metric-value" ref="totalUnits">{{ cart.item_count }}</span>
+                <span class="wholesale-pdp-pick__metric-label">Total items</span>
+              </div>
+              <div class="wholesale-pdp-pick__total-metric wholesale-pdp-pick__total-metric--money">
+                <span class="wholesale-pdp-pick__metric-value" ref="subtotal">{{ cart.total_price | money }}</span>
+                <span class="wholesale-pdp-pick__metric-label">Product subtotal</span>
+                <span class="wholesale-pdp-pick__metric-fine">Taxes, discounts &amp; shipping calculated at checkout</span>
+              </div>
+            </div>
+
+            <div class="wholesale-pdp-pick__status" aria-live="polite">
+              <span class="wholesale-pdp-pick__toast hidden" ref="toast">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                  <path d="M5 12l5 5L20 7"/>
+                </svg>
+                <span ref="toastText"></span>
+              </span>
+              <span class="wholesale-pdp-pick__error hidden" ref="errorContainer">
+                <span ref="errorText"></span>
+              </span>
+            </div>
+          </footer>
+        </article>
+      </dialog>
+    </wholesale-pdp-pick>
+  </div>
+{%- endif -%}
+
+{% # theme-check-disable %}
+{% stylesheet %}
+  .wholesale-pdp-pick-section {
+    --whl-border: rgb(var(--color-foreground-rgb, 31 16 7) / 0.12);
+    --whl-row-hover: rgb(var(--color-foreground-rgb, 31 16 7) / 0.03);
+    --whl-muted: rgb(var(--color-foreground-rgb, 31 16 7) / 0.55);
+    --whl-success: #1f7a3f;
+    --whl-error: #b32d2d;
+  }
+
+  .wholesale-pdp-pick { display: block; }
+
+  /* Trigger button */
+  .wholesale-pdp-pick__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1.4rem;
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border: none;
+    border-radius: 4px;
+    font: inherit;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .wholesale-pdp-pick__trigger:hover { opacity: 0.92; }
+  .wholesale-pdp-pick__trigger-count {
+    margin-inline-start: 0.4rem;
+    padding: 0.15rem 0.5rem;
+    background: rgb(var(--color-background-rgb, 255 255 255) / 0.15);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+
+  /* Dialog */
+  .wholesale-pdp-pick__dialog {
+    padding: 0;
+    border: none;
+    background: transparent;
+    max-width: min(960px, 96vw);
+    width: 100%;
+    max-height: 92vh;
+  }
+  .wholesale-pdp-pick__dialog::backdrop {
+    background: rgb(0 0 0 / 0.55);
+    backdrop-filter: blur(2px);
+  }
+  .wholesale-pdp-pick__panel {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    border-radius: 6px;
+    box-shadow: 0 24px 80px rgb(0 0 0 / 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
+  }
+
+  .wholesale-pdp-pick__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.5rem 1.75rem 1rem;
+    border-block-end: 1px solid var(--whl-border);
+  }
+  .wholesale-pdp-pick__title {
+    font-family: var(--font-heading--family, serif);
+    font-size: 1.5rem;
+    margin: 0 0 0.25rem;
+    color: var(--color-foreground-heading, var(--color-foreground));
+  }
+  .wholesale-pdp-pick__subtitle {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--whl-muted);
+  }
+  .wholesale-pdp-pick__close {
+    background: transparent;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--whl-muted);
+    transition: color 0.15s, background 0.15s;
+  }
+  .wholesale-pdp-pick__close:hover {
+    color: var(--color-foreground);
+    background: var(--whl-row-hover);
+  }
+
+  /* List */
+  .wholesale-pdp-pick__list-head,
+  .wholesale-pdp-pick__row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(220px, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem 1.75rem;
+  }
+  .wholesale-pdp-pick__list-head {
+    padding-block: 0.6rem;
+    border-block-end: 1px solid var(--whl-border);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--whl-muted);
+  }
+  .wholesale-pdp-pick__list-head > span:nth-child(3),
+  .wholesale-pdp-pick__list-head > span:nth-child(4) { text-align: end; }
+
+  .wholesale-pdp-pick__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1 1 auto;
+  }
+  .wholesale-pdp-pick__row {
+    border-block-end: 1px solid var(--whl-border);
+  }
+  .wholesale-pdp-pick__row:hover { background: var(--whl-row-hover); }
+  .wholesale-pdp-pick__row:last-child { border-block-end: 0; }
+
+  .wholesale-pdp-pick__variant {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-width: 0;
+  }
+  .wholesale-pdp-pick__thumb {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 3px;
+    background: var(--whl-row-hover);
+    flex-shrink: 0;
+  }
+  .wholesale-pdp-pick__variant-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+  .wholesale-pdp-pick__variant-title {
+    font-weight: 500;
+    color: var(--color-foreground);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wholesale-pdp-pick__variant-sku {
+    font-size: 0.75rem;
+    color: var(--whl-muted);
+  }
+  .wholesale-pdp-pick__badge {
+    margin-block-start: 0.15rem;
+    align-self: flex-start;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--whl-error);
+  }
+
+  .wholesale-pdp-pick__qty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .wholesale-pdp-pick__stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--whl-border);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--color-background);
+  }
+  .wholesale-pdp-pick__step-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem 0.7rem;
+    cursor: pointer;
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-foreground);
+    transition: background 0.15s;
+  }
+  .wholesale-pdp-pick__step-btn:hover:not([disabled]) { background: var(--whl-row-hover); }
+  .wholesale-pdp-pick__step-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .wholesale-pdp-pick__qty-input {
+    width: 3.5rem;
+    border: none;
+    border-inline: 1px solid var(--whl-border);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: center;
+    padding: 0.45rem 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-pdp-pick__qty-input:focus {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: -2px;
+  }
+  .wholesale-pdp-pick__qty-input[disabled] { opacity: 0.5; }
+
+  .wholesale-pdp-pick__remove {
+    background: transparent;
+    border: none;
+    padding: 0.4rem;
+    border-radius: 3px;
+    cursor: pointer;
+    color: var(--whl-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s, background 0.15s;
+  }
+  .wholesale-pdp-pick__remove:hover {
+    color: var(--whl-error);
+    background: rgb(179 45 45 / 0.08);
+  }
+
+  .wholesale-pdp-pick__unit,
+  .wholesale-pdp-pick__total {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-foreground);
+  }
+  .wholesale-pdp-pick__unit-suffix {
+    color: var(--whl-muted);
+    font-size: 0.8rem;
+  }
+  .wholesale-pdp-pick__total { font-weight: 600; }
+
+  .wholesale-pdp-pick__empty {
+    padding: 3rem 1.75rem;
+    text-align: center;
+    color: var(--whl-muted);
+  }
+
+  /* Footer */
+  .wholesale-pdp-pick__footer {
+    border-block-start: 1px solid var(--whl-border);
+    padding: 1.25rem 1.75rem;
+    background: var(--color-background);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+  .wholesale-pdp-pick__footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .wholesale-pdp-pick__cart-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border: 1px solid var(--color-foreground);
+    border-radius: 4px;
+    color: var(--color-foreground);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: background 0.15s, color 0.15s;
+  }
+  .wholesale-pdp-pick__cart-link:hover {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+  .wholesale-pdp-pick__clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 0.9rem;
+    background: transparent;
+    border: none;
+    color: var(--whl-muted);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .wholesale-pdp-pick__clear:hover {
+    color: var(--whl-error);
+    background: var(--whl-row-hover);
+  }
+
+  .wholesale-pdp-pick__totals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-start;
+    justify-content: flex-end;
+    margin-block-start: 0.25rem;
+  }
+  .wholesale-pdp-pick__total-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+  }
+  .wholesale-pdp-pick__metric-value {
+    font-family: var(--font-heading--family, serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .wholesale-pdp-pick__total-metric--money .wholesale-pdp-pick__metric-value {
+    font-size: 1.65rem;
+  }
+  .wholesale-pdp-pick__metric-label {
+    font-size: 0.75rem;
+    color: var(--whl-muted);
+  }
+  .wholesale-pdp-pick__metric-fine {
+    font-size: 0.7rem;
+    color: var(--whl-muted);
+    max-width: 18rem;
+    text-align: end;
+  }
+
+  .wholesale-pdp-pick__status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 1.25rem;
+    font-size: 0.8rem;
+  }
+  .wholesale-pdp-pick__toast {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--whl-success);
+  }
+  .wholesale-pdp-pick__error {
+    color: var(--whl-error);
+  }
+  .wholesale-pdp-pick .hidden { display: none; }
+
+  .wholesale-pdp-pick.is-busy {
+    pointer-events: none;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+  }
+
+  /* Mobile */
+  @media (max-width: 750px) {
+    .wholesale-pdp-pick__dialog { max-width: 100vw; max-height: 100vh; }
+    .wholesale-pdp-pick__panel { border-radius: 0; max-height: 100vh; }
+    .wholesale-pdp-pick__list-head { display: none; }
+    .wholesale-pdp-pick__row {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "variant variant"
+        "qty unit"
+        "qty total";
+      gap: 0.5rem 1rem;
+    }
+    .wholesale-pdp-pick__variant { grid-area: variant; }
+    .wholesale-pdp-pick__qty { grid-area: qty; justify-content: flex-start; }
+    .wholesale-pdp-pick__unit { grid-area: unit; }
+    .wholesale-pdp-pick__total { grid-area: total; }
+    .wholesale-pdp-pick__totals { justify-content: space-between; gap: 1rem; }
+  }
+{% endstylesheet %}
+{% # theme-check-enable %}
+
+{% schema %}
+{
+  "name": "Wholesale PDP quick pick",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Adds a B2B-only quick-pick dialog to product pages. The trigger button and dialog are only rendered for logged-in B2B partners — DTC visitors see nothing."
+    },
+    {
+      "type": "text",
+      "id": "trigger_label",
+      "label": "Trigger button label",
+      "default": "Wholesale quick pick"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top padding",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom padding",
+      "min": 0,
+      "max": 60,
+      "step": 4,
+      "unit": "px",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Wholesale PDP quick pick",
+      "category": "Wholesale"
+    }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  }
+}
+{% endschema %}
