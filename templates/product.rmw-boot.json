@@ -310,16 +310,6 @@
         "padding-block-end": 0
       }
     },
-    "wholesale_pdp_pick_Rpg7x9": {
-      "type": "wholesale-pdp-pick",
-      "name": "Wholesale PDP quick pick",
-      "settings": {
-        "trigger_label": "Wholesale quick pick",
-        "color_scheme": "",
-        "padding-block-start": 8,
-        "padding-block-end": 8
-      }
-    },
     "product_recommendations": {
       "type": "product-recommendations",
       "blocks": {
@@ -464,7 +454,6 @@
   },
   "order": [
     "main",
-    "wholesale_pdp_pick_Rpg7x9",
     "product_recommendations"
   ]
 }
