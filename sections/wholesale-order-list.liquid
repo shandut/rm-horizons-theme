@@ -11,7 +11,18 @@
 {%- endcomment -%}
 
 {%- liquid
-  assign wholesale_collection = collections[section.settings.collection]
+  comment
+    Product source: when the merchant picks a collection, scope to that.
+    Otherwise default to `collections.all`, which for a logged-in B2B buyer
+    is automatically filtered by Shopify to only the products in that
+    buyer's company catalog.
+  endcomment
+  if section.settings.collection != blank
+    assign wholesale_collection = collections[section.settings.collection]
+  else
+    assign wholesale_collection = collections.all
+  endif
+
   assign size_option_name = section.settings.size_option_name | default: 'Size'
   assign size_option_name_lower = size_option_name | downcase
 
@@ -135,7 +146,11 @@
 
       {%- if wholesale_collection.products.size == 0 -%}
         <div class="wholesale-order-list__empty">
-          <p>No wholesale products available in this collection. Add products to the collection or pick a different one in the theme editor.</p>
+          {%- if section.settings.collection != blank -%}
+            <p>No products in <strong>{{ wholesale_collection.title | escape }}</strong>. Add products to the collection or clear the section's collection filter to show all products in your B2B catalog.</p>
+          {%- else -%}
+            <p>No products are published to your B2B catalog yet. Contact your account manager to have products added.</p>
+          {%- endif -%}
         </div>
       {%- else -%}
         <div class="wholesale-order-list__scroll" ref="scrollArea">
@@ -850,7 +865,8 @@
     {
       "type": "collection",
       "id": "collection",
-      "label": "Wholesale collection"
+      "label": "Filter by collection (optional)",
+      "info": "Leave blank to show every product in the logged-in buyer's B2B catalog. Pick a collection to scope the grid to that subset (e.g. 'Boots only')."
     },
     {
       "type": "text",
