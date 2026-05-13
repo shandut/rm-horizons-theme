@@ -310,6 +310,16 @@
         "padding-block-end": 0
       }
     },
+    "wholesale_pdp_pick_Rpg7x9": {
+      "type": "wholesale-pdp-pick",
+      "name": "Wholesale PDP quick pick",
+      "settings": {
+        "trigger_label": "Wholesale quick pick",
+        "color_scheme": "",
+        "padding-block-start": 8,
+        "padding-block-end": 8
+      }
+    },
     "product_recommendations": {
       "type": "product-recommendations",
       "blocks": {
@@ -450,21 +460,11 @@
         "padding-block-start": 48,
         "padding-block-end": 48
       }
-    },
-    "wholesale_pdp_pick_Rpg7x9": {
-      "type": "wholesale-pdp-pick",
-      "name": "Wholesale PDP quick pick",
-      "settings": {
-        "trigger_label": "Wholesale quick pick",
-        "color_scheme": "",
-        "padding-block-start": 8,
-        "padding-block-end": 8
-      }
     }
   },
   "order": [
     "main",
-    "product_recommendations",
-    "wholesale_pdp_pick_Rpg7x9"
+    "wholesale_pdp_pick_Rpg7x9",
+    "product_recommendations"
   ]
 }
